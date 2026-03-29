@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "com.example.mixin",
+  "package": "me.tuanzi.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "AnvilMenuMixin",
@@ -14,10 +14,10 @@
     "PlayerDeathDistanceMixin",
     "PlayerExperienceConsumeMixin",
     "PlayerExperienceMixin",
+    "PlayerListRespawnMixin",
     "ProjectileHitMixin",
     "ResultSlotMixin",
     "ServerPlayerMixin",
-    "PlayerListRespawnMixin",
     "TamableAnimalMixin",
     "TamableAnimalTameMixin"
   ],

@@ -16,15 +16,17 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.example.TemplateMod",
-      "com.example.statistics.StatisticsModule"
+      "me.tuanzi.TemplateMod",
+      "me.tuanzi.statistics.StatisticsModule",
+      "me.tuanzi.auth.AuthModule"
     ],
     "fabric-datagen": [
-      "com.example.TemplateModDataGenerator"
+      "me.tuanzi.TemplateModDataGenerator"
     ]
   },
   "mixins": [
-    "template-mod.mixins.json"
+    "template-mod.mixins.json",
+    "template-mod-auth.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.18.4",
