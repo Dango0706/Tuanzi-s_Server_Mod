@@ -15,43 +15,43 @@ public class PlayerMoveListener implements ServerTickEvents.EndTick {
     private static final Map<UUID, Vec3> lastPositions = new HashMap<>();
     private static final Map<UUID, Integer> tickCounters = new HashMap<>();
     private static final int CHECK_INTERVAL = 20; // 每秒检查一次（20 ticks）
-    
+
+    public static void removePlayerPosition(UUID playerId) {
+        lastPositions.remove(playerId);
+        tickCounters.remove(playerId);
+    }
+
     @Override
     public void onEndTick(MinecraftServer server) {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             UUID playerId = player.getUUID();
             Vec3 currentPos = player.position();
-            
+
             tickCounters.put(playerId, tickCounters.getOrDefault(playerId, 0) + 1);
-            
+
             if (tickCounters.get(playerId) >= CHECK_INTERVAL) {
                 tickCounters.put(playerId, 0);
-                
+
                 Vec3 lastPos = lastPositions.get(playerId);
                 if (lastPos != null) {
                     double distance = calculateDistance(lastPos, currentPos);
-                    
+
                     if (distance > 0.1 && distance < 100) {
                         String playerName = player.getName().getString();
                         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
                         stats.addDistanceTraveled(distance);
                     }
                 }
-                
+
                 lastPositions.put(playerId, currentPos);
             }
         }
     }
-    
+
     private double calculateDistance(Vec3 pos1, Vec3 pos2) {
         double dx = pos2.x - pos1.x;
         double dy = pos2.y - pos1.y;
         double dz = pos2.z - pos1.z;
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
-    }
-    
-    public static void removePlayerPosition(UUID playerId) {
-        lastPositions.remove(playerId);
-        tickCounters.remove(playerId);
     }
 }

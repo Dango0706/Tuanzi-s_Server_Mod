@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MerchantResultSlot.class)
 public abstract class MerchantResultSlotMixin {
-    
+
     @Inject(method = "onTake", at = @At("HEAD"))
     private void onTrade(Player player, ItemStack carried, CallbackInfo ci) {
         if (player instanceof ServerPlayer) {

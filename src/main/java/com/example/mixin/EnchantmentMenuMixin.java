@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(EnchantmentMenu.class)
 public abstract class EnchantmentMenuMixin {
-    
+
     @Inject(method = "clickMenuButton", at = @At("RETURN"))
     private void onEnchant(Player player, int buttonId, CallbackInfoReturnable<Boolean> cir) {
         if (cir.getReturnValueZ() && player instanceof ServerPlayer) {

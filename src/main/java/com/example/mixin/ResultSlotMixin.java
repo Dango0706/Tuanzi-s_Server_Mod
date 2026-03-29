@@ -12,16 +12,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ResultSlot.class)
 public abstract class ResultSlotMixin {
-    
+
     @Inject(method = "onTake", at = @At("HEAD"))
     private void onCraftItem(Player player, ItemStack stack, CallbackInfo ci) {
         if (player instanceof net.minecraft.server.level.ServerPlayer) {
             String playerName = player.getName().getString();
             PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
-            
+
             String itemType = stack.getItem().getDescriptionId();
             stats.addItemCrafted(itemType);
-            
+
             StatisticsModule.LOGGER.debug("Player {} crafted item: {}, total: {}", playerName, itemType, stats.getItemsCrafted());
         }
     }

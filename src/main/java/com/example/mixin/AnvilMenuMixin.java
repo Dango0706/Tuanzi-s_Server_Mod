@@ -12,14 +12,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AnvilMenu.class)
 public abstract class AnvilMenuMixin {
-    
+
     @Inject(method = "onTake", at = @At("HEAD"))
     private void onAnvilUse(Player player, ItemStack stack, CallbackInfo ci) {
         if (player instanceof net.minecraft.server.level.ServerPlayer) {
             String playerName = player.getName().getString();
             PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
             stats.addAnvilUse();
-            
+
             StatisticsModule.LOGGER.debug("Player {} used anvil, total: {}", playerName, stats.getAnvilUses());
         }
     }

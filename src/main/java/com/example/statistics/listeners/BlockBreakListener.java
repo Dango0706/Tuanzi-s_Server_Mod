@@ -3,11 +3,11 @@ package com.example.statistics.listeners;
 import com.example.statistics.StatisticsModule;
 import com.example.statistics.data.PlayerStatistics;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
@@ -17,10 +17,10 @@ public class BlockBreakListener implements PlayerBlockBreakEvents.Before {
         Block block = state.getBlock();
         String playerName = player.getName().getString();
         String blockType = block.getName().getString();
-        
+
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
         stats.addBlockBroken(blockType);
-        
+
         return true;
     }
 }

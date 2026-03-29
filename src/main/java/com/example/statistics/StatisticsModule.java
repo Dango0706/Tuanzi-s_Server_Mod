@@ -1,19 +1,22 @@
 package com.example.statistics;
 
+import com.example.statistics.commands.FloatingTextCommand;
 import com.example.statistics.commands.ScoreboardCommand;
 import com.example.statistics.commands.StatsCommand;
 import com.example.statistics.data.StatisticsDataManager;
+import com.example.statistics.floatingtext.FloatingTextManager;
 import com.example.statistics.listeners.*;
+import com.example.statistics.scoreboard.ScoreboardManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +48,6 @@ public class StatisticsModule implements ModInitializer {
         ServerPlayConnectionEvents.DISCONNECT.register(new PlayerLeaveListener());
         
         PlayerBlockBreakEvents.BEFORE.register(new BlockBreakListener());
-        UseBlockCallback.EVENT.register(new BlockPlaceListener());
         
         ServerTickEvents.END_SERVER_TICK.register(new PlayerMoveListener());
         
@@ -56,20 +58,43 @@ public class StatisticsModule implements ModInitializer {
         ServerLivingEntityEvents.AFTER_DAMAGE.register(new DamageListener());
         
         ChatListener.register();
+        
+        SessionListener.register();
+        
+        PlayerActivityListener.register();
     }
     
     private void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             StatsCommand.register(dispatcher, registryAccess);
             ScoreboardCommand.register(dispatcher, registryAccess);
+            FloatingTextCommand.register(dispatcher, registryAccess);
         });
     }
     
     private void registerServerLifecycleEvents() {
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+            FloatingTextManager.getInstance().loadData();
+        });
+        
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             if (dataManager != null) {
                 dataManager.shutdown();
             }
+            ScoreboardManager.reset();
+            FloatingTextManager.getInstance().saveData();
+            FloatingTextManager.getInstance().clearAll();
+        });
+        
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            FloatingTextManager.getInstance().updateAllDisplays(server.getTickCount());
+        });
+        
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            for (net.minecraft.server.level.ServerLevel level : server.getAllLevels()) {
+                FloatingTextManager.getInstance().rebuildAllEntities(level);
+            }
+            ScoreboardManager.getInstance(server).loadConfig();
         });
     }
     
