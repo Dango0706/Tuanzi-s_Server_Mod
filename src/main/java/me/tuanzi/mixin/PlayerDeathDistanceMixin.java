@@ -16,7 +16,7 @@ public abstract class PlayerDeathDistanceMixin {
     
     @Inject(method = "die", at = @At("HEAD"))
     private void onDie(DamageSource source, CallbackInfo ci) {
-        System.out.println("[DEBUG] PlayerDeathDistanceMixin.onDie called!");
+        StatisticsModule.LOGGER.debug("[PlayerDeathDistanceMixin] onDie called!");
         
         ServerPlayer serverPlayer = (ServerPlayer)(Object)this;
         String playerName = serverPlayer.getName().getString();
@@ -25,13 +25,13 @@ public abstract class PlayerDeathDistanceMixin {
         BlockPos deathPos = serverPlayer.blockPosition();
         
         long lastRespawnTime = stats.getLastRespawnTime();
-        System.out.println("[DEBUG] Player " + playerName + " died, lastRespawnTime: " + lastRespawnTime);
+        StatisticsModule.LOGGER.debug("Player {} died, lastRespawnTime: {}", playerName, lastRespawnTime);
         
         stats.recordDeath();
         
         long shortestLife = stats.getShortestLifeSeconds();
         long longestLife = stats.getLongestLifeSeconds();
-        System.out.println("[DEBUG] Player " + playerName + " after recordDeath: shortestLife=" + shortestLife + ", longestLife=" + longestLife);
+        StatisticsModule.LOGGER.debug("Player {} after recordDeath: shortestLife={}, longestLife={}", playerName, shortestLife, longestLife);
         
         ServerPlayer.RespawnConfig respawnConfig = serverPlayer.getRespawnConfig();
         if (respawnConfig != null) {
@@ -40,12 +40,12 @@ public abstract class PlayerDeathDistanceMixin {
             if (respawnPos != null) {
                 double distance = Math.sqrt(deathPos.distSqr(respawnPos));
                 stats.updateFarthestDeathDistance(distance);
-                System.out.println("[DEBUG] Player " + playerName + " died " + String.format("%.1f", distance) + " blocks from respawn, farthest: " + String.format("%.1f", stats.getFarthestDeathDistance()));
+                StatisticsModule.LOGGER.debug("Player {} died {} blocks from respawn, farthest: {}", playerName, String.format("%.1f", distance), String.format("%.1f", stats.getFarthestDeathDistance()));
             }
         } else {
             double distance = Math.sqrt(deathPos.distSqr(new BlockPos(0, 64, 0)));
             stats.updateFarthestDeathDistance(distance);
-            System.out.println("[DEBUG] Player " + playerName + " died " + String.format("%.1f", distance) + " blocks from world spawn (no respawn point), farthest: " + String.format("%.1f", stats.getFarthestDeathDistance()));
+            StatisticsModule.LOGGER.debug("Player {} died {} blocks from world spawn (no respawn point), farthest: {}", playerName, String.format("%.1f", distance), String.format("%.1f", stats.getFarthestDeathDistance()));
         }
     }
 }

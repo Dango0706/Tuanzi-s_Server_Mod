@@ -6,7 +6,6 @@
     "AnvilMenuMixin",
     "BlockItemMixin",
     "EnchantmentMenuMixin",
-    "ExampleMixin",
     "FishingHookMixin",
     "LivingEntityJumpMixin",
     "LivingEntityShieldMixin",

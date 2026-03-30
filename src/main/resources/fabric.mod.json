@@ -29,6 +29,7 @@
     "template-mod.mixins.json",
     "template-mod-auth.mixins.json"
   ],
+  "accessWidener": "template-mod.accesswidener",
   "depends": {
     "fabricloader": ">=0.18.4",
     "minecraft": "~26.1",
