@@ -5,35 +5,43 @@ import net.minecraft.server.level.ServerPlayer;
 
 public class TranslationHelper {
 
+    public static void initialize() {
+        AuthTranslationHelper.initialize();
+    }
+
+    public static void setDefaultLanguage(String lang) {
+        AuthTranslationHelper.setDefaultLanguage(lang);
+    }
+
     public static Component translatable(String key) {
-        return Component.translatable(key);
+        return AuthTranslationHelper.translateToComponent(key, "zh_cn");
     }
 
     public static Component translatable(String key, Object... args) {
-        return Component.translatable(key, args);
+        return AuthTranslationHelper.translateToComponent(key, "zh_cn", args);
     }
 
     public static void sendMessage(ServerPlayer player, String key) {
-        player.sendSystemMessage(translatable(key));
+        AuthTranslationHelper.sendMessage(player, key);
     }
 
     public static void sendMessage(ServerPlayer player, String key, Object... args) {
-        player.sendSystemMessage(translatable(key, args));
+        AuthTranslationHelper.sendMessage(player, key, args);
     }
 
     public static void sendSuccess(net.minecraft.commands.CommandSourceStack source, String key) {
-        source.sendSuccess(() -> translatable(key), false);
+        AuthTranslationHelper.sendSuccess(source, key);
     }
 
     public static void sendSuccess(net.minecraft.commands.CommandSourceStack source, String key, Object... args) {
-        source.sendSuccess(() -> translatable(key, args), false);
+        AuthTranslationHelper.sendSuccess(source, key, args);
     }
 
     public static void sendFailure(net.minecraft.commands.CommandSourceStack source, String key) {
-        source.sendFailure(translatable(key));
+        AuthTranslationHelper.sendFailure(source, key);
     }
 
     public static void sendFailure(net.minecraft.commands.CommandSourceStack source, String key, Object... args) {
-        source.sendFailure(translatable(key, args));
+        AuthTranslationHelper.sendFailure(source, key, args);
     }
 }

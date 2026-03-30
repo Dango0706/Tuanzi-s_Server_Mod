@@ -22,6 +22,20 @@ public class EconomyAPIImpl implements EconomyAPI {
     private EconomyAPIImpl(MinecraftServer server) {
         this.server = server;
         this.stateSaver = EconomyStateSaver.getServerState(server);
+        loadWalletTypesFromStorage();
+    }
+
+    private void loadWalletTypesFromStorage() {
+        lock.lock();
+        try {
+            WalletTypeRegistry.clear();
+            EconomyData data = stateSaver.getData();
+            for (WalletType walletType : data.getAllWalletTypes()) {
+                WalletTypeRegistry.register(walletType);
+            }
+        } finally {
+            lock.unlock();
+        }
     }
 
     public static synchronized EconomyAPIImpl getInstance(MinecraftServer server) {

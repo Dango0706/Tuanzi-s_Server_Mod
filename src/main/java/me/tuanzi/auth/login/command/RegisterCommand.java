@@ -17,6 +17,8 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerPlayer;
 
+import java.util.UUID;
+
 public class RegisterCommand {
 
     private static LoginConfig loginConfig;
@@ -56,9 +58,15 @@ public class RegisterCommand {
             return 0;
         }
 
+        UUID playerUUID = player.getUUID();
         String playerName = player.getName().getString();
         String password = StringArgumentType.getString(context, "password");
         String confirmPassword = StringArgumentType.getString(context, "confirmPassword");
+
+        if (isPremiumPlayer(playerUUID)) {
+            TranslationHelper.sendFailure(source, "auth.register.premium_no_need");
+            return 0;
+        }
 
         if (accountManager == null) {
             TranslationHelper.sendFailure(source, "auth.register.system_not_initialized");
@@ -109,5 +117,9 @@ public class RegisterCommand {
             TranslationHelper.sendFailure(source, "auth.register.failed");
             return 0;
         }
+    }
+
+    private static boolean isPremiumPlayer(UUID uuid) {
+        return uuid.version() == 4;
     }
 }

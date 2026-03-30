@@ -55,6 +55,7 @@ public class LoginCommand {
 
         String playerName = player.getName().getString();
         String password = StringArgumentType.getString(context, "password");
+        String ipAddress = player.getIpAddress();
 
         if (accountManager == null) {
             TranslationHelper.sendFailure(source, "auth.login.system_not_initialized");
@@ -66,7 +67,13 @@ public class LoginCommand {
             return 0;
         }
 
-        if (sessionManager != null && sessionManager.hasValidSession(playerName)) {
+        if (LoginStateManager.getInstance().isLoggedIn(player.getUUID())) {
+            TranslationHelper.sendSuccess(source, "auth.login.already_logged_in");
+            return 0;
+        }
+
+        if (sessionManager != null && sessionManager.validateSession(playerName, ipAddress)) {
+            LoginStateManager.getInstance().setLoggedIn(player.getUUID());
             TranslationHelper.sendSuccess(source, "auth.login.already_logged_in");
             return 0;
         }
@@ -79,7 +86,6 @@ public class LoginCommand {
 
         boolean verified = accountManager.verifyPassword(playerName, password);
         if (verified) {
-            String ipAddress = player.getIpAddress();
             accountManager.updateLoginInfo(playerName, ipAddress);
 
             if (sessionManager != null) {

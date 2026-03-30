@@ -18,6 +18,7 @@
   "auth.register.failed": "§cRegistration failed, please try again",
   "auth.register.password_mismatch": "§cPasswords do not match, please try again",
   "auth.register.system_not_initialized": "§cLogin system not initialized, please contact administrator",
+  "auth.register.premium_no_need": "§cPremium players do not need to register, you are automatically logged in",
   
   "auth.password.change_success": "§aPassword changed successfully!",
   "auth.password.change_failed": "§cFailed to change password",

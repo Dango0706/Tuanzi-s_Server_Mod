@@ -4,6 +4,7 @@ import me.tuanzi.economy.api.EconomyAPI;
 import me.tuanzi.economy.api.EconomyAPIImpl;
 import me.tuanzi.economy.currency.WalletType;
 import me.tuanzi.economy.exception.WalletTypeNotFoundException;
+import me.tuanzi.economy.utils.ServerTranslationHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -76,12 +77,12 @@ public class EconAdminCommand {
         EconomyAPI api = EconomyAPIImpl.getInstance(ctx.getSource().getServer());
         
         if (api.getWalletType(id).isPresent()) {
-            ctx.getSource().sendFailure(Component.literal("§c钱包类型 '" + id + "' 已存在"));
+            ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.admin.wallet_exists", id);
             return 0;
         }
         
         api.registerWalletType(id, Component.literal(displayName));
-        ctx.getSource().sendSuccess(() -> Component.literal("§a成功创建钱包类型 '" + id + "' (显示名称: " + displayName + ")"), true);
+        ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.wallet_created", id, displayName);
         return 1;
     }
 
@@ -91,12 +92,12 @@ public class EconAdminCommand {
         EconomyAPI api = EconomyAPIImpl.getInstance(ctx.getSource().getServer());
         
         if (api.getWalletType(id).isEmpty()) {
-            ctx.getSource().sendFailure(Component.literal("§c钱包类型 '" + id + "' 不存在"));
+            ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.admin.wallet_not_found", id);
             return 0;
         }
         
         api.unregisterWalletType(id);
-        ctx.getSource().sendSuccess(() -> Component.literal("§a成功删除钱包类型 '" + id + "'"), true);
+        ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.wallet_deleted", id);
         return 1;
     }
 
@@ -108,16 +109,17 @@ public class EconAdminCommand {
         EconomyAPI api = EconomyAPIImpl.getInstance(ctx.getSource().getServer());
         
         if (api.getWalletType(walletId).isEmpty()) {
-            ctx.getSource().sendFailure(Component.literal("§c钱包类型 '" + walletId + "' 不存在"));
+            ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.admin.wallet_not_found", walletId);
             return 0;
         }
         
         try {
             api.setBalance(player.getUUID(), walletId, amount);
-            ctx.getSource().sendSuccess(() -> Component.literal("§a已将 " + player.getName().getString() + " 的 " + walletId + " 余额设置为 " + String.format("%.2f", amount)), true);
+            String playerName = player.getName().getString();
+            ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_set", playerName, walletId, amount);
             return 1;
         } catch (WalletTypeNotFoundException e) {
-            ctx.getSource().sendFailure(Component.literal("§c钱包类型 '" + walletId + "' 不存在"));
+            ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.admin.wallet_not_found", walletId);
             return 0;
         }
     }
@@ -130,17 +132,18 @@ public class EconAdminCommand {
         EconomyAPI api = EconomyAPIImpl.getInstance(ctx.getSource().getServer());
         
         if (api.getWalletType(walletId).isEmpty()) {
-            ctx.getSource().sendFailure(Component.literal("§c钱包类型 '" + walletId + "' 不存在"));
+            ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.admin.wallet_not_found", walletId);
             return 0;
         }
         
         try {
             api.deposit(player.getUUID(), walletId, amount);
             double newBalance = api.getBalance(player.getUUID(), walletId);
-            ctx.getSource().sendSuccess(() -> Component.literal("§a已为 " + player.getName().getString() + " 的 " + walletId + " 增加 " + String.format("%.2f", amount) + " (当前余额: " + String.format("%.2f", newBalance) + ")"), true);
+            String playerName = player.getName().getString();
+            ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_added", playerName, walletId, amount, newBalance);
             return 1;
         } catch (WalletTypeNotFoundException e) {
-            ctx.getSource().sendFailure(Component.literal("§c钱包类型 '" + walletId + "' 不存在"));
+            ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.admin.wallet_not_found", walletId);
             return 0;
         }
     }
@@ -153,23 +156,24 @@ public class EconAdminCommand {
         EconomyAPI api = EconomyAPIImpl.getInstance(ctx.getSource().getServer());
         
         if (api.getWalletType(walletId).isEmpty()) {
-            ctx.getSource().sendFailure(Component.literal("§c钱包类型 '" + walletId + "' 不存在"));
+            ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.admin.wallet_not_found", walletId);
             return 0;
         }
         
         try {
             double currentBalance = api.getBalance(player.getUUID(), walletId);
             if (currentBalance < amount) {
-                ctx.getSource().sendFailure(Component.literal("§c余额不足! 当前余额: " + String.format("%.2f", currentBalance) + ", 尝试扣除: " + String.format("%.2f", amount)));
+                ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.admin.insufficient_balance", currentBalance, amount);
                 return 0;
             }
             
             api.withdraw(player.getUUID(), walletId, amount);
             double newBalance = api.getBalance(player.getUUID(), walletId);
-            ctx.getSource().sendSuccess(() -> Component.literal("§a已从 " + player.getName().getString() + " 的 " + walletId + " 扣除 " + String.format("%.2f", amount) + " (当前余额: " + String.format("%.2f", newBalance) + ")"), true);
+            String playerName = player.getName().getString();
+            ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_removed", playerName, walletId, amount, newBalance);
             return 1;
         } catch (WalletTypeNotFoundException e) {
-            ctx.getSource().sendFailure(Component.literal("§c钱包类型 '" + walletId + "' 不存在"));
+            ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.admin.wallet_not_found", walletId);
             return 0;
         }
     }
@@ -181,16 +185,19 @@ public class EconAdminCommand {
         Collection<WalletType> types = api.getAllWalletTypes();
         
         if (types.isEmpty()) {
-            ctx.getSource().sendSuccess(() -> Component.literal("§e" + player.getName().getString() + " 的钱包余额:"), false);
-            ctx.getSource().sendSuccess(() -> Component.literal("§7暂无注册的钱包类型"), false);
+            String playerName = player.getName().getString();
+            ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_header", playerName);
+            ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.no_wallets");
             return 1;
         }
         
-        ctx.getSource().sendSuccess(() -> Component.literal("§e========== §6" + player.getName().getString() + " 的钱包余额 §e=========="), false);
+        String playerName = player.getName().getString();
+        ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_header", playerName);
         for (WalletType type : types) {
             double balance = api.getBalance(player.getUUID(), type.id());
             String displayName = type.displayName().getString();
-            ctx.getSource().sendSuccess(() -> Component.literal("§b" + displayName + " (" + type.id() + "): §f" + String.format("%.2f", balance)), false);
+            String typeId = type.id();
+            ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_line", displayName, typeId, balance);
         }
         return 1;
     }
@@ -202,16 +209,17 @@ public class EconAdminCommand {
         EconomyAPI api = EconomyAPIImpl.getInstance(ctx.getSource().getServer());
         
         if (api.getWalletType(walletId).isEmpty()) {
-            ctx.getSource().sendFailure(Component.literal("§c钱包类型 '" + walletId + "' 不存在"));
+            ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.admin.wallet_not_found", walletId);
             return 0;
         }
         
         WalletType type = api.getWalletType(walletId).get();
         double balance = api.getBalance(player.getUUID(), walletId);
         String displayName = type.displayName().getString();
+        String playerName = player.getName().getString();
         
-        ctx.getSource().sendSuccess(() -> Component.literal("§e========== §6" + player.getName().getString() + " 的钱包余额 §e=========="), false);
-        ctx.getSource().sendSuccess(() -> Component.literal("§b" + displayName + " (" + walletId + "): §f" + String.format("%.2f", balance)), false);
+        ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_header", playerName);
+        ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_line", displayName, walletId, balance);
         return 1;
     }
 }

@@ -4,6 +4,7 @@ import me.tuanzi.statistics.StatisticsModule;
 import me.tuanzi.statistics.data.PlayerStatistics;
 import me.tuanzi.statistics.data.ServerStatistics;
 import me.tuanzi.statistics.listeners.PlayerJoinListener;
+import me.tuanzi.statistics.util.StatsTranslationHelper;
 import me.tuanzi.statistics.util.TranslationHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -462,58 +463,58 @@ public class StatsCommand {
         long minutes = (totalPlayTimeSeconds % 3600) / 60;
         long seconds = totalPlayTimeSeconds % 60;
 
-        source.sendSuccess(() -> Component.translatable("stats.header.player", playerName), false);
-        source.sendSuccess(() -> Component.translatable("stats.online_time", hours, minutes, seconds), false);
-        source.sendSuccess(() -> Component.translatable("stats.distance_traveled", stats.getDistanceTraveled()), false);
-        source.sendSuccess(() -> Component.translatable("stats.blocks_placed", stats.getBlocksPlaced()), false);
-        source.sendSuccess(() -> Component.translatable("stats.blocks_broken", stats.getBlocksBroken()), false);
-        source.sendSuccess(() -> Component.translatable("stats.kills", stats.getKills()), false);
-        source.sendSuccess(() -> Component.translatable("stats.deaths", stats.getDeaths()), false);
-        source.sendSuccess(() -> Component.translatable("stats.damage_dealt", stats.getDamageDealt()), false);
-        source.sendSuccess(() -> Component.translatable("stats.damage_taken", stats.getDamageTaken()), false);
-        source.sendSuccess(() -> Component.translatable("stats.durability_used", stats.getDurabilityUsed()), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.header.player", playerName);
+        StatsTranslationHelper.sendSuccess(source, "stats.online_time", hours, minutes, seconds);
+        StatsTranslationHelper.sendSuccess(source, "stats.distance_traveled", stats.getDistanceTraveled());
+        StatsTranslationHelper.sendSuccess(source, "stats.blocks_placed", stats.getBlocksPlaced());
+        StatsTranslationHelper.sendSuccess(source, "stats.blocks_broken", stats.getBlocksBroken());
+        StatsTranslationHelper.sendSuccess(source, "stats.kills", stats.getKills());
+        StatsTranslationHelper.sendSuccess(source, "stats.deaths", stats.getDeaths());
+        StatsTranslationHelper.sendSuccess(source, "stats.damage_dealt", stats.getDamageDealt());
+        StatsTranslationHelper.sendSuccess(source, "stats.damage_taken", stats.getDamageTaken());
+        StatsTranslationHelper.sendSuccess(source, "stats.durability_used", stats.getDurabilityUsed());
     }
 
     private static void showServerStats(CommandSourceStack source) {
         ServerStatistics stats = StatisticsModule.getInstance().getDataManager().getServerStatistics();
 
-        source.sendSuccess(() -> Component.translatable("stats.header.server"), false);
-        source.sendSuccess(() -> Component.translatable("stats.server.uptime", 
+        StatsTranslationHelper.sendSuccess(source, "stats.header.server");
+        StatsTranslationHelper.sendSuccess(source, "stats.server.uptime", 
                 stats.getTotalUptimeDays(), 
                 stats.getTotalUptimeHours() % 24, 
                 stats.getTotalUptimeMinutes() % 60, 
-                stats.getTotalUptimeSeconds() % 60), false);
-        source.sendSuccess(() -> Component.translatable("stats.server.session", 
+                stats.getTotalUptimeSeconds() % 60);
+        StatsTranslationHelper.sendSuccess(source, "stats.server.session", 
                 stats.getCurrentSessionUptimeSeconds() / 3600, 
                 (stats.getCurrentSessionUptimeSeconds() % 3600) / 60, 
-                stats.getCurrentSessionUptimeSeconds() % 60), false);
+                stats.getCurrentSessionUptimeSeconds() % 60);
     }
 
     private static void showKillsStats(CommandSourceStack source, String playerName, String entityType) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (entityType == null || entityType.isEmpty()) {
-            source.sendSuccess(() -> Component.translatable("stats.header.kills", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.kills.total", stats.getKills()), false);
-            source.sendSuccess(() -> Component.translatable("stats.kills.by_type_header"), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.kills", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.kills.total", stats.getKills());
+            StatsTranslationHelper.sendSuccess(source, "stats.kills.by_type_header");
 
             Map<String, Integer> killsByType = stats.getKillsByEntityType();
             if (killsByType.isEmpty()) {
-                source.sendSuccess(() -> Component.translatable("stats.kills.no_records"), false);
+                StatsTranslationHelper.sendSuccess(source, "stats.kills.no_records");
             } else {
                 for (Map.Entry<String, Integer> entry : killsByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
                     String displayName = translateEntityType(type);
-                    source.sendSuccess(() -> Component.translatable("stats.kills.entity_count", displayName, count), false);
+                    StatsTranslationHelper.sendSuccess(source, "stats.kills.entity_count", displayName, count);
                 }
             }
         } else {
             String originalType = findOriginalEntityType(stats.getKillsByEntityType(), entityType);
             int kills = stats.getKillsByEntityType().getOrDefault(originalType, 0);
             String displayName = translateEntityType(originalType != null ? originalType : entityType);
-            source.sendSuccess(() -> Component.translatable("stats.header.kills", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.kills.by_entity", displayName, kills), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.kills", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.kills.by_entity", displayName, kills);
         }
     }
 
@@ -521,38 +522,38 @@ public class StatsCommand {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (entityType == null || entityType.isEmpty()) {
-            source.sendSuccess(() -> Component.translatable("stats.header.deaths", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.deaths.total", stats.getDeaths()), false);
-            source.sendSuccess(() -> Component.translatable("stats.deaths.by_type_header"), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.deaths", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.deaths.total", stats.getDeaths());
+            StatsTranslationHelper.sendSuccess(source, "stats.deaths.by_type_header");
 
             Map<String, Integer> deathsByType = stats.getDeathsByEntityType();
             if (deathsByType.isEmpty()) {
-                source.sendSuccess(() -> Component.translatable("stats.deaths.no_records"), false);
+                StatsTranslationHelper.sendSuccess(source, "stats.deaths.no_records");
             } else {
                 for (Map.Entry<String, Integer> entry : deathsByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
                     String displayName = translateEntityType(type);
-                    source.sendSuccess(() -> Component.translatable("stats.deaths.entity_count", displayName, count), false);
+                    StatsTranslationHelper.sendSuccess(source, "stats.deaths.entity_count", displayName, count);
                 }
             }
         } else {
             String originalType = findOriginalEntityType(stats.getDeathsByEntityType(), entityType);
             int deaths = stats.getDeathsByEntityType().getOrDefault(originalType, 0);
             String displayName = translateEntityType(originalType != null ? originalType : entityType);
-            source.sendSuccess(() -> Component.translatable("stats.header.deaths", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.deaths.by_entity", displayName, deaths), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.deaths", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.deaths.by_entity", displayName, deaths);
         }
     }
 
     private static void showBlocksStats(CommandSourceStack source, String playerName, String blockType) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
-        source.sendSuccess(() -> Component.translatable("stats.header.blocks", playerName), false);
-        source.sendSuccess(() -> Component.translatable("stats.blocks.total_placed", stats.getBlocksPlaced()), false);
-        source.sendSuccess(() -> Component.translatable("stats.blocks.total_broken", stats.getBlocksBroken()), false);
-        source.sendSuccess(() -> Component.translatable("stats.blocks.placed_hint"), false);
-        source.sendSuccess(() -> Component.translatable("stats.blocks.broken_hint"), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.header.blocks", playerName);
+        StatsTranslationHelper.sendSuccess(source, "stats.blocks.total_placed", stats.getBlocksPlaced());
+        StatsTranslationHelper.sendSuccess(source, "stats.blocks.total_broken", stats.getBlocksBroken());
+        StatsTranslationHelper.sendSuccess(source, "stats.blocks.placed_hint");
+        StatsTranslationHelper.sendSuccess(source, "stats.blocks.broken_hint");
     }
 
     private static void showBlocksPlacedStats(CommandSourceStack source, String playerName, String blockType) {
@@ -758,26 +759,26 @@ public class StatsCommand {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (itemType == null || itemType.isEmpty()) {
-            source.sendSuccess(() -> Component.translatable("stats.header.fishing", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.fishing.total", stats.getFishingAttempts()), false);
-            source.sendSuccess(() -> Component.translatable("stats.fishing.success", stats.getFishingSuccess()), false);
-            source.sendSuccess(() -> Component.translatable("stats.fishing.failures", stats.getFishingFailures()), false);
-            source.sendSuccess(() -> Component.translatable("stats.fishing.by_type_header"), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.fishing", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.fishing.total", stats.getFishingAttempts());
+            StatsTranslationHelper.sendSuccess(source, "stats.fishing.success", stats.getFishingSuccess());
+            StatsTranslationHelper.sendSuccess(source, "stats.fishing.failures", stats.getFishingFailures());
+            StatsTranslationHelper.sendSuccess(source, "stats.fishing.by_type_header");
 
             Map<String, Integer> fishByType = stats.getFishCaughtByType();
             if (fishByType.isEmpty()) {
-                source.sendSuccess(() -> Component.translatable("stats.fishing.no_records"), false);
+                StatsTranslationHelper.sendSuccess(source, "stats.fishing.no_records");
             } else {
                 for (Map.Entry<String, Integer> entry : fishByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
-                    source.sendSuccess(() -> Component.translatable("stats.fishing.item_count", type, count), false);
+                    StatsTranslationHelper.sendSuccess(source, "stats.fishing.item_count", type, count);
                 }
             }
         } else {
             int count = stats.getFishCaughtByType().getOrDefault(itemType, 0);
-            source.sendSuccess(() -> Component.translatable("stats.header.fishing", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.fishing.item_detail", itemType, count), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.fishing", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.fishing.item_detail", itemType, count);
         }
     }
 
@@ -785,26 +786,26 @@ public class StatsCommand {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (itemType == null || itemType.isEmpty()) {
-            source.sendSuccess(() -> Component.translatable("stats.header.crafting", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.crafting.total", stats.getItemsCrafted()), false);
-            source.sendSuccess(() -> Component.translatable("stats.crafting.by_type_header"), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.crafting", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.crafting.total", stats.getItemsCrafted());
+            StatsTranslationHelper.sendSuccess(source, "stats.crafting.by_type_header");
 
             Map<String, Integer> craftedByType = stats.getItemsCraftedByType();
             if (craftedByType.isEmpty()) {
-                source.sendSuccess(() -> Component.translatable("stats.crafting.no_records"), false);
+                StatsTranslationHelper.sendSuccess(source, "stats.crafting.no_records");
             } else {
                 for (Map.Entry<String, Integer> entry : craftedByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
                     String displayName = TranslationHelper.translateItemKey(type);
-                    source.sendSuccess(() -> Component.translatable("stats.crafting.item_count", displayName, count), false);
+                    StatsTranslationHelper.sendSuccess(source, "stats.crafting.item_count", displayName, count);
                 }
             }
         } else {
             int count = stats.getItemsCraftedByType().getOrDefault(itemType, 0);
             String displayName = TranslationHelper.translateItemKey(itemType);
-            source.sendSuccess(() -> Component.translatable("stats.header.crafting", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.crafting.item_detail", displayName, count), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.crafting", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.crafting.item_detail", displayName, count);
         }
     }
 
@@ -812,100 +813,100 @@ public class StatsCommand {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (itemType == null || itemType.isEmpty()) {
-            source.sendSuccess(() -> Component.translatable("stats.header.drops", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.drops.total", stats.getItemsDropped()), false);
-            source.sendSuccess(() -> Component.translatable("stats.drops.by_type_header"), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.drops", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.drops.total", stats.getItemsDropped());
+            StatsTranslationHelper.sendSuccess(source, "stats.drops.by_type_header");
 
             Map<String, Integer> droppedByType = stats.getItemsDroppedByType();
             if (droppedByType.isEmpty()) {
-                source.sendSuccess(() -> Component.translatable("stats.drops.no_records"), false);
+                StatsTranslationHelper.sendSuccess(source, "stats.drops.no_records");
             } else {
                 for (Map.Entry<String, Integer> entry : droppedByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
                     String displayName = TranslationHelper.translateItemKey(type);
-                    source.sendSuccess(() -> Component.translatable("stats.drops.item_count", displayName, count), false);
+                    StatsTranslationHelper.sendSuccess(source, "stats.drops.item_count", displayName, count);
                 }
             }
         } else {
             int count = stats.getItemsDroppedByType().getOrDefault(itemType, 0);
             String displayName = TranslationHelper.translateItemKey(itemType);
-            source.sendSuccess(() -> Component.translatable("stats.header.drops", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.drops.item_detail", displayName, count), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.drops", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.drops.item_detail", displayName, count);
         }
     }
 
     private static void showPlayerInfoStats(CommandSourceStack source, String playerName) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
-        source.sendSuccess(() -> Component.translatable("stats.header.player_info", playerName), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.header.player_info", playerName);
 
         long firstJoinTime = stats.getFirstJoinTime();
         if (firstJoinTime > 0) {
             java.time.Instant instant = java.time.Instant.ofEpochSecond(firstJoinTime);
             java.time.ZonedDateTime zdt = instant.atZone(java.time.ZoneId.systemDefault());
             String formattedDate = zdt.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            source.sendSuccess(() -> Component.translatable("stats.player_info.first_join", formattedDate), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.player_info.first_join", formattedDate);
         } else {
-            source.sendSuccess(() -> Component.translatable("stats.player_info.first_join_unknown"), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.player_info.first_join_unknown");
         }
 
-        source.sendSuccess(() -> Component.translatable("stats.player_info.login_days", stats.getLoginDays()), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.player_info.login_days", stats.getLoginDays());
     }
 
     private static void showActivityStats(CommandSourceStack source, String playerName) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
-        source.sendSuccess(() -> Component.translatable("stats.header.activity", playerName), false);
-        source.sendSuccess(() -> Component.translatable("stats.activity.anvil_uses", stats.getAnvilUses()), false);
-        source.sendSuccess(() -> Component.translatable("stats.activity.items_enchanted", stats.getItemsEnchanted()), false);
-        source.sendSuccess(() -> Component.translatable("stats.activity.villager_trades", stats.getVillagerTrades()), false);
-        source.sendSuccess(() -> Component.translatable("stats.activity.chat_messages", stats.getChatMessagesSent()), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.header.activity", playerName);
+        StatsTranslationHelper.sendSuccess(source, "stats.activity.anvil_uses", stats.getAnvilUses());
+        StatsTranslationHelper.sendSuccess(source, "stats.activity.items_enchanted", stats.getItemsEnchanted());
+        StatsTranslationHelper.sendSuccess(source, "stats.activity.villager_trades", stats.getVillagerTrades());
+        StatsTranslationHelper.sendSuccess(source, "stats.activity.chat_messages", stats.getChatMessagesSent());
     }
 
     private static void showExtendedStats(CommandSourceStack source, String playerName) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
-        source.sendSuccess(() -> Component.translatable("stats.header.extended", playerName), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.header.extended", playerName);
         
-        source.sendSuccess(() -> Component.translatable("stats.extended.exp_header"), false);
-        source.sendSuccess(() -> Component.translatable("stats.extended.exp_gained", stats.getTotalExperienceGained()), false);
-        source.sendSuccess(() -> Component.translatable("stats.extended.exp_consumed", stats.getTotalExperienceConsumed()), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.exp_header");
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.exp_gained", stats.getTotalExperienceGained());
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.exp_consumed", stats.getTotalExperienceConsumed());
         
-        source.sendSuccess(() -> Component.translatable("stats.extended.combat_header"), false);
-        source.sendSuccess(() -> Component.translatable("stats.extended.bow_hits", stats.getBowHits()), false);
-        source.sendSuccess(() -> Component.translatable("stats.extended.crossbow_hits", stats.getCrossbowHits()), false);
-        source.sendSuccess(() -> Component.translatable("stats.extended.shield_blocks", stats.getShieldBlocks()), false);
-        source.sendSuccess(() -> Component.translatable("stats.extended.highest_damage_dealt", stats.getHighestDamageDealt()), false);
-        source.sendSuccess(() -> Component.translatable("stats.extended.highest_damage_taken", stats.getHighestDamageTaken()), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.combat_header");
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.bow_hits", stats.getBowHits());
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.crossbow_hits", stats.getCrossbowHits());
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.shield_blocks", stats.getShieldBlocks());
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.highest_damage_dealt", stats.getHighestDamageDealt());
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.highest_damage_taken", stats.getHighestDamageTaken());
         
-        source.sendSuccess(() -> Component.translatable("stats.extended.pet_header"), false);
-        source.sendSuccess(() -> Component.translatable("stats.extended.animals_tamed", stats.getAnimalsTamed()), false);
-        source.sendSuccess(() -> Component.translatable("stats.extended.pet_deaths", stats.getPetDeaths()), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.pet_header");
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.animals_tamed", stats.getAnimalsTamed());
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.pet_deaths", stats.getPetDeaths());
         
-        source.sendSuccess(() -> Component.translatable("stats.extended.exploration_header"), false);
-        source.sendSuccess(() -> Component.translatable("stats.extended.explored_chunks", stats.getExploredChunks()), false);
-        source.sendSuccess(() -> Component.translatable("stats.extended.total_jumps", stats.getTotalJumps()), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.exploration_header");
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.explored_chunks", stats.getExploredChunks());
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.total_jumps", stats.getTotalJumps());
         
-        source.sendSuccess(() -> Component.translatable("stats.extended.time_header"), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.time_header");
         long longestSession = stats.getLongestSessionSeconds();
-        source.sendSuccess(() -> Component.translatable("stats.extended.longest_session", 
-                longestSession / 3600, (longestSession % 3600) / 60, longestSession % 60), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.longest_session", 
+                longestSession / 3600, (longestSession % 3600) / 60, longestSession % 60);
         
         long sneakTime = stats.getTotalSneakSeconds();
-        source.sendSuccess(() -> Component.translatable("stats.extended.sneak_time", 
-                sneakTime / 3600, (sneakTime % 3600) / 60, sneakTime % 60), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.sneak_time", 
+                sneakTime / 3600, (sneakTime % 3600) / 60, sneakTime % 60);
         
-        source.sendSuccess(() -> Component.translatable("stats.extended.life_header"), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.life_header");
         long shortestLife = stats.getShortestLifeSeconds();
-        source.sendSuccess(() -> Component.translatable("stats.extended.shortest_life", 
-                shortestLife / 60, shortestLife % 60), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.shortest_life", 
+                shortestLife / 60, shortestLife % 60);
         
         long longestLife = stats.getLongestLifeSeconds();
-        source.sendSuccess(() -> Component.translatable("stats.extended.longest_life", 
-                longestLife / 3600, (longestLife % 3600) / 60, longestLife % 60), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.longest_life", 
+                longestLife / 3600, (longestLife % 3600) / 60, longestLife % 60);
         
-        source.sendSuccess(() -> Component.translatable("stats.extended.death_header"), false);
-        source.sendSuccess(() -> Component.translatable("stats.extended.farthest_death_distance", stats.getFarthestDeathDistance()), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.death_header");
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.farthest_death_distance", stats.getFarthestDeathDistance());
     }
 }

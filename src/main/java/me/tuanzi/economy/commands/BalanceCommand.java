@@ -1,81 +1,105 @@
 package me.tuanzi.economy.commands;
 
+import me.tuanzi.economy.api.EconomyAPI;
+import me.tuanzi.economy.api.EconomyAPIImpl;
+import me.tuanzi.economy.currency.WalletType;
+import me.tuanzi.economy.utils.ServerTranslationHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import me.tuanzi.economy.api.EconomyAPI;
-import me.tuanzi.economy.api.EconomyAPIImpl;
-import me.tuanzi.economy.currency.WalletType;
-import me.tuanzi.economy.exception.WalletTypeNotFoundException;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
 
 public class BalanceCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess) {
         dispatcher.register(Commands.literal("balance")
-                .executes(BalanceCommand::viewAllBalances)
-                .then(Commands.argument("id", StringArgumentType.word())
-                        .suggests((context, builder) -> {
-                            EconomyAPI api = EconomyAPIImpl.getInstance(context.getSource().getServer());
-                            Collection<WalletType> walletTypes = api.getAllWalletTypes();
-                            return SharedSuggestionProvider.suggest(
-                                    walletTypes.stream().map(WalletType::id),
-                                    builder
-                            );
-                        })
-                        .executes(BalanceCommand::viewSpecificBalance)));
+            .executes(ctx -> {
+                ServerPlayer player = ctx.getSource().getPlayer();
+                if (player == null) {
+                    ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.balance.player_only");
+                    return 0;
+                }
+                return showAllBalances(ctx, player);
+            })
+            .then(Commands.argument("wallet", StringArgumentType.word())
+                .suggests((ctx, builder) -> suggestWalletTypes(ctx, builder))
+                .executes(ctx -> {
+                    ServerPlayer player = ctx.getSource().getPlayer();
+                    if (player == null) {
+                        ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.balance.player_only");
+                        return 0;
+                    }
+                    String walletId = StringArgumentType.getString(ctx, "wallet");
+                    return showSpecificBalance(ctx, player, walletId);
+                }))
+            .then(Commands.argument("player", EntityArgument.player())
+                .executes(ctx -> {
+                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+                    return showAllBalances(ctx, target);
+                })
+                .then(Commands.argument("wallet", StringArgumentType.word())
+                    .suggests((ctx, builder) -> suggestWalletTypes(ctx, builder))
+                    .executes(ctx -> {
+                        ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+                        String walletId = StringArgumentType.getString(ctx, "wallet");
+                        return showSpecificBalance(ctx, target, walletId);
+                    }))));
     }
 
-    private static int viewAllBalances(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        CommandSourceStack source = context.getSource();
-        ServerPlayer player = source.getPlayerOrException();
-        EconomyAPI api = EconomyAPIImpl.getInstance(source.getServer());
+    private static CompletableFuture<Suggestions> suggestWalletTypes(CommandContext<CommandSourceStack> ctx, SuggestionsBuilder builder) {
+        EconomyAPI api = EconomyAPIImpl.getInstance(ctx.getSource().getServer());
+        Collection<WalletType> types = api.getAllWalletTypes();
+        return SharedSuggestionProvider.suggest(
+            types.stream().map(WalletType::id),
+            builder
+        );
+    }
 
-        Collection<WalletType> walletTypes = api.getAllWalletTypes();
+    private static int showAllBalances(CommandContext<CommandSourceStack> ctx, ServerPlayer player) {
+        EconomyAPI api = EconomyAPIImpl.getInstance(ctx.getSource().getServer());
+        Collection<WalletType> types = api.getAllWalletTypes();
 
-        if (walletTypes.isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§e========== §6余额查询 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§c暂无可用钱包类型"), false);
+        String playerName = player.getName().getString();
+        ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.balance.player_header", playerName);
+
+        if (types.isEmpty()) {
+            ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.balance.no_wallets");
             return 1;
         }
 
-        source.sendSuccess(() -> Component.literal("§e========== §6" + player.getName().getString() + " 的余额 §e=========="), false);
-
-        for (WalletType walletType : walletTypes) {
-            double balance = api.getBalance(player.getUUID(), walletType.id());
-            String displayName = walletType.displayName().getString();
-            source.sendSuccess(() -> Component.literal("§b" + displayName + ": §a" + String.format("%.2f", balance)), false);
+        for (WalletType type : types) {
+            double balance = api.getBalance(player.getUUID(), type.id());
+            String displayName = type.displayName().getString();
+            ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.balance.line", displayName, balance);
         }
 
         return 1;
     }
 
-    private static int viewSpecificBalance(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        CommandSourceStack source = context.getSource();
-        ServerPlayer player = source.getPlayerOrException();
-        String walletId = StringArgumentType.getString(context, "id");
+    private static int showSpecificBalance(CommandContext<CommandSourceStack> ctx, ServerPlayer player, String walletId) {
+        EconomyAPI api = EconomyAPIImpl.getInstance(ctx.getSource().getServer());
 
-        EconomyAPI api = EconomyAPIImpl.getInstance(source.getServer());
-
-        try {
-            double balance = api.getBalance(player.getUUID(), walletId);
-            WalletType walletType = api.getWalletType(walletId).orElse(null);
-
-            String displayName = walletType != null ? walletType.displayName().getString() : walletId;
-
-            source.sendSuccess(() -> Component.literal("§e========== §6余额查询 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b" + displayName + ": §a" + String.format("%.2f", balance)), false);
-        } catch (WalletTypeNotFoundException e) {
-            source.sendFailure(Component.literal("§c钱包类型 '" + walletId + "' 不存在"));
+        if (api.getWalletType(walletId).isEmpty()) {
+            ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.balance.wallet_not_found", walletId);
+            return 0;
         }
 
+        WalletType type = api.getWalletType(walletId).get();
+        double balance = api.getBalance(player.getUUID(), walletId);
+        String displayName = type.displayName().getString();
+
+        ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.balance.line", displayName, balance);
         return 1;
     }
 }

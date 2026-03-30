@@ -18,6 +18,7 @@
   "auth.register.failed": "§c注册失败，请稍后重试",
   "auth.register.password_mismatch": "§c两次输入的密码不一致，请重新输入",
   "auth.register.system_not_initialized": "§c登录系统尚未初始化，请联系管理员",
+  "auth.register.premium_no_need": "§c正版玩家无需注册，您已自动登录",
   
   "auth.password.change_success": "§a密码修改成功！",
   "auth.password.change_failed": "§c密码修改失败",

@@ -15,6 +15,7 @@ import me.tuanzi.auth.login.listener.PlayerRestrictionListener;
 import me.tuanzi.auth.login.session.SessionManager;
 import me.tuanzi.auth.login.timeout.LoginTimeoutManager;
 import me.tuanzi.auth.logging.AuthLogger;
+import me.tuanzi.auth.utils.TranslationHelper;
 import me.tuanzi.auth.whitelist.WhitelistManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -43,6 +44,8 @@ public class AuthModule implements ModInitializer {
         instance = this;
         
         LOGGER.info("正在初始化玩家身份验证模块...");
+        
+        TranslationHelper.initialize();
         
         authConfig = new AuthConfig();
         authConfig.loadConfig();

@@ -7,6 +7,7 @@ import me.tuanzi.statistics.data.StatisticsDataManager;
 import me.tuanzi.statistics.floatingtext.FloatingTextManager;
 import me.tuanzi.statistics.listeners.*;
 import me.tuanzi.statistics.scoreboard.ScoreboardManager;
+import me.tuanzi.statistics.util.StatsTranslationHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
@@ -30,6 +31,8 @@ public class StatisticsModule implements ModInitializer {
         instance = this;
         
         LOGGER.info("Initializing Statistics Module...");
+        
+        StatsTranslationHelper.initialize();
         
         dataManager = new StatisticsDataManager();
         dataManager.loadData();

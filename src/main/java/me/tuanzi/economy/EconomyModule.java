@@ -4,6 +4,7 @@ import me.tuanzi.economy.api.EconomyAPIImpl;
 import me.tuanzi.economy.commands.BalanceCommand;
 import me.tuanzi.economy.commands.EconAdminCommand;
 import me.tuanzi.economy.commands.PayCommand;
+import me.tuanzi.economy.utils.ServerTranslationHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -17,6 +18,8 @@ public class EconomyModule implements ModInitializer {
     @Override
     public void onInitialize() {
         LOGGER.info("Initializing Economy Module...");
+
+        ServerTranslationHelper.initialize();
 
         registerCommands();
         registerServerLifecycleEvents();
