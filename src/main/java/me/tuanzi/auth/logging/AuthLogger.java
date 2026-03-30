@@ -91,11 +91,42 @@ public class AuthLogger {
         ALLOW_JOIN("允许加入"),
         KICK("踢出服务器"),
         CACHE_UPDATED("缓存已更新"),
-        API_ERROR("API错误");
+        API_ERROR("API错误"),
+        REGISTER("注册"),
+        LOGIN("登录"),
+        LOGIN_SUCCESS("登录成功"),
+        LOGIN_FAILED("登录失败"),
+        PASSWORD_CHANGE("密码修改"),
+        PASSWORD_RESET("密码重置"),
+        ACCOUNT_LOCKED("账户锁定"),
+        SESSION_CREATED("会话创建"),
+        SESSION_EXPIRED("会话过期");
         
         private final String displayName;
         
         Action(String displayName) {
+            this.displayName = displayName;
+        }
+        
+        public String getDisplayName() {
+            return displayName;
+        }
+    }
+    
+    /**
+     * 登录模块事件类型枚举
+     */
+    public enum LoginEventType {
+        REGISTER("注册"),
+        LOGIN("登录"),
+        LOGOUT("登出"),
+        PASSWORD_CHANGE("密码修改"),
+        PASSWORD_RESET("密码重置"),
+        ADMIN_OPERATION("管理员操作");
+        
+        private final String displayName;
+        
+        LoginEventType(String displayName) {
             this.displayName = displayName;
         }
         
@@ -400,5 +431,230 @@ public class AuthLogger {
      */
     public void logVerifyError(String playerName, LoginType loginType, Exception e) {
         error(playerName, loginType, VerifyResult.ERROR, Action.API_ERROR, e);
+    }
+    
+    /**
+     * 记录登录模块日志（内部方法）
+     *
+     * @param level      日志级别
+     * @param eventType  事件类型
+     * @param playerName 玩家名
+     * @param success    是否成功
+     * @param message    附加消息
+     */
+    private void logLoginEvent(LogLevel level, LoginEventType eventType, String playerName, boolean success, String message) {
+        if (!authConfig.isEnableAuthLog()) {
+            return;
+        }
+        
+        synchronized (lock) {
+            try {
+                checkRotation();
+                
+                String timestamp = LocalDateTime.now().format(DATETIME_FORMATTER);
+                String status = success ? "成功" : "失败";
+                String logLine = String.format("[%s] [%s] [LoginModule] %s | %s | %s",
+                        timestamp,
+                        level.name(),
+                        playerName != null ? playerName : "未知",
+                        eventType != null ? eventType.getDisplayName() : "未知",
+                        status);
+                
+                if (message != null && !message.isEmpty()) {
+                    logLine += " | " + message;
+                }
+                
+                PrintWriter writer = getOrCreateWriter();
+                writer.println(logLine);
+                writer.flush();
+                
+                writeToSLF4J(level, logLine);
+                
+            } catch (IOException e) {
+                AuthModule.LOGGER.error("写入登录模块日志失败: {}", e.getMessage());
+            }
+        }
+    }
+    
+    /**
+     * 记录注册事件日志
+     *
+     * @param playerName 玩家名
+     * @param success    是否成功
+     */
+    public void logRegisterEvent(String playerName, boolean success) {
+        logRegisterEvent(playerName, success, null);
+    }
+    
+    /**
+     * 记录注册事件日志（带附加消息）
+     *
+     * @param playerName 玩家名
+     * @param success    是否成功
+     * @param message    附加消息
+     */
+    public void logRegisterEvent(String playerName, boolean success, String message) {
+        LogLevel level = success ? LogLevel.INFO : LogLevel.WARN;
+        logLoginEvent(level, LoginEventType.REGISTER, playerName, success, message);
+    }
+    
+    /**
+     * 记录登录事件日志
+     *
+     * @param playerName 玩家名
+     * @param success    是否成功
+     * @param ipAddress  IP地址
+     */
+    public void logLoginEvent(String playerName, boolean success, String ipAddress) {
+        logLoginEvent(playerName, success, ipAddress, null);
+    }
+    
+    /**
+     * 记录登录事件日志（带附加消息）
+     *
+     * @param playerName 玩家名
+     * @param success    是否成功
+     * @param ipAddress  IP地址
+     * @param message    附加消息
+     */
+    public void logLoginEvent(String playerName, boolean success, String ipAddress, String message) {
+        LogLevel level = success ? LogLevel.INFO : LogLevel.WARN;
+        String fullMessage = "IP: " + (ipAddress != null ? ipAddress : "未知");
+        if (message != null && !message.isEmpty()) {
+            fullMessage += " | " + message;
+        }
+        logLoginEvent(level, LoginEventType.LOGIN, playerName, success, fullMessage);
+    }
+    
+    /**
+     * 记录登录失败日志
+     *
+     * @param playerName     玩家名
+     * @param remainingAttempts 剩余尝试次数
+     */
+    public void logLoginFailed(String playerName, int remainingAttempts) {
+        String message = "剩余尝试次数: " + remainingAttempts;
+        logLoginEvent(LogLevel.WARN, LoginEventType.LOGIN, playerName, false, message);
+    }
+    
+    /**
+     * 记录账户锁定日志
+     *
+     * @param playerName 玩家名
+     * @param reason     锁定原因
+     */
+    public void logAccountLocked(String playerName, String reason) {
+        String message = "账户已被锁定 | 原因: " + (reason != null ? reason : "登录失败次数过多");
+        logLoginEvent(LogLevel.WARN, LoginEventType.LOGIN, playerName, false, message);
+    }
+    
+    /**
+     * 记录密码修改日志
+     *
+     * @param playerName 玩家名
+     * @param success    是否成功
+     */
+    public void logPasswordChangeEvent(String playerName, boolean success) {
+        logPasswordChangeEvent(playerName, success, null);
+    }
+    
+    /**
+     * 记录密码修改日志（带附加消息）
+     *
+     * @param playerName 玩家名
+     * @param success    是否成功
+     * @param message    附加消息
+     */
+    public void logPasswordChangeEvent(String playerName, boolean success, String message) {
+        LogLevel level = success ? LogLevel.INFO : LogLevel.WARN;
+        logLoginEvent(level, LoginEventType.PASSWORD_CHANGE, playerName, success, message);
+    }
+    
+    /**
+     * 记录管理员操作日志
+     *
+     * @param operatorName 操作者名称
+     * @param operation    操作类型
+     * @param targetPlayer 目标玩家
+     * @param success      是否成功
+     */
+    public void logAdminOperation(String operatorName, String operation, String targetPlayer, boolean success) {
+        logAdminOperation(operatorName, operation, targetPlayer, success, null);
+    }
+    
+    /**
+     * 记录管理员操作日志（带附加消息）
+     *
+     * @param operatorName 操作者名称
+     * @param operation    操作类型
+     * @param targetPlayer 目标玩家
+     * @param success      是否成功
+     * @param message      附加消息
+     */
+    public void logAdminOperation(String operatorName, String operation, String targetPlayer, boolean success, String message) {
+        if (!authConfig.isEnableAuthLog()) {
+            return;
+        }
+        
+        synchronized (lock) {
+            try {
+                checkRotation();
+                
+                String timestamp = LocalDateTime.now().format(DATETIME_FORMATTER);
+                String status = success ? "成功" : "失败";
+                String logLine = String.format("[%s] [%s] [AdminOperation] 操作者: %s | 操作: %s | 目标: %s | %s",
+                        timestamp,
+                        success ? LogLevel.INFO.name() : LogLevel.WARN.name(),
+                        operatorName != null ? operatorName : "未知",
+                        operation != null ? operation : "未知",
+                        targetPlayer != null ? targetPlayer : "无",
+                        status);
+                
+                if (message != null && !message.isEmpty()) {
+                    logLine += " | " + message;
+                }
+                
+                PrintWriter writer = getOrCreateWriter();
+                writer.println(logLine);
+                writer.flush();
+                
+                LogLevel level = success ? LogLevel.INFO : LogLevel.WARN;
+                writeToSLF4J(level, logLine);
+                
+            } catch (IOException e) {
+                AuthModule.LOGGER.error("写入管理员操作日志失败: {}", e.getMessage());
+            }
+        }
+    }
+    
+    /**
+     * 记录会话创建日志
+     *
+     * @param playerName 玩家名
+     * @param ipAddress  IP地址
+     */
+    public void logSessionCreated(String playerName, String ipAddress) {
+        String message = "IP: " + (ipAddress != null ? ipAddress : "未知");
+        logLoginEvent(LogLevel.INFO, LoginEventType.LOGIN, playerName, true, "会话已创建 | " + message);
+    }
+    
+    /**
+     * 记录会话过期日志
+     *
+     * @param playerName 玩家名
+     */
+    public void logSessionExpired(String playerName) {
+        logLoginEvent(LogLevel.INFO, LoginEventType.LOGOUT, playerName, true, "会话已过期");
+    }
+    
+    /**
+     * 记录登出日志
+     *
+     * @param playerName 玩家名
+     * @param ipAddress  IP地址
+     */
+    public void logLogout(String playerName, String ipAddress) {
+        String message = "IP: " + (ipAddress != null ? ipAddress : "未知");
+        logLoginEvent(LogLevel.INFO, LoginEventType.LOGOUT, playerName, true, message);
     }
 }
