@@ -9,10 +9,10 @@ import me.tuanzi.auth.login.LoginStateManager;
 import me.tuanzi.auth.login.data.AccountManager;
 import me.tuanzi.auth.login.session.SessionManager;
 import me.tuanzi.auth.login.timeout.LoginTimeoutManager;
+import me.tuanzi.auth.utils.TranslationHelper;
 import me.tuanzi.auth.whitelist.WhitelistManager;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -57,7 +57,7 @@ public class PlayerJoinListener implements ServerPlayConnectionEvents.Join {
         
         if (!inWhitelist) {
             AuthModule.LOGGER.warn("[AuthModule] 盗版玩家 {} 不在白名单中，拒绝登录", playerName);
-            handler.disconnect(Component.literal("§c您不在服务器白名单中，请联系管理员申请访问权限。"));
+            handler.disconnect(TranslationHelper.translatable("auth.module.not_in_whitelist"));
             AuthModule.LOGGER.info("========================================");
             return;
         }
@@ -69,7 +69,7 @@ public class PlayerJoinListener implements ServerPlayConnectionEvents.Join {
         if (sessionManager != null && sessionManager.checkIpPersistence(playerName, ipAddress)) {
             AuthModule.LOGGER.info("[AuthModule] 玩家 {} 通过 IP 持久化自动登录", playerName);
             stateManager.setLoggedIn(playerUUID);
-            player.sendSystemMessage(Component.literal("§a欢迎回来！您已自动登录。"));
+            TranslationHelper.sendMessage(player, "auth.restriction.auto_login");
             AuthModule.LOGGER.info("========================================");
             return;
         }
@@ -77,15 +77,15 @@ public class PlayerJoinListener implements ServerPlayConnectionEvents.Join {
         boolean isRegistered = accountManager != null && accountManager.isRegistered(playerName);
         
         if (isRegistered) {
-            player.sendSystemMessage(Component.literal("§e请使用 §a/login <密码> §e登录"));
+            TranslationHelper.sendMessage(player, "auth.restriction.please_login");
         } else {
-            player.sendSystemMessage(Component.literal("§e您尚未注册，请使用 §a/register <密码> <确认密码> §e注册"));
+            TranslationHelper.sendMessage(player, "auth.restriction.please_register");
         }
         
         if (timeoutManager != null) {
             timeoutManager.startLoginTimer(playerName);
             int timeoutSeconds = loginConfig != null ? loginConfig.getLoginTimeoutSeconds() : 60;
-            player.sendSystemMessage(Component.literal(String.format("§c您有 %d 秒的时间完成登录", timeoutSeconds)));
+            TranslationHelper.sendMessage(player, "auth.restriction.login_timeout", timeoutSeconds);
         }
         
         AuthModule.LOGGER.info("[AuthModule] 等待玩家 {} 登录...", playerName);

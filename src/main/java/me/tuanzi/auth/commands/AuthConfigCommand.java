@@ -5,10 +5,10 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import me.tuanzi.auth.AuthModule;
 import me.tuanzi.auth.login.LoginConfig;
+import me.tuanzi.auth.utils.TranslationHelper;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.permissions.Permission;
 import net.minecraft.server.permissions.PermissionLevel;
 
@@ -63,18 +63,18 @@ public class AuthConfigCommand {
         AuthModule authModule = AuthModule.getInstance();
         
         if (authModule == null) {
-            source.sendFailure(Component.literal("§cAuthModule 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.module_not_initialized");
             return 0;
         }
         
         LoginConfig loginConfig = authModule.getLoginConfig();
         if (loginConfig == null) {
-            source.sendFailure(Component.literal("§cLoginConfig 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.config_not_initialized");
             return 0;
         }
         
         loginConfig.loadConfig();
-        source.sendSuccess(() -> Component.literal("§a配置文件已重新加载"), false);
+        TranslationHelper.sendSuccess(source, "auth.config.reloaded");
         return 1;
     }
 
@@ -83,24 +83,24 @@ public class AuthConfigCommand {
         AuthModule authModule = AuthModule.getInstance();
         
         if (authModule == null) {
-            source.sendFailure(Component.literal("§cAuthModule 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.module_not_initialized");
             return 0;
         }
         
         LoginConfig config = authModule.getLoginConfig();
         if (config == null) {
-            source.sendFailure(Component.literal("§cLoginConfig 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.config_not_initialized");
             return 0;
         }
         
-        source.sendSuccess(() -> Component.literal("§6===== 登录配置 ====="), false);
-        source.sendSuccess(() -> Component.literal("§e登录超时: §f" + config.getLoginTimeoutSeconds() + " 秒"), false);
-        source.sendSuccess(() -> Component.literal("§e会话持久化: §f" + config.getIpSessionPersistenceSeconds() + " 秒"), false);
-        source.sendSuccess(() -> Component.literal("§e最大登录尝试: §f" + config.getMaxLoginAttempts() + " 次"), false);
-        source.sendSuccess(() -> Component.literal("§e锁定时长: §f" + config.getLockoutDurationSeconds() + " 秒"), false);
-        source.sendSuccess(() -> Component.literal("§e密码最小长度: §f" + config.getMinPasswordLength() + " 字符"), false);
-        source.sendSuccess(() -> Component.literal("§e密码最大长度: §f" + config.getMaxPasswordLength() + " 字符"), false);
-        source.sendSuccess(() -> Component.literal("§6==================="), false);
+        TranslationHelper.sendSuccess(source, "auth.config.show_header");
+        TranslationHelper.sendSuccess(source, "auth.config.login_timeout", config.getLoginTimeoutSeconds());
+        TranslationHelper.sendSuccess(source, "auth.config.session_persistence", config.getIpSessionPersistenceSeconds());
+        TranslationHelper.sendSuccess(source, "auth.config.max_login_attempts", config.getMaxLoginAttempts());
+        TranslationHelper.sendSuccess(source, "auth.config.lockout_duration", config.getLockoutDurationSeconds());
+        TranslationHelper.sendSuccess(source, "auth.config.min_password_length", config.getMinPasswordLength());
+        TranslationHelper.sendSuccess(source, "auth.config.max_password_length", config.getMaxPasswordLength());
+        TranslationHelper.sendSuccess(source, "auth.config.show_footer");
         
         return 1;
     }
@@ -111,20 +111,20 @@ public class AuthConfigCommand {
         
         AuthModule authModule = AuthModule.getInstance();
         if (authModule == null) {
-            source.sendFailure(Component.literal("§cAuthModule 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.module_not_initialized");
             return 0;
         }
         
         LoginConfig config = authModule.getLoginConfig();
         if (config == null) {
-            source.sendFailure(Component.literal("§cLoginConfig 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.config_not_initialized");
             return 0;
         }
         
         config.setLoginTimeoutSeconds(seconds);
         config.saveConfig();
         
-        source.sendSuccess(() -> Component.literal("§a登录超时已设置为 §f" + seconds + " §a秒"), false);
+        TranslationHelper.sendSuccess(source, "auth.config.set_login_timeout", seconds);
         return 1;
     }
 
@@ -134,20 +134,20 @@ public class AuthConfigCommand {
         
         AuthModule authModule = AuthModule.getInstance();
         if (authModule == null) {
-            source.sendFailure(Component.literal("§cAuthModule 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.module_not_initialized");
             return 0;
         }
         
         LoginConfig config = authModule.getLoginConfig();
         if (config == null) {
-            source.sendFailure(Component.literal("§cLoginConfig 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.config_not_initialized");
             return 0;
         }
         
         config.setIpSessionPersistenceSeconds(seconds);
         config.saveConfig();
         
-        source.sendSuccess(() -> Component.literal("§a会话持久化已设置为 §f" + seconds + " §a秒"), false);
+        TranslationHelper.sendSuccess(source, "auth.config.set_session_persistence", seconds);
         return 1;
     }
 
@@ -157,20 +157,20 @@ public class AuthConfigCommand {
         
         AuthModule authModule = AuthModule.getInstance();
         if (authModule == null) {
-            source.sendFailure(Component.literal("§cAuthModule 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.module_not_initialized");
             return 0;
         }
         
         LoginConfig config = authModule.getLoginConfig();
         if (config == null) {
-            source.sendFailure(Component.literal("§cLoginConfig 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.config_not_initialized");
             return 0;
         }
         
         config.setMaxLoginAttempts(attempts);
         config.saveConfig();
         
-        source.sendSuccess(() -> Component.literal("§a最大登录尝试次数已设置为 §f" + attempts + " §a次"), false);
+        TranslationHelper.sendSuccess(source, "auth.config.set_max_login_attempts", attempts);
         return 1;
     }
 
@@ -180,20 +180,20 @@ public class AuthConfigCommand {
         
         AuthModule authModule = AuthModule.getInstance();
         if (authModule == null) {
-            source.sendFailure(Component.literal("§cAuthModule 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.module_not_initialized");
             return 0;
         }
         
         LoginConfig config = authModule.getLoginConfig();
         if (config == null) {
-            source.sendFailure(Component.literal("§cLoginConfig 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.config_not_initialized");
             return 0;
         }
         
         config.setLockoutDurationSeconds(seconds);
         config.saveConfig();
         
-        source.sendSuccess(() -> Component.literal("§a锁定时长已设置为 §f" + seconds + " §a秒"), false);
+        TranslationHelper.sendSuccess(source, "auth.config.set_lockout_duration", seconds);
         return 1;
     }
 
@@ -203,20 +203,20 @@ public class AuthConfigCommand {
         
         AuthModule authModule = AuthModule.getInstance();
         if (authModule == null) {
-            source.sendFailure(Component.literal("§cAuthModule 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.module_not_initialized");
             return 0;
         }
         
         LoginConfig config = authModule.getLoginConfig();
         if (config == null) {
-            source.sendFailure(Component.literal("§cLoginConfig 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.config_not_initialized");
             return 0;
         }
         
         config.setMinPasswordLength(length);
         config.saveConfig();
         
-        source.sendSuccess(() -> Component.literal("§a密码最小长度已设置为 §f" + length + " §a字符"), false);
+        TranslationHelper.sendSuccess(source, "auth.config.set_min_password_length", length);
         return 1;
     }
 
@@ -226,20 +226,20 @@ public class AuthConfigCommand {
         
         AuthModule authModule = AuthModule.getInstance();
         if (authModule == null) {
-            source.sendFailure(Component.literal("§cAuthModule 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.module_not_initialized");
             return 0;
         }
         
         LoginConfig config = authModule.getLoginConfig();
         if (config == null) {
-            source.sendFailure(Component.literal("§cLoginConfig 未初始化"));
+            TranslationHelper.sendFailure(source, "auth.command.config_not_initialized");
             return 0;
         }
         
         config.setMaxPasswordLength(length);
         config.saveConfig();
         
-        source.sendSuccess(() -> Component.literal("§a密码最大长度已设置为 §f" + length + " §a字符"), false);
+        TranslationHelper.sendSuccess(source, "auth.config.set_max_password_length", length);
         return 1;
     }
 }

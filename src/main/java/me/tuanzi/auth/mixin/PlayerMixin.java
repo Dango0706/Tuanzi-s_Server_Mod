@@ -1,7 +1,7 @@
 package me.tuanzi.auth.mixin;
 
 import me.tuanzi.auth.login.LoginStateManager;
-import net.minecraft.network.chat.Component;
+import me.tuanzi.auth.utils.TranslationHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,7 +21,7 @@ public abstract class PlayerMixin {
         Player self = (Player) (Object) this;
         
         if (!LoginStateManager.getInstance().isLoggedIn(self.getUUID())) {
-            self.sendSystemMessage(Component.literal("§c请先登录后再进行攻击！"));
+            TranslationHelper.sendMessage((net.minecraft.server.level.ServerPlayer) self, "auth.restriction.no_attack");
             ci.cancel();
         }
     }

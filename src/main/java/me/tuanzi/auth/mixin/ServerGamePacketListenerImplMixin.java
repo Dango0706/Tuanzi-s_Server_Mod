@@ -1,9 +1,7 @@
 package me.tuanzi.auth.mixin;
 
-import com.mojang.brigadier.ParseResults;
 import me.tuanzi.auth.login.LoginStateManager;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.Component;
+import me.tuanzi.auth.utils.TranslationHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,7 +25,7 @@ public abstract class ServerGamePacketListenerImplMixin {
         if (!LoginStateManager.getInstance().isLoggedIn(player.getUUID())) {
             String command = packet.command();
             if (!isAllowedCommand(command)) {
-                player.sendSystemMessage(Component.literal("§c请先登录后再使用命令！"));
+                TranslationHelper.sendMessage(player, "auth.restriction.no_command");
                 ci.cancel();
             }
         }
@@ -42,7 +40,7 @@ public abstract class ServerGamePacketListenerImplMixin {
         if (!LoginStateManager.getInstance().isLoggedIn(player.getUUID())) {
             String command = packet.command();
             if (!isAllowedCommand(command)) {
-                player.sendSystemMessage(Component.literal("§c请先登录后再使用命令！"));
+                TranslationHelper.sendMessage(player, "auth.restriction.no_command");
                 ci.cancel();
             }
         }

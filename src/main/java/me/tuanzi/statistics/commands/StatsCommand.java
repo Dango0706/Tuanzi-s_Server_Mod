@@ -26,7 +26,7 @@ public class StatsCommand {
                         String playerName = player.getName().getString();
                         showPlayerStats(context.getSource(), playerName);
                     } else {
-                        context.getSource().sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+                        context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
                     }
                     return 1;
                 })
@@ -65,7 +65,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showKillsStats(context.getSource(), playerName, null);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
                             }
                             return 1;
                         })
@@ -101,7 +101,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showDeathsStats(context.getSource(), playerName, null);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
                             }
                             return 1;
                         })
@@ -137,7 +137,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showBlocksStats(context.getSource(), playerName, null);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
                             }
                             return 1;
                         })
@@ -148,7 +148,7 @@ public class StatsCommand {
                                         String playerName = player.getName().getString();
                                         showBlocksPlacedStats(context.getSource(), playerName, null);
                                     } else {
-                                        context.getSource().sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+                                        context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
                                     }
                                     return 1;
                                 })
@@ -184,7 +184,7 @@ public class StatsCommand {
                                         String playerName = player.getName().getString();
                                         showBlocksBrokenStats(context.getSource(), playerName, null);
                                     } else {
-                                        context.getSource().sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+                                        context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
                                     }
                                     return 1;
                                 })
@@ -221,7 +221,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showDamageStats(context.getSource(), playerName);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
                             }
                             return 1;
                         })
@@ -232,7 +232,7 @@ public class StatsCommand {
                                         String playerName = player.getName().getString();
                                         showDamageDealtStats(context.getSource(), playerName, null);
                                     } else {
-                                        context.getSource().sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+                                        context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
                                     }
                                     return 1;
                                 })
@@ -268,7 +268,7 @@ public class StatsCommand {
                                         String playerName = player.getName().getString();
                                         showDamageTakenStats(context.getSource(), playerName, null);
                                     } else {
-                                        context.getSource().sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+                                        context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
                                     }
                                     return 1;
                                 })
@@ -305,7 +305,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showFishingStats(context.getSource(), playerName, null);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
                             }
                             return 1;
                         })
@@ -341,7 +341,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showCraftingStats(context.getSource(), playerName, null);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
                             }
                             return 1;
                         })
@@ -377,7 +377,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showDropsStats(context.getSource(), playerName, null);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
                             }
                             return 1;
                         })
@@ -413,7 +413,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showPlayerInfoStats(context.getSource(), playerName);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
                             }
                             return 1;
                         })
@@ -425,7 +425,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showActivityStats(context.getSource(), playerName);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
                             }
                             return 1;
                         })
@@ -437,7 +437,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showExtendedStats(context.getSource(), playerName);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
                             }
                             return 1;
                         })
@@ -462,51 +462,58 @@ public class StatsCommand {
         long minutes = (totalPlayTimeSeconds % 3600) / 60;
         long seconds = totalPlayTimeSeconds % 60;
 
-        source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的统计数据 §e=========="), false);
-        source.sendSuccess(() -> Component.literal("§b在线时间: §f" + hours + "小时 " + minutes + "分钟 " + seconds + "秒"), false);
-        source.sendSuccess(() -> Component.literal("§b移动距离: §f" + String.format("%.2f", stats.getDistanceTraveled()) + " 米"), false);
-        source.sendSuccess(() -> Component.literal("§b放置方块: §f" + stats.getBlocksPlaced()), false);
-        source.sendSuccess(() -> Component.literal("§b破坏方块: §f" + stats.getBlocksBroken()), false);
-        source.sendSuccess(() -> Component.literal("§b击杀数: §f" + stats.getKills()), false);
-        source.sendSuccess(() -> Component.literal("§b死亡数: §f" + stats.getDeaths()), false);
-        source.sendSuccess(() -> Component.literal("§b造成伤害: §f" + stats.getDamageDealt()), false);
-        source.sendSuccess(() -> Component.literal("§b受到伤害: §f" + stats.getDamageTaken()), false);
-        source.sendSuccess(() -> Component.literal("§b耐久消耗: §f" + stats.getDurabilityUsed()), false);
+        source.sendSuccess(() -> Component.translatable("stats.header.player", playerName), false);
+        source.sendSuccess(() -> Component.translatable("stats.online_time", hours, minutes, seconds), false);
+        source.sendSuccess(() -> Component.translatable("stats.distance_traveled", stats.getDistanceTraveled()), false);
+        source.sendSuccess(() -> Component.translatable("stats.blocks_placed", stats.getBlocksPlaced()), false);
+        source.sendSuccess(() -> Component.translatable("stats.blocks_broken", stats.getBlocksBroken()), false);
+        source.sendSuccess(() -> Component.translatable("stats.kills", stats.getKills()), false);
+        source.sendSuccess(() -> Component.translatable("stats.deaths", stats.getDeaths()), false);
+        source.sendSuccess(() -> Component.translatable("stats.damage_dealt", stats.getDamageDealt()), false);
+        source.sendSuccess(() -> Component.translatable("stats.damage_taken", stats.getDamageTaken()), false);
+        source.sendSuccess(() -> Component.translatable("stats.durability_used", stats.getDurabilityUsed()), false);
     }
 
     private static void showServerStats(CommandSourceStack source) {
         ServerStatistics stats = StatisticsModule.getInstance().getDataManager().getServerStatistics();
 
-        source.sendSuccess(() -> Component.literal("§e========== §6服务器统计 §e=========="), false);
-        source.sendSuccess(() -> Component.literal("§b总运行时间: §f" + stats.getTotalUptimeDays() + "天 " + (stats.getTotalUptimeHours() % 24) + "小时 " + (stats.getTotalUptimeMinutes() % 60) + "分钟 " + (stats.getTotalUptimeSeconds() % 60) + "秒"), false);
-        source.sendSuccess(() -> Component.literal("§b当前会话运行时间: §f" + (stats.getCurrentSessionUptimeSeconds() / 3600) + "小时 " + ((stats.getCurrentSessionUptimeSeconds() % 3600) / 60) + "分钟 " + (stats.getCurrentSessionUptimeSeconds() % 60) + "秒"), false);
+        source.sendSuccess(() -> Component.translatable("stats.header.server"), false);
+        source.sendSuccess(() -> Component.translatable("stats.server.uptime", 
+                stats.getTotalUptimeDays(), 
+                stats.getTotalUptimeHours() % 24, 
+                stats.getTotalUptimeMinutes() % 60, 
+                stats.getTotalUptimeSeconds() % 60), false);
+        source.sendSuccess(() -> Component.translatable("stats.server.session", 
+                stats.getCurrentSessionUptimeSeconds() / 3600, 
+                (stats.getCurrentSessionUptimeSeconds() % 3600) / 60, 
+                stats.getCurrentSessionUptimeSeconds() % 60), false);
     }
 
     private static void showKillsStats(CommandSourceStack source, String playerName, String entityType) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (entityType == null || entityType.isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的击杀统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b总击杀数: §f" + stats.getKills()), false);
-            source.sendSuccess(() -> Component.literal("§e--- 按实体类型分类 ---"), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.kills", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.kills.total", stats.getKills()), false);
+            source.sendSuccess(() -> Component.translatable("stats.kills.by_type_header"), false);
 
             Map<String, Integer> killsByType = stats.getKillsByEntityType();
             if (killsByType.isEmpty()) {
-                source.sendSuccess(() -> Component.literal("§7暂无击杀记录"), false);
+                source.sendSuccess(() -> Component.translatable("stats.kills.no_records"), false);
             } else {
                 for (Map.Entry<String, Integer> entry : killsByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
                     String displayName = translateEntityType(type);
-                    source.sendSuccess(() -> Component.literal("§f" + displayName + ": §a" + count), false);
+                    source.sendSuccess(() -> Component.translatable("stats.kills.entity_count", displayName, count), false);
                 }
             }
         } else {
             String originalType = findOriginalEntityType(stats.getKillsByEntityType(), entityType);
             int kills = stats.getKillsByEntityType().getOrDefault(originalType, 0);
             String displayName = translateEntityType(originalType != null ? originalType : entityType);
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的击杀统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b" + displayName + " 击杀数: §f" + kills), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.kills", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.kills.by_entity", displayName, kills), false);
         }
     }
 
@@ -514,64 +521,64 @@ public class StatsCommand {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (entityType == null || entityType.isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的死亡统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b总死亡数: §f" + stats.getDeaths()), false);
-            source.sendSuccess(() -> Component.literal("§e--- 按实体类型分类 ---"), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.deaths", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.deaths.total", stats.getDeaths()), false);
+            source.sendSuccess(() -> Component.translatable("stats.deaths.by_type_header"), false);
 
             Map<String, Integer> deathsByType = stats.getDeathsByEntityType();
             if (deathsByType.isEmpty()) {
-                source.sendSuccess(() -> Component.literal("§7暂无死亡记录"), false);
+                source.sendSuccess(() -> Component.translatable("stats.deaths.no_records"), false);
             } else {
                 for (Map.Entry<String, Integer> entry : deathsByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
                     String displayName = translateEntityType(type);
-                    source.sendSuccess(() -> Component.literal("§f" + displayName + ": §c" + count), false);
+                    source.sendSuccess(() -> Component.translatable("stats.deaths.entity_count", displayName, count), false);
                 }
             }
         } else {
             String originalType = findOriginalEntityType(stats.getDeathsByEntityType(), entityType);
             int deaths = stats.getDeathsByEntityType().getOrDefault(originalType, 0);
             String displayName = translateEntityType(originalType != null ? originalType : entityType);
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的死亡统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b被 " + displayName + " 击杀数: §f" + deaths), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.deaths", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.deaths.by_entity", displayName, deaths), false);
         }
     }
 
     private static void showBlocksStats(CommandSourceStack source, String playerName, String blockType) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
-        source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的方块统计 §e=========="), false);
-        source.sendSuccess(() -> Component.literal("§b总放置方块: §f" + stats.getBlocksPlaced()), false);
-        source.sendSuccess(() -> Component.literal("§b总破坏方块: §f" + stats.getBlocksBroken()), false);
-        source.sendSuccess(() -> Component.literal("§7使用 /stats blocks placed 查看放置详情"), false);
-        source.sendSuccess(() -> Component.literal("§7使用 /stats blocks broken 查看破坏详情"), false);
+        source.sendSuccess(() -> Component.translatable("stats.header.blocks", playerName), false);
+        source.sendSuccess(() -> Component.translatable("stats.blocks.total_placed", stats.getBlocksPlaced()), false);
+        source.sendSuccess(() -> Component.translatable("stats.blocks.total_broken", stats.getBlocksBroken()), false);
+        source.sendSuccess(() -> Component.translatable("stats.blocks.placed_hint"), false);
+        source.sendSuccess(() -> Component.translatable("stats.blocks.broken_hint"), false);
     }
 
     private static void showBlocksPlacedStats(CommandSourceStack source, String playerName, String blockType) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (blockType == null || blockType.isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的放置方块统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b总放置方块: §f" + stats.getBlocksPlaced()), false);
-            source.sendSuccess(() -> Component.literal("§e--- 按方块类型分类 ---"), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.blocks_placed", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.blocks.total_placed", stats.getBlocksPlaced()), false);
+            source.sendSuccess(() -> Component.translatable("stats.blocks.by_type_header"), false);
 
             Map<String, Integer> blocksByType = stats.getBlocksPlacedByType();
             if (blocksByType.isEmpty()) {
-                source.sendSuccess(() -> Component.literal("§7暂无放置记录"), false);
+                source.sendSuccess(() -> Component.translatable("stats.blocks.no_placed_records"), false);
             } else {
                 for (Map.Entry<String, Integer> entry : blocksByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
                     String displayName = TranslationHelper.translateBlockKey(type);
-                    source.sendSuccess(() -> Component.literal("§f" + displayName + ": §a" + count), false);
+                    source.sendSuccess(() -> Component.translatable("stats.blocks.placed_count", displayName, count), false);
                 }
             }
         } else {
             int placed = stats.getBlocksPlacedByType().getOrDefault(blockType, 0);
             String displayName = TranslationHelper.translateBlockKey(blockType);
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的放置方块统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b" + displayName + " 放置数: §f" + placed), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.blocks_placed", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.blocks.placed_detail", displayName, placed), false);
         }
     }
 
@@ -579,64 +586,64 @@ public class StatsCommand {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (blockType == null || blockType.isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的破坏方块统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b总破坏方块: §f" + stats.getBlocksBroken()), false);
-            source.sendSuccess(() -> Component.literal("§e--- 按方块类型分类 ---"), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.blocks_broken", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.blocks.total_broken", stats.getBlocksBroken()), false);
+            source.sendSuccess(() -> Component.translatable("stats.blocks.by_type_header"), false);
 
             Map<String, Integer> blocksByType = stats.getBlocksBrokenByType();
             if (blocksByType.isEmpty()) {
-                source.sendSuccess(() -> Component.literal("§7暂无破坏记录"), false);
+                source.sendSuccess(() -> Component.translatable("stats.blocks.no_broken_records"), false);
             } else {
                 for (Map.Entry<String, Integer> entry : blocksByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
                     String displayName = TranslationHelper.translateBlockKey(type);
-                    source.sendSuccess(() -> Component.literal("§f" + displayName + ": §c" + count), false);
+                    source.sendSuccess(() -> Component.translatable("stats.blocks.broken_count", displayName, count), false);
                 }
             }
         } else {
             int broken = stats.getBlocksBrokenByType().getOrDefault(blockType, 0);
             String displayName = TranslationHelper.translateBlockKey(blockType);
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的破坏方块统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b" + displayName + " 破坏数: §f" + broken), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.blocks_broken", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.blocks.broken_detail", displayName, broken), false);
         }
     }
 
     private static void showDamageStats(CommandSourceStack source, String playerName) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
-        source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的伤害统计 §e=========="), false);
-        source.sendSuccess(() -> Component.literal("§b总造成伤害: §f" + stats.getDamageDealt() + " 点"), false);
-        source.sendSuccess(() -> Component.literal("§b总受到伤害: §f" + stats.getDamageTaken() + " 点"), false);
-        source.sendSuccess(() -> Component.literal("§7使用 /stats damage dealt 查看造成伤害详情"), false);
-        source.sendSuccess(() -> Component.literal("§7使用 /stats damage taken 查看受到伤害详情"), false);
+        source.sendSuccess(() -> Component.translatable("stats.header.damage", playerName), false);
+        source.sendSuccess(() -> Component.translatable("stats.damage.total_dealt", stats.getDamageDealt()), false);
+        source.sendSuccess(() -> Component.translatable("stats.damage.total_taken", stats.getDamageTaken()), false);
+        source.sendSuccess(() -> Component.translatable("stats.damage.dealt_hint"), false);
+        source.sendSuccess(() -> Component.translatable("stats.damage.taken_hint"), false);
     }
 
     private static void showDamageDealtStats(CommandSourceStack source, String playerName, String entityType) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (entityType == null || entityType.isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的造成伤害统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b总造成伤害: §f" + stats.getDamageDealt() + " 点"), false);
-            source.sendSuccess(() -> Component.literal("§e--- 按实体类型分类 ---"), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.damage_dealt", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.damage.total_dealt", stats.getDamageDealt()), false);
+            source.sendSuccess(() -> Component.translatable("stats.damage.by_type_header"), false);
 
             Map<String, Long> damageByType = stats.getDamageDealtByEntityType();
             if (damageByType.isEmpty()) {
-                source.sendSuccess(() -> Component.literal("§7暂无造成伤害记录"), false);
+                source.sendSuccess(() -> Component.translatable("stats.damage.no_dealt_records"), false);
             } else {
                 for (Map.Entry<String, Long> entry : damageByType.entrySet()) {
                     String type = entry.getKey();
                     long damage = entry.getValue();
                     String displayName = translateEntityType(type);
-                    source.sendSuccess(() -> Component.literal("§f对 " + displayName + ": §a" + damage + " 点"), false);
+                    source.sendSuccess(() -> Component.translatable("stats.damage.dealt_to", displayName, damage), false);
                 }
             }
         } else {
             String originalType = findOriginalEntityTypeForDamage(stats.getDamageDealtByEntityType(), entityType);
             long damage = stats.getDamageDealtByEntityType().getOrDefault(originalType, 0L);
             String displayName = translateEntityType(originalType != null ? originalType : entityType);
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的造成伤害统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b对 " + displayName + " 造成伤害: §f" + damage + " 点"), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.damage_dealt", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.damage.dealt_detail", displayName, damage), false);
         }
     }
 
@@ -644,27 +651,27 @@ public class StatsCommand {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (entityType == null || entityType.isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的受到伤害统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b总受到伤害: §f" + stats.getDamageTaken() + " 点"), false);
-            source.sendSuccess(() -> Component.literal("§e--- 按实体类型分类 ---"), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.damage_taken", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.damage.total_taken", stats.getDamageTaken()), false);
+            source.sendSuccess(() -> Component.translatable("stats.damage.by_type_header"), false);
 
             Map<String, Long> damageByType = stats.getDamageTakenByEntityType();
             if (damageByType.isEmpty()) {
-                source.sendSuccess(() -> Component.literal("§7暂无受到伤害记录"), false);
+                source.sendSuccess(() -> Component.translatable("stats.damage.no_taken_records"), false);
             } else {
                 for (Map.Entry<String, Long> entry : damageByType.entrySet()) {
                     String type = entry.getKey();
                     long damage = entry.getValue();
                     String displayName = translateEntityType(type);
-                    source.sendSuccess(() -> Component.literal("§f来自 " + displayName + ": §c" + damage + " 点"), false);
+                    source.sendSuccess(() -> Component.translatable("stats.damage.taken_from", displayName, damage), false);
                 }
             }
         } else {
             String originalType = findOriginalEntityTypeForDamage(stats.getDamageTakenByEntityType(), entityType);
             long damage = stats.getDamageTakenByEntityType().getOrDefault(originalType, 0L);
             String displayName = translateEntityType(originalType != null ? originalType : entityType);
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的受到伤害统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b来自 " + displayName + " 的伤害: §f" + damage + " 点"), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.damage_taken", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.damage.taken_detail", displayName, damage), false);
         }
     }
 
@@ -688,60 +695,60 @@ public class StatsCommand {
 
     private static String translateEntityType(String entityType) {
         if (entityType == null || entityType.isEmpty()) {
-            return "未知";
+            return Component.translatable("entity.minecraft.unknown").getString();
         }
 
         String lower = entityType.toLowerCase();
         if (lower.contains("zombie")) {
-            return "僵尸";
+            return Component.translatable("entity.minecraft.zombie").getString();
         } else if (lower.contains("skeleton")) {
-            return "骷髅";
+            return Component.translatable("entity.minecraft.skeleton").getString();
         } else if (lower.contains("creeper")) {
-            return "苦力怕";
+            return Component.translatable("entity.minecraft.creeper").getString();
         } else if (lower.contains("spider")) {
-            return "蜘蛛";
+            return Component.translatable("entity.minecraft.spider").getString();
         } else if (lower.contains("enderman")) {
-            return "末影人";
+            return Component.translatable("entity.minecraft.enderman").getString();
         } else if (lower.contains("blaze")) {
-            return "烈焰人";
+            return Component.translatable("entity.minecraft.blaze").getString();
         } else if (lower.contains("ghast")) {
-            return "恶魂";
+            return Component.translatable("entity.minecraft.ghast").getString();
         } else if (lower.contains("witch")) {
-            return "女巫";
+            return Component.translatable("entity.minecraft.witch").getString();
         } else if (lower.contains("slime")) {
-            return "史莱姆";
+            return Component.translatable("entity.minecraft.slime").getString();
         } else if (lower.contains("pig")) {
-            return "猪";
+            return Component.translatable("entity.minecraft.pig").getString();
         } else if (lower.contains("cow")) {
-            return "牛";
+            return Component.translatable("entity.minecraft.cow").getString();
         } else if (lower.contains("sheep")) {
-            return "羊";
+            return Component.translatable("entity.minecraft.sheep").getString();
         } else if (lower.contains("chicken")) {
-            return "鸡";
+            return Component.translatable("entity.minecraft.chicken").getString();
         } else if (lower.contains("player")) {
-            return "玩家";
+            return Component.translatable("entity.minecraft.player").getString();
         } else if (lower.contains("villager")) {
-            return "村民";
+            return Component.translatable("entity.minecraft.villager").getString();
         } else if (lower.contains("pillager")) {
-            return "掠夺者";
+            return Component.translatable("entity.minecraft.pillager").getString();
         } else if (lower.contains("drowned")) {
-            return "溺尸";
+            return Component.translatable("entity.minecraft.drowned").getString();
         } else if (lower.contains("phantom")) {
-            return "幻术师";
+            return Component.translatable("entity.minecraft.phantom").getString();
         } else if (lower.contains("wither")) {
-            return "凋灵";
+            return Component.translatable("entity.minecraft.wither").getString();
         } else if (lower.contains("warden")) {
-            return "监守者";
+            return Component.translatable("entity.minecraft.warden").getString();
         } else if (lower.contains("guardian")) {
-            return "守卫者";
+            return Component.translatable("entity.minecraft.guardian").getString();
         } else if (lower.contains("elder")) {
-            return "末影龙";
+            return Component.translatable("entity.minecraft.elder_guardian").getString();
         } else if (lower.contains("dragon")) {
-            return "龙";
+            return Component.translatable("entity.minecraft.ender_dragon").getString();
         } else if (lower.contains("iron_golem") || lower.contains("irongolem")) {
-            return "铁傀儡";
+            return Component.translatable("entity.minecraft.iron_golem").getString();
         } else if (lower.contains("snow_golem") || lower.contains("snowgolem")) {
-            return "雪傀儡";
+            return Component.translatable("entity.minecraft.snow_golem").getString();
         }
 
         return entityType;
@@ -751,26 +758,26 @@ public class StatsCommand {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (itemType == null || itemType.isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的钓鱼统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b总钓鱼次数: §f" + stats.getFishingAttempts()), false);
-            source.sendSuccess(() -> Component.literal("§b成功次数: §a" + stats.getFishingSuccess()), false);
-            source.sendSuccess(() -> Component.literal("§b失败次数: §c" + stats.getFishingFailures()), false);
-            source.sendSuccess(() -> Component.literal("§e--- 按物品类型分类 ---"), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.fishing", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.fishing.total", stats.getFishingAttempts()), false);
+            source.sendSuccess(() -> Component.translatable("stats.fishing.success", stats.getFishingSuccess()), false);
+            source.sendSuccess(() -> Component.translatable("stats.fishing.failures", stats.getFishingFailures()), false);
+            source.sendSuccess(() -> Component.translatable("stats.fishing.by_type_header"), false);
 
             Map<String, Integer> fishByType = stats.getFishCaughtByType();
             if (fishByType.isEmpty()) {
-                source.sendSuccess(() -> Component.literal("§7暂无钓鱼记录"), false);
+                source.sendSuccess(() -> Component.translatable("stats.fishing.no_records"), false);
             } else {
                 for (Map.Entry<String, Integer> entry : fishByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
-                    source.sendSuccess(() -> Component.literal("§f" + type + ": §a" + count), false);
+                    source.sendSuccess(() -> Component.translatable("stats.fishing.item_count", type, count), false);
                 }
             }
         } else {
             int count = stats.getFishCaughtByType().getOrDefault(itemType, 0);
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的钓鱼统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b" + itemType + " 钓获数: §f" + count), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.fishing", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.fishing.item_detail", itemType, count), false);
         }
     }
 
@@ -778,26 +785,26 @@ public class StatsCommand {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (itemType == null || itemType.isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的合成统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b总合成次数: §f" + stats.getItemsCrafted()), false);
-            source.sendSuccess(() -> Component.literal("§e--- 按物品类型分类 ---"), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.crafting", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.crafting.total", stats.getItemsCrafted()), false);
+            source.sendSuccess(() -> Component.translatable("stats.crafting.by_type_header"), false);
 
             Map<String, Integer> craftedByType = stats.getItemsCraftedByType();
             if (craftedByType.isEmpty()) {
-                source.sendSuccess(() -> Component.literal("§7暂无合成记录"), false);
+                source.sendSuccess(() -> Component.translatable("stats.crafting.no_records"), false);
             } else {
                 for (Map.Entry<String, Integer> entry : craftedByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
                     String displayName = TranslationHelper.translateItemKey(type);
-                    source.sendSuccess(() -> Component.literal("§f" + displayName + ": §a" + count), false);
+                    source.sendSuccess(() -> Component.translatable("stats.crafting.item_count", displayName, count), false);
                 }
             }
         } else {
             int count = stats.getItemsCraftedByType().getOrDefault(itemType, 0);
             String displayName = TranslationHelper.translateItemKey(itemType);
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的合成统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b" + displayName + " 合成数: §f" + count), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.crafting", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.crafting.item_detail", displayName, count), false);
         }
     }
 
@@ -805,108 +812,100 @@ public class StatsCommand {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (itemType == null || itemType.isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的丢弃物品统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b总丢弃次数: §f" + stats.getItemsDropped()), false);
-            source.sendSuccess(() -> Component.literal("§e--- 按物品类型分类 ---"), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.drops", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.drops.total", stats.getItemsDropped()), false);
+            source.sendSuccess(() -> Component.translatable("stats.drops.by_type_header"), false);
 
             Map<String, Integer> droppedByType = stats.getItemsDroppedByType();
             if (droppedByType.isEmpty()) {
-                source.sendSuccess(() -> Component.literal("§7暂无丢弃记录"), false);
+                source.sendSuccess(() -> Component.translatable("stats.drops.no_records"), false);
             } else {
                 for (Map.Entry<String, Integer> entry : droppedByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
                     String displayName = TranslationHelper.translateItemKey(type);
-                    source.sendSuccess(() -> Component.literal("§f" + displayName + ": §c" + count), false);
+                    source.sendSuccess(() -> Component.translatable("stats.drops.item_count", displayName, count), false);
                 }
             }
         } else {
             int count = stats.getItemsDroppedByType().getOrDefault(itemType, 0);
             String displayName = TranslationHelper.translateItemKey(itemType);
-            source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的丢弃物品统计 §e=========="), false);
-            source.sendSuccess(() -> Component.literal("§b" + displayName + " 丢弃数: §f" + count), false);
+            source.sendSuccess(() -> Component.translatable("stats.header.drops", playerName), false);
+            source.sendSuccess(() -> Component.translatable("stats.drops.item_detail", displayName, count), false);
         }
     }
 
     private static void showPlayerInfoStats(CommandSourceStack source, String playerName) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
-        source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的玩家信息 §e=========="), false);
+        source.sendSuccess(() -> Component.translatable("stats.header.player_info", playerName), false);
 
         long firstJoinTime = stats.getFirstJoinTime();
         if (firstJoinTime > 0) {
             java.time.Instant instant = java.time.Instant.ofEpochSecond(firstJoinTime);
             java.time.ZonedDateTime zdt = instant.atZone(java.time.ZoneId.systemDefault());
             String formattedDate = zdt.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            source.sendSuccess(() -> Component.literal("§b首次加入时间: §f" + formattedDate), false);
+            source.sendSuccess(() -> Component.translatable("stats.player_info.first_join", formattedDate), false);
         } else {
-            source.sendSuccess(() -> Component.literal("§b首次加入时间: §f未知"), false);
+            source.sendSuccess(() -> Component.translatable("stats.player_info.first_join_unknown"), false);
         }
 
-        source.sendSuccess(() -> Component.literal("§b登录天数: §f" + stats.getLoginDays() + " 天"), false);
+        source.sendSuccess(() -> Component.translatable("stats.player_info.login_days", stats.getLoginDays()), false);
     }
 
     private static void showActivityStats(CommandSourceStack source, String playerName) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
-        source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的活动统计 §e=========="), false);
-        source.sendSuccess(() -> Component.literal("§b使用铁砧次数: §f" + stats.getAnvilUses()), false);
-        source.sendSuccess(() -> Component.literal("§b附魔物品数: §f" + stats.getItemsEnchanted()), false);
-        source.sendSuccess(() -> Component.literal("§b村民交易次数: §f" + stats.getVillagerTrades()), false);
-        source.sendSuccess(() -> Component.literal("§b发送聊天消息数: §f" + stats.getChatMessagesSent()), false);
+        source.sendSuccess(() -> Component.translatable("stats.header.activity", playerName), false);
+        source.sendSuccess(() -> Component.translatable("stats.activity.anvil_uses", stats.getAnvilUses()), false);
+        source.sendSuccess(() -> Component.translatable("stats.activity.items_enchanted", stats.getItemsEnchanted()), false);
+        source.sendSuccess(() -> Component.translatable("stats.activity.villager_trades", stats.getVillagerTrades()), false);
+        source.sendSuccess(() -> Component.translatable("stats.activity.chat_messages", stats.getChatMessagesSent()), false);
     }
 
     private static void showExtendedStats(CommandSourceStack source, String playerName) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
-        source.sendSuccess(() -> Component.literal("§e========== §6" + playerName + " 的扩展统计 §e=========="), false);
+        source.sendSuccess(() -> Component.translatable("stats.header.extended", playerName), false);
         
-        source.sendSuccess(() -> Component.literal("§b--- 经验统计 ---"), false);
-        source.sendSuccess(() -> Component.literal("§f获得经验总量: §a" + stats.getTotalExperienceGained()), false);
-        source.sendSuccess(() -> Component.literal("§f消耗经验总量: §c" + stats.getTotalExperienceConsumed()), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.exp_header"), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.exp_gained", stats.getTotalExperienceGained()), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.exp_consumed", stats.getTotalExperienceConsumed()), false);
         
-        source.sendSuccess(() -> Component.literal("§b--- 战斗统计 ---"), false);
-        source.sendSuccess(() -> Component.literal("§f弓命中次数: §a" + stats.getBowHits()), false);
-        source.sendSuccess(() -> Component.literal("§f弩命中次数: §a" + stats.getCrossbowHits()), false);
-        source.sendSuccess(() -> Component.literal("§f盾牌格挡次数: §a" + stats.getShieldBlocks()), false);
-        source.sendSuccess(() -> Component.literal("§f最高单次造成伤害: §a" + stats.getHighestDamageDealt() + "点"), false);
-        source.sendSuccess(() -> Component.literal("§f最高单次受到伤害: §c" + stats.getHighestDamageTaken() + "点"), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.combat_header"), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.bow_hits", stats.getBowHits()), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.crossbow_hits", stats.getCrossbowHits()), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.shield_blocks", stats.getShieldBlocks()), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.highest_damage_dealt", stats.getHighestDamageDealt()), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.highest_damage_taken", stats.getHighestDamageTaken()), false);
         
-        source.sendSuccess(() -> Component.literal("§b--- 宠物统计 ---"), false);
-        source.sendSuccess(() -> Component.literal("§f动物驯服总数: §a" + stats.getAnimalsTamed()), false);
-        source.sendSuccess(() -> Component.literal("§f宠物死亡次数: §c" + stats.getPetDeaths()), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.pet_header"), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.animals_tamed", stats.getAnimalsTamed()), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.pet_deaths", stats.getPetDeaths()), false);
         
-        source.sendSuccess(() -> Component.literal("§b--- 探索统计 ---"), false);
-        source.sendSuccess(() -> Component.literal("§f探索区块数: §a" + stats.getExploredChunks()), false);
-        source.sendSuccess(() -> Component.literal("§f累计跳跃次数: §a" + stats.getTotalJumps()), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.exploration_header"), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.explored_chunks", stats.getExploredChunks()), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.total_jumps", stats.getTotalJumps()), false);
         
-        source.sendSuccess(() -> Component.literal("§b--- 时间统计 ---"), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.time_header"), false);
         long longestSession = stats.getLongestSessionSeconds();
-        long longestHours = longestSession / 3600;
-        long longestMinutes = (longestSession % 3600) / 60;
-        long longestSeconds = longestSession % 60;
-        source.sendSuccess(() -> Component.literal("§f最长在线时长: §a" + longestHours + "时" + longestMinutes + "分" + longestSeconds + "秒"), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.longest_session", 
+                longestSession / 3600, (longestSession % 3600) / 60, longestSession % 60), false);
         
         long sneakTime = stats.getTotalSneakSeconds();
-        long sneakHours = sneakTime / 3600;
-        long sneakMinutes = (sneakTime % 3600) / 60;
-        long sneakSeconds = sneakTime % 60;
-        source.sendSuccess(() -> Component.literal("§f累计潜行时间: §a" + sneakHours + "时" + sneakMinutes + "分" + sneakSeconds + "秒"), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.sneak_time", 
+                sneakTime / 3600, (sneakTime % 3600) / 60, sneakTime % 60), false);
         
-        source.sendSuccess(() -> Component.literal("§b--- 寿命统计 ---"), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.life_header"), false);
         long shortestLife = stats.getShortestLifeSeconds();
-        long shortMinutes = shortestLife / 60;
-        long shortSeconds = shortestLife % 60;
-        source.sendSuccess(() -> Component.literal("§f最短寿命: §c" + shortMinutes + "分" + shortSeconds + "秒"), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.shortest_life", 
+                shortestLife / 60, shortestLife % 60), false);
         
         long longestLife = stats.getLongestLifeSeconds();
-        long lifeHours = longestLife / 3600;
-        long lifeMinutes = (longestLife % 3600) / 60;
-        long lifeSeconds = longestLife % 60;
-        source.sendSuccess(() -> Component.literal("§f最长寿命: §a" + lifeHours + "时" + lifeMinutes + "分" + lifeSeconds + "秒"), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.longest_life", 
+                longestLife / 3600, (longestLife % 3600) / 60, longestLife % 60), false);
         
-        source.sendSuccess(() -> Component.literal("§b--- 死亡统计 ---"), false);
-        double farthestDistance = stats.getFarthestDeathDistance();
-        source.sendSuccess(() -> Component.literal("§f最远死亡掉落距离: §c" + String.format("%.1f", farthestDistance) + "米"), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.death_header"), false);
+        source.sendSuccess(() -> Component.translatable("stats.extended.farthest_death_distance", stats.getFarthestDeathDistance()), false);
     }
 }

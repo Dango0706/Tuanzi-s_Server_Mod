@@ -6,6 +6,7 @@ import me.tuanzi.auth.AuthModule;
 import me.tuanzi.auth.login.data.AccountManager;
 import me.tuanzi.auth.login.security.PasswordService;
 import me.tuanzi.auth.logging.AuthLogger;
+import me.tuanzi.auth.utils.TranslationHelper;
 import me.tuanzi.auth.whitelist.WhitelistManager;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -88,14 +89,14 @@ public class AuthCommand {
         String operatorName = source.getTextName();
         
         if (playerName == null || playerName.trim().isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§c玩家名不能为空"), false);
+            TranslationHelper.sendSuccess(source, "auth.password.player_name_empty");
             return 0;
         }
         
         final String trimmedName = playerName.trim();
         
         if (whitelistManager.isInWhitelist(trimmedName)) {
-            source.sendSuccess(() -> Component.literal("§c玩家 §f" + trimmedName + " §c已在白名单中"), false);
+            TranslationHelper.sendSuccess(source, "auth.whitelist.already_in", trimmedName);
             return 0;
         }
         
@@ -103,12 +104,12 @@ public class AuthCommand {
         if (success) {
             UUID uuid = me.tuanzi.auth.whitelist.OfflineUUIDGenerator.generateOfflineUUID(trimmedName);
             AuthLogger.getInstance().logAdminOperation(operatorName, "添加白名单", trimmedName, true);
-            source.sendSuccess(() -> Component.literal("§a已将玩家 §f" + trimmedName + " §a添加到白名单"), false);
+            TranslationHelper.sendSuccess(source, "auth.whitelist.add_success", trimmedName);
             source.sendSuccess(() -> Component.literal("§7盗版 UUID: §f" + uuid.toString()), false);
             return 1;
         } else {
             AuthLogger.getInstance().logAdminOperation(operatorName, "添加白名单", trimmedName, false);
-            source.sendSuccess(() -> Component.literal("§c添加玩家到白名单失败"), false);
+            TranslationHelper.sendSuccess(source, "auth.whitelist.add_failed");
             return 0;
         }
     }
@@ -118,25 +119,25 @@ public class AuthCommand {
         String operatorName = source.getTextName();
         
         if (playerName == null || playerName.trim().isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§c玩家名不能为空"), false);
+            TranslationHelper.sendSuccess(source, "auth.password.player_name_empty");
             return 0;
         }
         
         final String trimmedName = playerName.trim();
         
         if (!whitelistManager.isInWhitelist(trimmedName)) {
-            source.sendSuccess(() -> Component.literal("§c玩家 §f" + trimmedName + " §c不在白名单中"), false);
+            TranslationHelper.sendSuccess(source, "auth.whitelist.not_in", trimmedName);
             return 0;
         }
         
         boolean success = whitelistManager.removeFromWhitelist(trimmedName);
         if (success) {
             AuthLogger.getInstance().logAdminOperation(operatorName, "移除白名单", trimmedName, true);
-            source.sendSuccess(() -> Component.literal("§a已将玩家 §f" + trimmedName + " §a从白名单中移除"), false);
+            TranslationHelper.sendSuccess(source, "auth.whitelist.remove_success", trimmedName);
             return 1;
         } else {
             AuthLogger.getInstance().logAdminOperation(operatorName, "移除白名单", trimmedName, false);
-            source.sendSuccess(() -> Component.literal("§c从白名单移除玩家失败"), false);
+            TranslationHelper.sendSuccess(source, "auth.whitelist.remove_failed");
             return 0;
         }
     }
@@ -146,12 +147,12 @@ public class AuthCommand {
         Map<UUID, String> whitelistMap = whitelistManager.getWhitelistMap();
         
         if (whitelistMap.isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§e白名单为空"), false);
+            TranslationHelper.sendSuccess(source, "auth.whitelist.empty");
             return 1;
         }
         
-        source.sendSuccess(() -> Component.literal("§e========== §6白名单列表 §e=========="), false);
-        source.sendSuccess(() -> Component.literal("§b共 §f" + whitelistMap.size() + " §b位玩家"), false);
+        TranslationHelper.sendSuccess(source, "auth.whitelist.list_header");
+        TranslationHelper.sendSuccess(source, "auth.whitelist.list_count", whitelistMap.size());
         source.sendSuccess(() -> Component.literal("§e-----------------------------------"), false);
         
         for (Map.Entry<UUID, String> entry : whitelistMap.entrySet()) {
@@ -177,12 +178,12 @@ public class AuthCommand {
         String operatorName = source.getTextName();
         
         if (playerName == null || playerName.trim().isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§c玩家名不能为空"), false);
+            TranslationHelper.sendSuccess(source, "auth.password.player_name_empty");
             return 0;
         }
         
         if (newPassword == null || newPassword.isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§c新密码不能为空"), false);
+            TranslationHelper.sendSuccess(source, "auth.password.new_password_empty");
             return 0;
         }
         
@@ -197,7 +198,7 @@ public class AuthCommand {
         }
         
         if (!accountManager.isRegistered(trimmedName)) {
-            source.sendSuccess(() -> Component.literal("§c玩家 §f" + trimmedName + " §c尚未注册"), false);
+            TranslationHelper.sendSuccess(source, "auth.password.player_not_registered", trimmedName);
             return 0;
         }
         
@@ -211,11 +212,11 @@ public class AuthCommand {
         if (success) {
             AuthLogger.getInstance().logAdminOperation(operatorName, "重置密码", trimmedName, true);
             AuthModule.LOGGER.info("管理员 {} 重置了玩家 {} 的密码", operatorName, trimmedName);
-            source.sendSuccess(() -> Component.literal("§a已成功重置玩家 §f" + trimmedName + " §a的密码"), false);
+            TranslationHelper.sendSuccess(source, "auth.password.reset_success", trimmedName);
             return 1;
         } else {
             AuthLogger.getInstance().logAdminOperation(operatorName, "重置密码", trimmedName, false);
-            source.sendSuccess(() -> Component.literal("§c重置密码失败"), false);
+            TranslationHelper.sendSuccess(source, "auth.password.reset_failed");
             return 0;
         }
     }

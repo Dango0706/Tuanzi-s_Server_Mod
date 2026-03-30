@@ -11,10 +11,10 @@ import me.tuanzi.auth.login.security.PasswordService;
 import me.tuanzi.auth.login.session.SessionManager;
 import me.tuanzi.auth.login.timeout.LoginTimeoutManager;
 import me.tuanzi.auth.logging.AuthLogger;
+import me.tuanzi.auth.utils.TranslationHelper;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 public class RegisterCommand {
@@ -52,7 +52,7 @@ public class RegisterCommand {
         
         ServerPlayer player = source.getPlayer();
         if (player == null) {
-            source.sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+            TranslationHelper.sendFailure(source, "auth.command.player_only");
             return 0;
         }
 
@@ -61,23 +61,23 @@ public class RegisterCommand {
         String confirmPassword = StringArgumentType.getString(context, "confirmPassword");
 
         if (accountManager == null) {
-            source.sendSuccess(() -> Component.literal("§c登录系统尚未初始化，请联系管理员"), false);
+            TranslationHelper.sendFailure(source, "auth.register.system_not_initialized");
             return 0;
         }
 
         if (accountManager.isRegistered(playerName)) {
-            source.sendSuccess(() -> Component.literal("§c您已经注册过了，请使用 /login 命令登录"), false);
+            TranslationHelper.sendFailure(source, "auth.register.already_registered");
             return 0;
         }
 
         PasswordService.PasswordValidationResult validationResult = PasswordService.validatePasswordStrength(password);
         if (!validationResult.isValid()) {
-            source.sendSuccess(() -> Component.literal("§c" + validationResult.getMessage()), false);
+            source.sendSuccess(() -> net.minecraft.network.chat.Component.literal("§c" + validationResult.getMessage()), false);
             return 0;
         }
 
         if (!password.equals(confirmPassword)) {
-            source.sendSuccess(() -> Component.literal("§c两次输入的密码不一致，请重新输入"), false);
+            TranslationHelper.sendFailure(source, "auth.register.password_mismatch");
             return 0;
         }
 
@@ -102,11 +102,11 @@ public class RegisterCommand {
 
             AuthLogger.getInstance().logRegisterEvent(playerName, true, "IP: " + ipAddress);
 
-            source.sendSuccess(() -> Component.literal("§a注册成功！您已自动登录"), false);
+            TranslationHelper.sendSuccess(source, "auth.register.success");
             return 1;
         } else {
             AuthLogger.getInstance().logRegisterEvent(playerName, false, "注册失败");
-            source.sendSuccess(() -> Component.literal("§c注册失败，请稍后重试"), false);
+            TranslationHelper.sendFailure(source, "auth.register.failed");
             return 0;
         }
     }

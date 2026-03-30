@@ -10,10 +10,10 @@ import me.tuanzi.auth.login.data.AccountManager;
 import me.tuanzi.auth.login.session.SessionManager;
 import me.tuanzi.auth.login.timeout.LoginTimeoutManager;
 import me.tuanzi.auth.logging.AuthLogger;
+import me.tuanzi.auth.utils.TranslationHelper;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 public class LoginCommand {
@@ -49,7 +49,7 @@ public class LoginCommand {
 
         ServerPlayer player = source.getPlayer();
         if (player == null) {
-            source.sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);
+            TranslationHelper.sendFailure(source, "auth.command.player_only");
             return 0;
         }
 
@@ -57,23 +57,23 @@ public class LoginCommand {
         String password = StringArgumentType.getString(context, "password");
 
         if (accountManager == null) {
-            source.sendSuccess(() -> Component.literal("§c登录系统尚未初始化，请联系管理员"), false);
+            TranslationHelper.sendFailure(source, "auth.login.system_not_initialized");
             return 0;
         }
 
         if (!accountManager.isRegistered(playerName)) {
-            source.sendSuccess(() -> Component.literal("§c您还没有注册，请先使用 /register <密码> <确认密码> 注册"), false);
+            TranslationHelper.sendFailure(source, "auth.login.not_registered");
             return 0;
         }
 
         if (sessionManager != null && sessionManager.hasValidSession(playerName)) {
-            source.sendSuccess(() -> Component.literal("§a您已经登录过了"), false);
+            TranslationHelper.sendSuccess(source, "auth.login.already_logged_in");
             return 0;
         }
 
         if (loginAttemptManager != null && loginAttemptManager.isLocked(playerName)) {
             String lockMessage = loginAttemptManager.getLockMessage(playerName);
-            source.sendSuccess(() -> Component.literal(lockMessage != null ? lockMessage : "§c您的账户已被锁定"), false);
+            source.sendSuccess(() -> net.minecraft.network.chat.Component.literal(lockMessage != null ? lockMessage : TranslationHelper.translatable("auth.login.account_locked").getString()), false);
             return 0;
         }
 
@@ -98,7 +98,7 @@ public class LoginCommand {
 
             AuthLogger.getInstance().logLoginEvent(playerName, true, ipAddress);
 
-            source.sendSuccess(() -> Component.literal("§a登录成功！"), false);
+            TranslationHelper.sendSuccess(source, "auth.login.success");
             return 1;
         } else {
             if (loginAttemptManager != null) {
@@ -107,15 +107,15 @@ public class LoginCommand {
 
                 if (remaining > 0) {
                     AuthLogger.getInstance().logLoginFailed(playerName, remaining);
-                    source.sendSuccess(() -> Component.literal("§c密码错误！您还有 §f" + remaining + " §c次尝试机会"), false);
+                    TranslationHelper.sendSuccess(source, "auth.login.password_wrong", remaining);
                 } else {
                     String lockMessage = loginAttemptManager.getLockMessage(playerName);
                     AuthLogger.getInstance().logAccountLocked(playerName, lockMessage);
-                    source.sendSuccess(() -> Component.literal(lockMessage != null ? lockMessage : "§c登录失败次数过多，账户已被锁定"), false);
+                    source.sendSuccess(() -> net.minecraft.network.chat.Component.literal(lockMessage != null ? lockMessage : TranslationHelper.translatable("auth.login.locked_too_many_attempts").getString()), false);
                 }
             } else {
                 AuthLogger.getInstance().logLoginEvent(playerName, false, player.getIpAddress(), "密码错误");
-                source.sendSuccess(() -> Component.literal("§c密码错误！"), false);
+                TranslationHelper.sendSuccess(source, "auth.login.password_wrong_simple");
             }
             return 0;
         }
