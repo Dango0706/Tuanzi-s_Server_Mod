@@ -18,7 +18,8 @@
     "main": [
       "me.tuanzi.TemplateMod",
       "me.tuanzi.statistics.StatisticsModule",
-      "me.tuanzi.auth.AuthModule"
+      "me.tuanzi.auth.AuthModule",
+      "me.tuanzi.economy.EconomyModule"
     ],
     "fabric-datagen": [
       "me.tuanzi.TemplateModDataGenerator"
