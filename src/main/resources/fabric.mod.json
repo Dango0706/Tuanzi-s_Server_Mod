@@ -1,28 +1,28 @@
 {
   "schemaVersion": 1,
-  "id": "template-mod",
+  "id": "tuanzis-server-mod",
   "version": "${version}",
-  "name": "Template Mod",
+  "name": "Tuanzi's Server Mod",
   "description": "This is an example description! Tell everyone what your mod is about!",
   "authors": [
-    "Me!"
+    "Tuanzi"
   ],
   "contact": {
     "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "sources": "https://github.com/Dango0706/Tuanzi-s_Server_Mod"
   },
-  "license": "CC0-1.0",
+  "license": "MIT",
   "icon": "assets/template-mod/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "me.tuanzi.TemplateMod",
+      "me.tuanzi.TuanzisServerMod",
       "me.tuanzi.statistics.StatisticsModule",
       "me.tuanzi.auth.AuthModule",
       "me.tuanzi.economy.EconomyModule"
     ],
     "fabric-datagen": [
-      "me.tuanzi.TemplateModDataGenerator"
+      "me.tuanzi.TuanzisServerModDataGenerator"
     ]
   },
   "mixins": [

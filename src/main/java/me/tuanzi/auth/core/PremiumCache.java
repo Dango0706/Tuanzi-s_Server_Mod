@@ -1,6 +1,6 @@
 package me.tuanzi.auth.core;
 
-import me.tuanzi.TemplateMod;
+import me.tuanzi.TuanzisServerMod;
 
 import java.util.Collection;
 import java.util.Map;
@@ -60,7 +60,7 @@ public class PremiumCache {
         });
         
         startCleanupTask();
-        TemplateMod.LOGGER.info("PremiumCache 已初始化，TTL: {} 毫秒", ttl);
+        TuanzisServerMod.LOGGER.info("PremiumCache 已初始化，TTL: {} 毫秒", ttl);
     }
     
     /**
@@ -82,7 +82,7 @@ public class PremiumCache {
             }
         }
         if (removedCount > 0) {
-            TemplateMod.LOGGER.debug("已清理 {} 个过期的缓存条目", removedCount);
+            TuanzisServerMod.LOGGER.debug("已清理 {} 个过期的缓存条目", removedCount);
         }
     }
     
@@ -101,8 +101,8 @@ public class PremiumCache {
         if (uuid != null && !uuid.isEmpty()) {
             cacheByUuid.put(uuid, player);
         }
-        
-        TemplateMod.LOGGER.debug("已缓存玩家: {} ({}), 类型: {}", username, uuid, playerType);
+
+        TuanzisServerMod.LOGGER.debug("已缓存玩家: {} ({}), 类型: {}", username, uuid, playerType);
     }
     
     /**
@@ -219,7 +219,7 @@ public class PremiumCache {
     public void clear() {
         cacheByUsername.clear();
         cacheByUuid.clear();
-        TemplateMod.LOGGER.info("已清空所有缓存");
+        TuanzisServerMod.LOGGER.info("已清空所有缓存");
     }
     
     /**
@@ -278,7 +278,7 @@ public class PremiumCache {
             Thread.currentThread().interrupt();
         }
         clear();
-        TemplateMod.LOGGER.info("PremiumCache 已关闭");
+        TuanzisServerMod.LOGGER.info("PremiumCache 已关闭");
     }
     
     /**

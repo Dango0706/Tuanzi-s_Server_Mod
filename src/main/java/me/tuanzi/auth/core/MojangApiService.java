@@ -2,7 +2,7 @@ package me.tuanzi.auth.core;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import me.tuanzi.TemplateMod;
+import me.tuanzi.TuanzisServerMod;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -91,17 +91,17 @@ public class MojangApiService {
             if (response.statusCode() == 200) {
                 UserProfile profile = GSON.fromJson(response.body(), UserProfile.class);
                 if (profile != null && profile.isValid()) {
-                    TemplateMod.LOGGER.debug("成功查询到玩家 {} 的 Mojang UUID: {}", username, profile.getId());
+                    TuanzisServerMod.LOGGER.debug("成功查询到玩家 {} 的 Mojang UUID: {}", username, profile.getId());
                     return profile;
                 }
             } else if (response.statusCode() == 204 || response.statusCode() == 404) {
-                TemplateMod.LOGGER.debug("玩家 {} 不是正版玩家", username);
+                TuanzisServerMod.LOGGER.debug("玩家 {} 不是正版玩家", username);
                 return null;
             } else {
-                TemplateMod.LOGGER.warn("查询玩家 {} 的 Mojang UUID 失败，状态码: {}", username, response.statusCode());
+                TuanzisServerMod.LOGGER.warn("查询玩家 {} 的 Mojang UUID 失败，状态码: {}", username, response.statusCode());
             }
         } catch (Exception e) {
-            TemplateMod.LOGGER.error("查询玩家 {} 的 Mojang UUID 时发生异常: {}", username, e.getMessage());
+            TuanzisServerMod.LOGGER.error("查询玩家 {} 的 Mojang UUID 时发生异常: {}", username, e.getMessage());
         }
         return null;
     }
@@ -125,18 +125,18 @@ public class MojangApiService {
                     if (response.statusCode() == 200) {
                         UserProfile profile = GSON.fromJson(response.body(), UserProfile.class);
                         if (profile != null && profile.isValid()) {
-                            TemplateMod.LOGGER.debug("成功查询到玩家 {} 的 Mojang UUID: {}", username, profile.getId());
+                            TuanzisServerMod.LOGGER.debug("成功查询到玩家 {} 的 Mojang UUID: {}", username, profile.getId());
                             return profile;
                         }
                     } else if (response.statusCode() == 204 || response.statusCode() == 404) {
-                        TemplateMod.LOGGER.debug("玩家 {} 不是正版玩家", username);
+                        TuanzisServerMod.LOGGER.debug("玩家 {} 不是正版玩家", username);
                     } else {
-                        TemplateMod.LOGGER.warn("查询玩家 {} 的 Mojang UUID 失败，状态码: {}", username, response.statusCode());
+                        TuanzisServerMod.LOGGER.warn("查询玩家 {} 的 Mojang UUID 失败，状态码: {}", username, response.statusCode());
                     }
                     return null;
                 })
                 .exceptionally(e -> {
-                    TemplateMod.LOGGER.error("查询玩家 {} 的 Mojang UUID 时发生异常: {}", username, e.getMessage());
+                    TuanzisServerMod.LOGGER.error("查询玩家 {} 的 Mojang UUID 时发生异常: {}", username, e.getMessage());
                     return null;
                 });
     }
@@ -164,14 +164,14 @@ public class MojangApiService {
             if (response.statusCode() == 200) {
                 SessionProfile profile = GSON.fromJson(response.body(), SessionProfile.class);
                 if (profile != null && profile.isValid()) {
-                    TemplateMod.LOGGER.debug("玩家 {} Session 验证成功", username);
+                    TuanzisServerMod.LOGGER.debug("玩家 {} Session 验证成功", username);
                     return profile;
                 }
             } else {
-                TemplateMod.LOGGER.debug("玩家 {} Session 验证失败，状态码: {}", username, response.statusCode());
+                TuanzisServerMod.LOGGER.debug("玩家 {} Session 验证失败，状态码: {}", username, response.statusCode());
             }
         } catch (Exception e) {
-            TemplateMod.LOGGER.error("验证玩家 {} Session 时发生异常: {}", username, e.getMessage());
+            TuanzisServerMod.LOGGER.error("验证玩家 {} Session 时发生异常: {}", username, e.getMessage());
         }
         return null;
     }
@@ -198,16 +198,16 @@ public class MojangApiService {
                     if (response.statusCode() == 200) {
                         SessionProfile profile = GSON.fromJson(response.body(), SessionProfile.class);
                         if (profile != null && profile.isValid()) {
-                            TemplateMod.LOGGER.debug("玩家 {} Session 验证成功", username);
+                            TuanzisServerMod.LOGGER.debug("玩家 {} Session 验证成功", username);
                             return profile;
                         }
                     } else {
-                        TemplateMod.LOGGER.debug("玩家 {} Session 验证失败，状态码: {}", username, response.statusCode());
+                        TuanzisServerMod.LOGGER.debug("玩家 {} Session 验证失败，状态码: {}", username, response.statusCode());
                     }
                     return null;
                 })
                 .exceptionally(e -> {
-                    TemplateMod.LOGGER.error("验证玩家 {} Session 时发生异常: {}", username, e.getMessage());
+                    TuanzisServerMod.LOGGER.error("验证玩家 {} Session 时发生异常: {}", username, e.getMessage());
                     return null;
                 });
     }
