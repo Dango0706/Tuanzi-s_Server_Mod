@@ -3,7 +3,7 @@
   "id": "tuanzis-server-mod",
   "version": "${version}",
   "name": "Tuanzi's Server Mod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "This is the mod of my server, which includes some interesting and useful features.",
   "authors": [
     "Tuanzi"
   ],
