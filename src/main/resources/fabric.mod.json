@@ -26,10 +26,10 @@
     ]
   },
   "mixins": [
-    "template-mod.mixins.json",
-    "template-mod-auth.mixins.json"
+    "tuanzis-server.mixins.json",
+    "tuanzis-server-auth.mixins.json"
   ],
-  "accessWidener": "template-mod.accesswidener",
+  "accessWidener": "tuanzis-server.accesswidener",
   "depends": {
     "fabricloader": ">=0.18.4",
     "minecraft": "~26.1",
