@@ -12,7 +12,7 @@
     "sources": "https://github.com/Dango0706/Tuanzi-s_Server_Mod"
   },
   "license": "MIT",
-  "icon": "assets/template-mod/icon.png",
+  "icon": "assets/tuanzis-server-mod/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [

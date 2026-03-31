@@ -32,7 +32,7 @@ public class ServerTranslationHelper {
     }
 
     private static void loadTranslations(String langCode, Map<String, String> targetMap) {
-        String path = "/assets/template-mod/lang/" + langCode + ".json";
+        String path = "/assets/tuanzis-server-mod/lang/" + langCode + ".json";
         try (InputStream is = ServerTranslationHelper.class.getResourceAsStream(path)) {
             if (is != null) {
                 try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
