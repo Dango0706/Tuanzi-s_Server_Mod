@@ -10,8 +10,11 @@ import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 public class ItemUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(ShopModule.MOD_ID);
@@ -20,35 +23,65 @@ public class ItemUtils {
     }
 
     public static Optional<ItemStack> findItemByDisplayName(String displayName, Level level) {
+        return findItemByDisplayName(displayName, level, "en_us");
+    }
+
+    public static Optional<ItemStack> findItemByDisplayName(String displayName, Level level, String preferredLanguage) {
         if (displayName == null || displayName.isEmpty()) {
             return Optional.empty();
         }
 
         String searchName = displayName.trim();
-        String searchLower = searchName.toLowerCase();
+        String normalizedSearch = normalizeTokenForCompare(searchName);
         
-        LOGGER.info("[商店调试] 开始查找物品: '{}'", searchName);
+        LOGGER.info("[商店调试] 开始查找物品: '{}', 客户端语言: {}", searchName, preferredLanguage);
         
         for (var item : BuiltInRegistries.ITEM) {
             if (item == Items.AIR) {
                 continue;
             }
-            
+
             ItemStack stack = new ItemStack(item);
-            
             String translationKey = item.getDescriptionId();
-            String translatedName = Language.getInstance().getOrDefault(translationKey, translationKey);
-            
-            String translatedNameClean = translatedName.toLowerCase();
-            
-            if (translatedName.equals(searchName) || translatedNameClean.equals(searchLower)) {
-                LOGGER.info("[商店调试] 名称精确匹配: '{}' -> {}", translatedName, translationKey);
-                return Optional.of(stack);
+
+            Set<String> candidates = new LinkedHashSet<>();
+            candidates.add(translationKey);
+
+            Identifier itemId = BuiltInRegistries.ITEM.getKey(item);
+            if (itemId != null) {
+                candidates.add(itemId.toString());
+                candidates.add(itemId.getPath());
+                candidates.add(itemId.getPath().replace('_', ' '));
+                candidates.add(snakeToLowerCamel(itemId.getPath()));
             }
-            
-            if (translatedNameClean.contains(searchLower) || searchLower.contains(translatedNameClean)) {
-                LOGGER.info("[商店调试] 名称包含匹配: '{}' -> {}", translatedName, translationKey);
-                return Optional.of(stack);
+
+            String enUsName = Language.getInstance().getOrDefault(translationKey, translationKey);
+            candidates.add(enUsName);
+
+            String preferredTranslated = ShopTranslationHelper.getRawTranslation(translationKey, preferredLanguage);
+            if (!preferredTranslated.equals(translationKey)) {
+                candidates.add(preferredTranslated);
+            }
+
+            String zhName = ShopTranslationHelper.getRawTranslation(translationKey, "zh_cn");
+            if (!zhName.equals(translationKey)) {
+                candidates.add(zhName);
+            }
+
+            String enName = ShopTranslationHelper.getRawTranslation(translationKey, "en_us");
+            if (!enName.equals(translationKey)) {
+                candidates.add(enName);
+            }
+
+            for (String candidate : candidates) {
+                if (candidate == null || candidate.isBlank()) {
+                    continue;
+                }
+
+                if (candidate.equalsIgnoreCase(searchName) || normalizeTokenForCompare(candidate).equals(normalizedSearch)) {
+                    LOGGER.info("[商店调试] 名称匹配: '{}' -> {}", candidate, translationKey);
+                    return Optional.of(stack);
+                }
             }
         }
         
@@ -57,29 +90,117 @@ public class ItemUtils {
     }
 
     public static Optional<ItemStack> parseItemStackFlexible(String input, Level level) {
+        return parseItemStackFlexible(input, level, "en_us");
+    }
+
+    public static Optional<ItemStack> parseItemStackFlexible(String input, Level level, String preferredLanguage) {
         if (input == null || input.isEmpty()) {
             return Optional.empty();
         }
 
         String trimmed = input.trim();
-        
-        try {
-            Identifier itemId;
-            if (trimmed.contains(":")) {
-                itemId = Identifier.parse(trimmed);
-            } else {
-                itemId = Identifier.fromNamespaceAndPath("minecraft", trimmed.toLowerCase().replace(" ", "_"));
-            }
 
-            var item = BuiltInRegistries.ITEM.getValue(itemId);
-            if (item != null && item != Items.AIR) {
-                LOGGER.info("[商店调试] 物品ID匹配: '{}'", itemId);
-                return Optional.of(new ItemStack(item));
+        for (String candidate : buildRegistryIdCandidates(trimmed)) {
+            try {
+                Identifier itemId = candidate.contains(":")
+                        ? Identifier.parse(candidate)
+                        : Identifier.fromNamespaceAndPath("minecraft", candidate);
+
+                var item = BuiltInRegistries.ITEM.getValue(itemId);
+                if (item != null && item != Items.AIR) {
+                    LOGGER.info("[商店调试] 物品ID匹配: '{}'", itemId);
+                    return Optional.of(new ItemStack(item));
+                }
+            } catch (Exception ignored) {
             }
-        } catch (Exception ignored) {
         }
 
-        return findItemByDisplayName(trimmed, level);
+        return findItemByDisplayName(trimmed, level, preferredLanguage);
+    }
+
+    private static Set<String> buildRegistryIdCandidates(String rawInput) {
+        String trimmed = rawInput.trim();
+        LinkedHashSet<String> candidates = new LinkedHashSet<>();
+
+        if (trimmed.isEmpty()) {
+            return candidates;
+        }
+
+        String normalized = normalizeItemPathInput(trimmed);
+        candidates.add(normalized);
+
+        if (normalized.startsWith("item.minecraft.")) {
+            candidates.add(normalized.substring("item.minecraft.".length()));
+        }
+
+        if (normalized.startsWith("minecraft:")) {
+            candidates.add(normalized.substring("minecraft:".length()));
+        }
+
+        if (normalized.startsWith("minecraft.")) {
+            candidates.add(normalized.substring("minecraft.".length()));
+        }
+
+        return candidates;
+    }
+
+    private static String normalizeItemPathInput(String value) {
+        String normalized = value.trim()
+                .replace('-', '_')
+                .replace(' ', '_');
+
+        normalized = toSnakeCase(normalized).toLowerCase(Locale.ROOT);
+        return normalized;
+    }
+
+    private static String normalizeTokenForCompare(String value) {
+        return value.toLowerCase(Locale.ROOT)
+                .replaceAll("\\s+", "")
+                .replace(" ", "")
+                .replace("_", "")
+                .replace("-", "")
+                .replace(":", "")
+                .replace(".", "")
+                .replace("§", "");
+    }
+
+    private static String toSnakeCase(String value) {
+        StringBuilder out = new StringBuilder(value.length() + 8);
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (Character.isUpperCase(c)) {
+                if (i > 0 && value.charAt(i - 1) != '_' && value.charAt(i - 1) != ':') {
+                    out.append('_');
+                }
+                out.append(Character.toLowerCase(c));
+            } else {
+                out.append(c);
+            }
+        }
+        return out.toString();
+    }
+
+    private static String snakeToLowerCamel(String snakeCase) {
+        if (snakeCase == null || snakeCase.isEmpty()) {
+            return snakeCase;
+        }
+
+        StringBuilder result = new StringBuilder(snakeCase.length());
+        boolean upperNext = false;
+        for (int i = 0; i < snakeCase.length(); i++) {
+            char c = snakeCase.charAt(i);
+            if (c == '_') {
+                upperNext = true;
+                continue;
+            }
+            if (upperNext) {
+                result.append(Character.toUpperCase(c));
+                upperNext = false;
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
     }
 
     public static boolean itemsMatch(ItemStack a, ItemStack b) {
@@ -117,7 +238,7 @@ public class ItemUtils {
 
     public static String getItemDisplayName(ItemStack stack) {
         if (stack.isEmpty()) {
-            return "Empty";
+            return "空";
         }
         return stack.getDisplayName().getString();
     }

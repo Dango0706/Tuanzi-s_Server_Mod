@@ -20,23 +20,23 @@ public class SignUpdateHelper {
 
     public static void updateSignForShop(ShopInstance shop, ServerLevel level) {
         if (shop == null || level == null) {
-            LOGGER.warn("[SignUpdate] Cannot update sign: shop or level is null");
+            LOGGER.warn("[告示牌更新] 无法更新告示牌：商店或世界为空");
             return;
         }
 
         BlockPos signPos = shop.getSignPos();
         if (signPos == null) {
-            LOGGER.warn("[SignUpdate] Cannot update sign: signPos is null, shopId={}", shop.getShopId());
+            LOGGER.warn("[告示牌更新] 无法更新告示牌：告示牌坐标为空，商店ID={}", shop.getShopId());
             return;
         }
 
         if (!(level.getBlockEntity(signPos) instanceof SignBlockEntity signEntity)) {
-            LOGGER.warn("[SignUpdate] Block entity at {} is not a sign, shopId={}", signPos, shop.getShopId());
+            LOGGER.warn("[告示牌更新] 目标方块实体不是告示牌：位置={}, 商店ID={}", signPos, shop.getShopId());
             return;
         }
 
         boolean isSellShop = shop.getShopType() == ShopType.SELL;
-        String currencyName = "Unknown";
+        String currencyName = "未知货币";
         double price = shop.getCurrentPrice();
 
         MinecraftServer server = level.getServer();
@@ -64,15 +64,15 @@ public class SignUpdateHelper {
         signEntity.setChanged();
         level.sendBlockUpdated(signPos, level.getBlockState(signPos), level.getBlockState(signPos), 3);
 
-        LOGGER.info("[SignUpdate] Sign refreshed and synced. shopId={}, pos={}, line0={}, line1={}, line2={}",
+        LOGGER.info("[告示牌更新] 刷新并同步成功：商店ID={}, 位置={}, 第1行={}, 第2行={}, 第3行={}",
                 shop.getShopId().toString().substring(0, 8), signPos, line0, line1, line2);
 
-        DevFlowLogger.status("Sign Sync",
-                "Updated sign text and synced to clients"
+        DevFlowLogger.status("告示牌同步",
+                "已更新告示牌文本并同步给客户端"
                         + "\n  " + line0
                         + "\n  " + line1
                         + "\n  " + line2
-                        + "\n  Pos: [" + signPos.getX() + ", " + signPos.getY() + ", " + signPos.getZ() + "]");
+                        + "\n  坐标: [" + signPos.getX() + ", " + signPos.getY() + ", " + signPos.getZ() + "]");
     }
 
     public static void updateSignForShopImmediate(ShopInstance shop, ServerLevel level) {
@@ -87,6 +87,6 @@ public class SignUpdateHelper {
 
         updateSignForShop(shop, level);
 
-        LOGGER.debug("[SignUpdate] Immediate mode completed, shopId={}", shop.getShopId().toString().substring(0, 8));
+        LOGGER.debug("[告示牌更新] 立即刷新完成，商店ID={}", shop.getShopId().toString().substring(0, 8));
     }
 }

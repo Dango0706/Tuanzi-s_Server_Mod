@@ -243,7 +243,7 @@ public class ChatInputHandler {
         DevFlowLogger.step("物品修改流程", "使用SignUpdateHelper强制刷新告示牌");
         if (player.level() instanceof ServerLevel chatServerLevel) {
             SignUpdateHelper.updateSignForShop(shop, chatServerLevel);
-            LOGGER.info("[商店调试] 物品修改(聊天确认) - 已通过SignUpdateHelper刷新告示牌 - ShopId: {}", shop.getShopId());
+            LOGGER.info("[商店调试] 物品修改(聊天确认) - 已通过SignUpdateHelper刷新告示牌 - 商店ID: {}", shop.getShopId());
             DevFlowLogger.status("物品修改流程", "告示牌已通过SignUpdateHelper刷新");
         }
 
@@ -311,7 +311,7 @@ public class ChatInputHandler {
         DevFlowLogger.step("物品修改流程", "使用SignUpdateHelper强制刷新告示牌");
         if (player.level() instanceof ServerLevel signServerLevel) {
             SignUpdateHelper.updateSignForShop(shop, signServerLevel);
-            LOGGER.info("[商店调试] 物品修改(命令确认) - 已通过SignUpdateHelper刷新告示牌 - ShopId: {}", shop.getShopId());
+            LOGGER.info("[商店调试] 物品修改(命令确认) - 已通过SignUpdateHelper刷新告示牌 - 商店ID: {}", shop.getShopId());
             DevFlowLogger.status("物品修改流程", "告示牌已通过SignUpdateHelper刷新");
         }
 
@@ -400,7 +400,7 @@ public class ChatInputHandler {
         
         level.sendBlockUpdated(signPos, level.getBlockState(signPos), level.getBlockState(signPos), 3);
         
-        LOGGER.info("[商店调试] 告示牌文字已更新 - ShopId: {}, Pos: {}, 已标记数据为脏数据等待保存", shop.getShopId(), signPos);
+        LOGGER.info("[商店调试] 告示牌文字已更新 - 商店ID: {}, 位置: {}, 已标记数据为脏数据等待保存", shop.getShopId(), signPos);
     }
 
     private void executeTransaction(ServerPlayer player, ShopInstance shop, int quantity) {
@@ -441,7 +441,7 @@ public class ChatInputHandler {
     }
 
     public void cleanupForShop(UUID shopId) {
-        LOGGER.info("清理商店相关的待处理状态 - ShopId: {}", shopId);
+        LOGGER.info("清理商店相关的待处理状态 - 商店ID: {}", shopId);
         
         pendingTransactions.entrySet().removeIf(entry -> 
             entry.getValue().shopId.equals(shopId));
@@ -449,7 +449,7 @@ public class ChatInputHandler {
         pendingItemChanges.entrySet().removeIf(entry -> 
             entry.getValue().shopId.equals(shopId));
         
-        LOGGER.info("商店状态清理完成 - ShopId: {}", shopId);
+        LOGGER.info("商店状态清理完成 - 商店ID: {}", shopId);
     }
 
     public boolean hasPendingTransaction(UUID playerId) {

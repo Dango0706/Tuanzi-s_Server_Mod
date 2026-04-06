@@ -3,7 +3,6 @@ package me.tuanzi.shop.shop;
 import me.tuanzi.economy.api.EconomyAPI;
 import me.tuanzi.economy.api.EconomyAPIImpl;
 import me.tuanzi.economy.currency.WalletType;
-import me.tuanzi.shop.storage.ShopRegistry;
 import me.tuanzi.shop.storage.ShopStateSaver;
 import me.tuanzi.shop.util.DevFlowLogger;
 import net.minecraft.core.BlockPos;

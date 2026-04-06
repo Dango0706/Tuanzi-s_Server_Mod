@@ -17,6 +17,7 @@ import me.tuanzi.shop.util.DevFlowLogger;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
@@ -88,13 +89,23 @@ public class ShopModule implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        LOGGER.info("Initializing Shop Module...");
+        LOGGER.info("正在初始化商店模块...");
 
         config = new ShopConfig();
         config.load();
 
         ServerLifecycleEvents.SERVER_STARTING.register(this::onServerStarting);
         ServerLifecycleEvents.SERVER_STOPPED.register(this::onServerStopped);
+
+        ServerTickEvents.START_SERVER_TICK.register(server -> {
+            ShopModule instance = getInstance(server);
+            if (instance != null && instance.displayManager != null) {
+                ServerLevel overworld = server.getLevel(Level.OVERWORLD);
+                if (overworld != null) {
+                    instance.displayManager.maintainAllDisplays(overworld);
+                }
+            }
+        });
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             ShopAdminCommand.register(dispatcher, registryAccess);
@@ -121,7 +132,7 @@ public class ShopModule implements ModInitializer {
             return !instance.chatInputHandler.handleChatInput(sender, content);
         });
 
-        LOGGER.info("Shop Module initialized!");
+        LOGGER.info("商店模块初始化完成！");
     }
 
     private void onServerStarting(MinecraftServer server) {
@@ -131,14 +142,14 @@ public class ShopModule implements ModInitializer {
             instance.displayManager.initializeAllDisplays(overworld);
         }
         int shopCount = instance.shopManager != null ? instance.shopManager.getAllShops().size() : 0;
-        LOGGER.info("Shop Module loaded {} shops", shopCount);
+        LOGGER.info("商店模块已加载 {} 个商店", shopCount);
     }
 
     private void onServerStopped(MinecraftServer server) {
         ShopManager.resetInstance();
         ShopRegistry.resetInstance();
         instances.remove(server);
-        LOGGER.info("Shop Module unloaded");
+        LOGGER.info("商店模块已卸载");
     }
 
     private InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
@@ -310,12 +321,12 @@ public class ShopModule implements ModInitializer {
                 ShopInstance shop = shopAtPos.get();
                 
                 if (!shop.isValid()) {
-                    LOGGER.warn("检测到已标记删除的商店，强制清理 - ShopId: {}, 位置: {}", shop.getShopId(), pos);
+                    LOGGER.warn("检测到已标记删除的商店，强制清理 - 商店ID: {}, 位置: {}", shop.getShopId(), pos);
                     forceDeleteShop(instance, shop, serverLevel, serverPlayer);
                     return true;
                 }
                 
-                LOGGER.info("检测到商店破坏事件 - ShopId: {}, 破坏位置: {}, 商店箱子: {}, 告示牌: {}", 
+                LOGGER.info("检测到商店破坏事件 - 商店ID: {}, 破坏位置: {}, 商店箱子: {}, 告示牌: {}",
                         shop.getShopId(), pos, shop.getShopPos(), shop.getSignPos());
                 forceDeleteShop(instance, shop, serverLevel, serverPlayer);
             }
@@ -332,7 +343,7 @@ public class ShopModule implements ModInitializer {
 
         for (ShopInstance shop : shopManager.getAllShops()) {
             if (shop.getSignPos().equals(pos)) {
-                LOGGER.debug("通过告示牌位置找到商店 - ShopId: {}, SignPos: {}", shop.getShopId(), pos);
+                LOGGER.debug("通过告示牌位置找到商店 - 商店ID: {}, 告示牌位置: {}", shop.getShopId(), pos);
                 return Optional.of(shop);
             }
         }
@@ -350,7 +361,7 @@ public class ShopModule implements ModInitializer {
 
         UUID shopId = shop.getShopId();
         
-        LOGGER.info("正在删除商店 - ShopId: {}, 所有者: {}", shopId, shop.getOwnerId());
+        LOGGER.info("正在删除商店 - 商店ID: {}, 所有者: {}", shopId, shop.getOwnerId());
         DevFlowLogger.step("商店删除流程", "标记商店为已删除");
         
         shop.markAsDeleted();
@@ -372,7 +383,7 @@ public class ShopModule implements ModInitializer {
         
         player.sendSystemMessage(ShopTranslationHelper.colored("§a商店已成功删除"));
         
-        LOGGER.info("商店删除完成 - ShopId: {}", shopId);
+        LOGGER.info("商店删除完成 - 商店ID: {}", shopId);
 
         DevFlowLogger.endFlow("商店删除流程", true, 
                 "商店删除成功 - ID: " + shopId.toString().substring(0, 8));

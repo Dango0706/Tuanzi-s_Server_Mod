@@ -2,6 +2,7 @@ package me.tuanzi.shop.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import me.tuanzi.translation.MinecraftLanguageHelper;
 import net.minecraft.network.chat.Component;
 
 import java.io.InputStream;
@@ -42,7 +43,14 @@ public class ShopTranslationHelper {
     }
 
     private static String getTranslationTemplate(String key, String language) {
-        Map<String, String> preferred = "en_us".equals(language) ? EN_US_TRANSLATIONS : ZH_CN_TRANSLATIONS;
+        String normalizedLanguage = normalizeLanguage(language);
+
+        String gameTranslation = MinecraftLanguageHelper.translateVanilla(key, normalizedLanguage);
+        if (!gameTranslation.equals(key)) {
+            return gameTranslation;
+        }
+
+        Map<String, String> preferred = "en_us".equals(normalizedLanguage) ? EN_US_TRANSLATIONS : ZH_CN_TRANSLATIONS;
         String template = preferred.get(key);
         if (template != null) {
             return template;
@@ -87,6 +95,20 @@ public class ShopTranslationHelper {
     public static String getRawTranslation(String key) {
         String text = getTranslationTemplate(key, DEFAULT_LANGUAGE);
         return text != null ? text : key;
+    }
+
+    public static String getRawTranslation(String key, String language) {
+        String normalizedLang = normalizeLanguage(language);
+        String text = getTranslationTemplate(key, normalizedLang);
+        return text != null ? text : key;
+    }
+
+    public static boolean hasTranslation(String key, String language) {
+        return !getRawTranslation(key, language).equals(key);
+    }
+
+    private static String normalizeLanguage(String language) {
+        return MinecraftLanguageHelper.normalizeLanguage(language);
     }
 
     public static Component getSellPattern() {

@@ -30,7 +30,7 @@ public class StatisticsModule implements ModInitializer {
     public void onInitialize() {
         instance = this;
         
-        LOGGER.info("Initializing Statistics Module...");
+        LOGGER.info("正在初始化统计模块...");
         
         StatsTranslationHelper.initialize();
         
@@ -41,7 +41,7 @@ public class StatisticsModule implements ModInitializer {
         registerCommands();
         registerServerLifecycleEvents();
         
-        LOGGER.info("Statistics Module initialized successfully!");
+        LOGGER.info("统计模块初始化完成");
     }
     
     private void registerListeners() {

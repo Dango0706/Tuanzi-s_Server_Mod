@@ -3,7 +3,9 @@
   "package": "me.tuanzi.shop.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "SignBlockEntityMixin"
+    "SignBlockEntityMixin",
+    "ItemEntityMixin",
+    "HopperBlockEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

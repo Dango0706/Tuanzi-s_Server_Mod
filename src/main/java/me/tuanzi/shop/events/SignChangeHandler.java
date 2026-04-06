@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 public class SignChangeHandler {
@@ -76,7 +77,7 @@ public class SignChangeHandler {
         LOGGER.info("[商店调试] 告示牌已附着在箱子上");
 
         ShopType shopType = ShopTranslationHelper.isSellPattern(firstLine) ? ShopType.SELL : ShopType.BUY;
-        LOGGER.info("[商店调试] 商店类型: {}", shopType);
+        LOGGER.info("[商店调试] 商店类型: {}", shopType == ShopType.SELL ? "出售" : "收购");
 
         String itemLine = lines[1].trim();
         LOGGER.debug("[商店调试] 解析物品行: '{}'", itemLine);
@@ -124,7 +125,7 @@ public class SignChangeHandler {
             return false;
         }
 
-        LOGGER.info("[商店调试] 找到货币: ID={}, 显示名={}", 
+        LOGGER.info("[商店调试] 找到货币: 货币ID={}, 显示名={}",
                 walletTypeOpt.get().id(), walletTypeOpt.get().displayName().getString());
 
         String walletTypeId = walletTypeOpt.get().id();
@@ -153,7 +154,7 @@ public class SignChangeHandler {
             return false;
         }
 
-        LOGGER.info("[商店] 玩家 {} 成功创建{}商店 - ID: {}, 位置: {}, 物品: {}, 价格: {} {}", 
+        LOGGER.info("[商店] 玩家 {} 成功创建{}商店 - 商店ID: {}, 位置: {}, 物品: {}, 价格: {} {}",
                 player.getName().getString(),
                 shopType == ShopType.SELL ? "出售" : "收购",
                 shop.getShopId(),
@@ -196,7 +197,7 @@ public class SignChangeHandler {
         BlockPos signPos = signEntity.getBlockPos();
         Level level = signEntity.getLevel();
         if (level == null) {
-            LOGGER.debug("[商店调试] 告示牌所在世界为 null");
+            LOGGER.debug("[商店调试] 告示牌所在世界为空");
             return false;
         }
 
@@ -252,7 +253,8 @@ public class SignChangeHandler {
             return ItemStack.EMPTY;
         }
 
-        Optional<ItemStack> result = ItemUtils.parseItemStackFlexible(itemLine, player.level());
+        String language = getPreferredLanguage(player);
+        Optional<ItemStack> result = ItemUtils.parseItemStackFlexible(itemLine, player.level(), language);
         if (result.isPresent()) {
             ItemStack stack = result.get();
             LOGGER.info("[商店调试] 解析物品成功: {} -> {}", itemLine, stack.getDisplayName().getString());
@@ -261,5 +263,14 @@ public class SignChangeHandler {
 
         LOGGER.warn("[商店调试] 无法解析物品: '{}'", itemLine);
         return ItemStack.EMPTY;
+    }
+
+    private String getPreferredLanguage(ServerPlayer player) {
+        String language = player.clientInformation().language();
+        if (language == null || language.isBlank()) {
+            return "zh_cn";
+        }
+        String normalized = language.toLowerCase(Locale.ROOT);
+        return normalized.startsWith("zh") ? "zh_cn" : "en_us";
     }
 }

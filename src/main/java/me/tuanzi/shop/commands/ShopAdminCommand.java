@@ -152,12 +152,12 @@ public class ShopAdminCommand {
         if (moduleInstance != null && moduleInstance.getDisplayManager() != null) {
             if (player.level() instanceof net.minecraft.server.level.ServerLevel adminServerLevel) {
                 moduleInstance.getDisplayManager().removeDisplayForShop(shopId, adminServerLevel);
-                LOGGER.info("[ShopAdmin] Admin {} deleted shop {} and removed display entity", 
+                LOGGER.info("[商店管理] 管理员 {} 删除了商店 {}，并移除了悬浮展示实体",
                         player.getName().getString(), shopId);
             }
         }
 
-        LOGGER.info("[ShopAdmin] Admin {} deleted shop {} at {}", 
+        LOGGER.info("[商店管理] 管理员 {} 删除了商店 {}，位置 {}",
                 player.getName().getString(), shopId, shop.getShopPos());
         source.sendSuccess(() -> ShopTranslationHelper.translatable("shop.deleted.success"), false);
         return 1;
@@ -187,7 +187,7 @@ public class ShopAdminCommand {
         shop.setInfinite(value);
         shopManager.markDirty();
 
-        LOGGER.info("[ShopAdmin] Admin {} set shop {} infinite mode: {}", 
+        LOGGER.info("[商店管理] 管理员 {} 设置商店 {} 的无限模式为: {}",
                 player.getName().getString(), shop.getShopId(), value);
 
         boolean finalValue = value;
@@ -219,12 +219,12 @@ public class ShopAdminCommand {
         shop.setDynamicPricing(!shop.isDynamicPricing());
         shopManager.markDirty();
 
-        LOGGER.info("[ShopAdmin] Admin {} toggled shop {} dynamic pricing: {}", 
+        LOGGER.info("[商店管理] 管理员 {} 切换商店 {} 的动态定价状态为: {}",
                 player.getName().getString(), shop.getShopId(), shop.isDynamicPricing());
 
         if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             SignUpdateHelper.updateSignForShop(shop, serverLevel);
-            LOGGER.info("[ShopAdmin] 告示牌已同步更新（动态定价切换） - ShopId: {}", shop.getShopId());
+            LOGGER.info("[商店管理] 告示牌已同步更新（动态定价切换） - 商店ID: {}", shop.getShopId());
         }
 
         boolean newValue = shop.isDynamicPricing();
@@ -257,12 +257,12 @@ public class ShopAdminCommand {
         shop.setCurrentPrice(price);
         shopManager.markDirty();
 
-        LOGGER.info("[ShopAdmin] Admin {} set shop {} price: {}", 
+        LOGGER.info("[商店管理] 管理员 {} 设置商店 {} 的价格为: {}",
                 player.getName().getString(), shop.getShopId(), price);
 
         if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             SignUpdateHelper.updateSignForShop(shop, serverLevel);
-            LOGGER.info("[ShopAdmin] 告示牌已同步更新 - ShopId: {}", shop.getShopId());
+            LOGGER.info("[商店管理] 告示牌已同步更新 - 商店ID: {}", shop.getShopId());
         }
 
         source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.price_set", price), false);
@@ -300,12 +300,12 @@ public class ShopAdminCommand {
         shopManager.markDirty();
 
         String currencyName = walletTypeOpt.get().displayName().getString();
-        LOGGER.info("[ShopAdmin] Admin {} set shop {} currency: {}", 
+        LOGGER.info("[商店管理] 管理员 {} 设置商店 {} 的货币为: {}",
                 player.getName().getString(), shop.getShopId(), currencyName);
 
         if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             SignUpdateHelper.updateSignForShop(shop, serverLevel);
-            LOGGER.info("[ShopAdmin] 告示牌已同步更新 - ShopId: {}", shop.getShopId());
+            LOGGER.info("[商店管理] 告示牌已同步更新 - 商店ID: {}", shop.getShopId());
         }
 
         source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.currency_set", currencyName), false);

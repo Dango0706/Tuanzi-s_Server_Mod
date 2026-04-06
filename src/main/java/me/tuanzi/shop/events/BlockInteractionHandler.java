@@ -47,7 +47,7 @@ public class BlockInteractionHandler {
         ShopInstance shop = shopOpt.get();
         
         if (!shop.isValid()) {
-            LOGGER.warn("尝试与已删除的商店交互 - ShopId: {}, 玩家: {}", shop.getShopId(), player.getName().getString());
+            LOGGER.warn("尝试与已删除的商店交互 - 商店ID: {}, 玩家: {}", shop.getShopId(), player.getName().getString());
             player.sendSystemMessage(ShopTranslationHelper.colored("§c此商店已不存在"));
             return true;
         }
@@ -216,7 +216,7 @@ public class BlockInteractionHandler {
         
         if (!shop.isValid()) {
             DevFlowLogger.error("交易执行流程", "商店已被删除: " + shopId);
-            LOGGER.warn("尝试与已删除的商店交易 - ShopId: {}, 玩家: {}", shopId, player.getName().getString());
+            LOGGER.warn("尝试与已删除的商店交易 - 商店ID: {}, 玩家: {}", shopId, player.getName().getString());
             player.sendSystemMessage(ShopTranslationHelper.colored("§c此商店已不存在"));
             DevFlowLogger.endFlow("交易执行流程", false, "商店已删除");
             return false;

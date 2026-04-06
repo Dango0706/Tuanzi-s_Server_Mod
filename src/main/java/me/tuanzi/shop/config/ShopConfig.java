@@ -48,9 +48,9 @@ public class ShopConfig {
                 maxTransactionQuantity = obj.get("maxTransactionQuantity").getAsInt();
             }
 
-            LOGGER.info("Shop config loaded");
+            LOGGER.info("商店配置已加载");
         } catch (Exception e) {
-            LOGGER.warn("Failed to load shop config, using defaults: {}", e.getMessage());
+            LOGGER.warn("加载商店配置失败，使用默认配置：{}", e.getMessage());
             save();
         }
     }
@@ -66,9 +66,9 @@ public class ShopConfig {
             obj.addProperty("maxTransactionQuantity", maxTransactionQuantity);
 
             Files.writeString(configPath, GSON.toJson(obj));
-            LOGGER.info("Shop config saved");
+            LOGGER.info("商店配置已保存");
         } catch (IOException e) {
-            LOGGER.error("Failed to save shop config: {}", e.getMessage());
+            LOGGER.error("保存商店配置失败：{}", e.getMessage());
         }
     }
 

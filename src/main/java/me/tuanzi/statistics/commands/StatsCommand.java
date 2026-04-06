@@ -161,9 +161,10 @@ public class StatsCommand {
                                             if (player != null) {
                                                 String playerName = player.getName().getString();
                                                 PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                                                String language = getPreferredLanguage(context.getSource());
                                                 return SharedSuggestionProvider.suggest(
                                                         stats.getBlocksPlacedByType().keySet().stream()
-                                                                .map(type -> "\"" + TranslationHelper.translateBlockKey(type) + "\""),
+                                                                .map(type -> "\"" + translateBlockType(type, language) + "\""),
                                                         builder
                                                 );
                                             }
@@ -197,9 +198,10 @@ public class StatsCommand {
                                             if (player != null) {
                                                 String playerName = player.getName().getString();
                                                 PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                                                String language = getPreferredLanguage(context.getSource());
                                                 return SharedSuggestionProvider.suggest(
                                                         stats.getBlocksBrokenByType().keySet().stream()
-                                                                .map(type -> "\"" + type + "\""),
+                                                                .map(type -> "\"" + translateBlockType(type, language) + "\""),
                                                         builder
                                                 );
                                             }
@@ -320,9 +322,10 @@ public class StatsCommand {
                                     if (player != null) {
                                         String playerName = player.getName().getString();
                                         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                                        String language = getPreferredLanguage(context.getSource());
                                         return SharedSuggestionProvider.suggest(
                                                 stats.getFishCaughtByType().keySet().stream()
-                                                        .map(type -> "\"" + type + "\""),
+                                                        .map(type -> "\"" + translateItemType(type, language) + "\""),
                                                 builder
                                         );
                                     }
@@ -356,9 +359,10 @@ public class StatsCommand {
                                     if (player != null) {
                                         String playerName = player.getName().getString();
                                         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                                        String language = getPreferredLanguage(context.getSource());
                                         return SharedSuggestionProvider.suggest(
                                                 stats.getItemsCraftedByType().keySet().stream()
-                                                        .map(type -> "\"" + TranslationHelper.translateItemKey(type) + "\""),
+                                                        .map(type -> "\"" + translateItemType(type, language) + "\""),
                                                 builder
                                         );
                                     }
@@ -392,9 +396,10 @@ public class StatsCommand {
                                     if (player != null) {
                                         String playerName = player.getName().getString();
                                         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                                        String language = getPreferredLanguage(context.getSource());
                                         return SharedSuggestionProvider.suggest(
                                                 stats.getItemsDroppedByType().keySet().stream()
-                                                        .map(type -> "\"" + TranslationHelper.translateItemKey(type) + "\""),
+                                                        .map(type -> "\"" + translateItemType(type, language) + "\""),
                                                 builder
                                         );
                                     }
@@ -564,6 +569,7 @@ public class StatsCommand {
 
     private static void showBlocksPlacedStats(CommandSourceStack source, String playerName, String blockType) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+        String language = getPreferredLanguage(source);
 
         if (blockType == null || blockType.isEmpty()) {
             StatsTranslationHelper.sendSuccess(source, "stats.header.blocks_placed", playerName);
@@ -577,13 +583,14 @@ public class StatsCommand {
                 for (Map.Entry<String, Integer> entry : blocksByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
-                    String displayName = TranslationHelper.translateBlockKey(type);
+                    String displayName = translateBlockType(type, language);
                     StatsTranslationHelper.sendSuccess(source, "stats.blocks.placed_count", displayName, count);
                 }
             }
         } else {
-            int placed = stats.getBlocksPlacedByType().getOrDefault(blockType, 0);
-            String displayName = TranslationHelper.translateBlockKey(blockType);
+            String resolvedType = resolveBlockInput(blockType, stats.getBlocksPlacedByType(), language);
+            int placed = stats.getBlocksPlacedByType().getOrDefault(resolvedType, 0);
+            String displayName = translateBlockType(resolvedType, language);
             StatsTranslationHelper.sendSuccess(source, "stats.header.blocks_placed", playerName);
             StatsTranslationHelper.sendSuccess(source, "stats.blocks.placed_detail", displayName, placed);
         }
@@ -591,6 +598,7 @@ public class StatsCommand {
 
     private static void showBlocksBrokenStats(CommandSourceStack source, String playerName, String blockType) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+        String language = getPreferredLanguage(source);
 
         if (blockType == null || blockType.isEmpty()) {
             StatsTranslationHelper.sendSuccess(source, "stats.header.blocks_broken", playerName);
@@ -604,13 +612,14 @@ public class StatsCommand {
                 for (Map.Entry<String, Integer> entry : blocksByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
-                    String displayName = TranslationHelper.translateBlockKey(type);
+                    String displayName = translateBlockType(type, language);
                     StatsTranslationHelper.sendSuccess(source, "stats.blocks.broken_count", displayName, count);
                 }
             }
         } else {
-            int broken = stats.getBlocksBrokenByType().getOrDefault(blockType, 0);
-            String displayName = TranslationHelper.translateBlockKey(blockType);
+            String resolvedType = resolveBlockInput(blockType, stats.getBlocksBrokenByType(), language);
+            int broken = stats.getBlocksBrokenByType().getOrDefault(resolvedType, 0);
+            String displayName = translateBlockType(resolvedType, language);
             StatsTranslationHelper.sendSuccess(source, "stats.header.blocks_broken", playerName);
             StatsTranslationHelper.sendSuccess(source, "stats.blocks.broken_detail", displayName, broken);
         }
@@ -772,8 +781,259 @@ public class StatsCommand {
         return "entity.minecraft." + normalized;
     }
 
+    private static String resolveBlockInput(String input, Map<String, ? extends Number> blockStats, String language) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+
+        String normalizedInput = input.trim();
+        if (blockStats.containsKey(normalizedInput)) {
+            return normalizedInput;
+        }
+
+        for (String blockType : blockStats.keySet()) {
+            if (matchesBlockInput(normalizedInput, blockType, language)) {
+                return blockType;
+            }
+        }
+
+        return normalizedInput;
+    }
+
+    private static String resolveItemInput(String input, Map<String, ? extends Number> itemStats, String language) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+
+        String normalizedInput = input.trim();
+        if (itemStats.containsKey(normalizedInput)) {
+            return normalizedInput;
+        }
+
+        for (String itemType : itemStats.keySet()) {
+            if (matchesItemInput(normalizedInput, itemType, language)) {
+                return itemType;
+            }
+        }
+
+        return normalizedInput;
+    }
+
+    private static boolean matchesBlockInput(String input, String blockType, String language) {
+        if (blockType.equalsIgnoreCase(input)) {
+            return true;
+        }
+
+        String normalizedInput = normalizeComparableToken(input);
+        if (normalizeComparableToken(blockType).equals(normalizedInput)) {
+            return true;
+        }
+
+        String normalizedKey = normalizeBlockTranslationKey(blockType);
+        if (normalizeComparableToken(normalizedKey).equals(normalizedInput)) {
+            return true;
+        }
+
+        String blockId = stripTranslationPrefix(blockType, "block.minecraft.");
+        if (normalizeComparableToken(blockId).equals(normalizedInput)) {
+            return true;
+        }
+
+        String normalizedBlockId = stripTranslationPrefix(normalizedKey, "block.minecraft.");
+        if (normalizeComparableToken(normalizedBlockId).equals(normalizedInput)) {
+            return true;
+        }
+
+        String preferredName = translateBlockType(blockType, language);
+        if (normalizeComparableToken(preferredName).equals(normalizedInput)) {
+            return true;
+        }
+
+        String zhName = translateBlockType(blockType, "zh_cn");
+        if (normalizeComparableToken(zhName).equals(normalizedInput)) {
+            return true;
+        }
+
+        String enName = translateBlockType(blockType, "en_us");
+        return normalizeComparableToken(enName).equals(normalizedInput);
+    }
+
+    private static boolean matchesItemInput(String input, String itemType, String language) {
+        if (itemType.equalsIgnoreCase(input)) {
+            return true;
+        }
+
+        String normalizedInput = normalizeComparableToken(input);
+        if (normalizeComparableToken(itemType).equals(normalizedInput)) {
+            return true;
+        }
+
+        String normalizedKey = normalizeItemTranslationKey(itemType);
+        if (normalizeComparableToken(normalizedKey).equals(normalizedInput)) {
+            return true;
+        }
+
+        String itemId = stripTranslationPrefix(itemType, "item.minecraft.");
+        if (normalizeComparableToken(itemId).equals(normalizedInput)) {
+            return true;
+        }
+
+        String normalizedItemId = stripTranslationPrefix(normalizedKey, "item.minecraft.");
+        if (normalizeComparableToken(normalizedItemId).equals(normalizedInput)) {
+            return true;
+        }
+
+        String preferredName = translateItemType(itemType, language);
+        if (normalizeComparableToken(preferredName).equals(normalizedInput)) {
+            return true;
+        }
+
+        String zhName = translateItemType(itemType, "zh_cn");
+        if (normalizeComparableToken(zhName).equals(normalizedInput)) {
+            return true;
+        }
+
+        String enName = translateItemType(itemType, "en_us");
+        return normalizeComparableToken(enName).equals(normalizedInput);
+    }
+
+    private static String translateBlockType(String blockType, String language) {
+        if (blockType == null || blockType.isEmpty()) {
+            return StatsTranslationHelper.translate("block.minecraft.unknown", language);
+        }
+
+        String key = normalizeBlockTranslationKey(blockType);
+        String translated = StatsTranslationHelper.translate(key, language);
+        if (!translated.equals(key)) {
+            return translated;
+        }
+
+        String fallback = TranslationHelper.translateBlockKey(key);
+        if (!fallback.equals(key)) {
+            return fallback;
+        }
+
+        String rawFallback = TranslationHelper.translateBlockKey(blockType);
+        if (!rawFallback.equals(blockType)) {
+            return rawFallback;
+        }
+
+        return stripTranslationPrefix(key, "block.minecraft.").replace('_', ' ');
+    }
+
+    private static String translateItemType(String itemType, String language) {
+        if (itemType == null || itemType.isEmpty()) {
+            return StatsTranslationHelper.translate("item.minecraft.unknown", language);
+        }
+
+        String key = normalizeItemTranslationKey(itemType);
+        String translated = StatsTranslationHelper.translate(key, language);
+        if (!translated.equals(key)) {
+            return translated;
+        }
+
+        String fallback = TranslationHelper.translateItemKey(key);
+        if (!fallback.equals(key)) {
+            return fallback;
+        }
+
+        String rawFallback = TranslationHelper.translateItemKey(itemType);
+        if (!rawFallback.equals(itemType)) {
+            return rawFallback;
+        }
+
+        return stripTranslationPrefix(key, "item.minecraft.").replace('_', ' ');
+    }
+
+    private static String normalizeBlockTranslationKey(String blockType) {
+        String normalized = blockType.trim().toLowerCase(Locale.ROOT);
+        if (normalized.startsWith("block.")) {
+            return normalized;
+        }
+        if (normalized.startsWith("minecraft:")) {
+            return "block.minecraft." + normalized.substring("minecraft:".length());
+        }
+        if (normalized.startsWith("minecraft.")) {
+            return "block." + normalized;
+        }
+        if (normalized.contains(":")) {
+            return "block." + normalized.replace(':', '.');
+        }
+
+        String idPath = toSnakeCase(normalized).replace(' ', '_').replace('-', '_');
+        return "block.minecraft." + idPath;
+    }
+
+    private static String normalizeItemTranslationKey(String itemType) {
+        String normalized = itemType.trim().toLowerCase(Locale.ROOT);
+        if (normalized.startsWith("item.")) {
+            return normalized;
+        }
+        if (normalized.startsWith("minecraft:")) {
+            return "item.minecraft." + normalized.substring("minecraft:".length());
+        }
+        if (normalized.startsWith("minecraft.")) {
+            return "item." + normalized;
+        }
+        if (normalized.contains(":")) {
+            return "item." + normalized.replace(':', '.');
+        }
+
+        String idPath = toSnakeCase(normalized).replace(' ', '_').replace('-', '_');
+        return "item.minecraft." + idPath;
+    }
+
+    private static String stripTranslationPrefix(String key, String prefix) {
+        if (key.startsWith(prefix)) {
+            return key.substring(prefix.length());
+        }
+        if (key.startsWith("minecraft:")) {
+            return key.substring("minecraft:".length());
+        }
+        if (key.startsWith("minecraft.")) {
+            return key.substring("minecraft.".length());
+        }
+        if (key.startsWith("item.minecraft.")) {
+            return key.substring("item.minecraft.".length());
+        }
+        if (key.startsWith("block.minecraft.")) {
+            return key.substring("block.minecraft.".length());
+        }
+        if (key.startsWith("entity.minecraft.")) {
+            return key.substring("entity.minecraft.".length());
+        }
+        return key;
+    }
+
+    private static String normalizeComparableToken(String value) {
+        return toSnakeCase(value.trim())
+                .toLowerCase(Locale.ROOT)
+                .replace(" ", "")
+                .replace("_", "")
+                .replace("-", "")
+                .replace(":", "")
+                .replace(".", "");
+    }
+
+    private static String toSnakeCase(String value) {
+        StringBuilder out = new StringBuilder(value.length() + 8);
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (Character.isUpperCase(c)) {
+                if (i > 0 && value.charAt(i - 1) != '_' && value.charAt(i - 1) != ':' && value.charAt(i - 1) != '.') {
+                    out.append('_');
+                }
+                out.append(Character.toLowerCase(c));
+            } else {
+                out.append(c);
+            }
+        }
+        return out.toString();
+    }
+
     private static void showFishingStats(CommandSourceStack source, String playerName, String itemType) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+        String language = getPreferredLanguage(source);
 
         if (itemType == null || itemType.isEmpty()) {
             StatsTranslationHelper.sendSuccess(source, "stats.header.fishing", playerName);
@@ -789,18 +1049,20 @@ public class StatsCommand {
                 for (Map.Entry<String, Integer> entry : fishByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
-                    StatsTranslationHelper.sendSuccess(source, "stats.fishing.item_count", type, count);
+                    StatsTranslationHelper.sendSuccess(source, "stats.fishing.item_count", translateItemType(type, language), count);
                 }
             }
         } else {
-            int count = stats.getFishCaughtByType().getOrDefault(itemType, 0);
+            String resolvedType = resolveItemInput(itemType, stats.getFishCaughtByType(), language);
+            int count = stats.getFishCaughtByType().getOrDefault(resolvedType, 0);
             StatsTranslationHelper.sendSuccess(source, "stats.header.fishing", playerName);
-            StatsTranslationHelper.sendSuccess(source, "stats.fishing.item_detail", itemType, count);
+            StatsTranslationHelper.sendSuccess(source, "stats.fishing.item_detail", translateItemType(resolvedType, language), count);
         }
     }
 
     private static void showCraftingStats(CommandSourceStack source, String playerName, String itemType) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+        String language = getPreferredLanguage(source);
 
         if (itemType == null || itemType.isEmpty()) {
             StatsTranslationHelper.sendSuccess(source, "stats.header.crafting", playerName);
@@ -814,13 +1076,14 @@ public class StatsCommand {
                 for (Map.Entry<String, Integer> entry : craftedByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
-                    String displayName = TranslationHelper.translateItemKey(type);
+                    String displayName = translateItemType(type, language);
                     StatsTranslationHelper.sendSuccess(source, "stats.crafting.item_count", displayName, count);
                 }
             }
         } else {
-            int count = stats.getItemsCraftedByType().getOrDefault(itemType, 0);
-            String displayName = TranslationHelper.translateItemKey(itemType);
+            String resolvedType = resolveItemInput(itemType, stats.getItemsCraftedByType(), language);
+            int count = stats.getItemsCraftedByType().getOrDefault(resolvedType, 0);
+            String displayName = translateItemType(resolvedType, language);
             StatsTranslationHelper.sendSuccess(source, "stats.header.crafting", playerName);
             StatsTranslationHelper.sendSuccess(source, "stats.crafting.item_detail", displayName, count);
         }
@@ -828,6 +1091,7 @@ public class StatsCommand {
 
     private static void showDropsStats(CommandSourceStack source, String playerName, String itemType) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+        String language = getPreferredLanguage(source);
 
         if (itemType == null || itemType.isEmpty()) {
             StatsTranslationHelper.sendSuccess(source, "stats.header.drops", playerName);
@@ -841,13 +1105,14 @@ public class StatsCommand {
                 for (Map.Entry<String, Integer> entry : droppedByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
-                    String displayName = TranslationHelper.translateItemKey(type);
+                    String displayName = translateItemType(type, language);
                     StatsTranslationHelper.sendSuccess(source, "stats.drops.item_count", displayName, count);
                 }
             }
         } else {
-            int count = stats.getItemsDroppedByType().getOrDefault(itemType, 0);
-            String displayName = TranslationHelper.translateItemKey(itemType);
+            String resolvedType = resolveItemInput(itemType, stats.getItemsDroppedByType(), language);
+            int count = stats.getItemsDroppedByType().getOrDefault(resolvedType, 0);
+            String displayName = translateItemType(resolvedType, language);
             StatsTranslationHelper.sendSuccess(source, "stats.header.drops", playerName);
             StatsTranslationHelper.sendSuccess(source, "stats.drops.item_detail", displayName, count);
         }

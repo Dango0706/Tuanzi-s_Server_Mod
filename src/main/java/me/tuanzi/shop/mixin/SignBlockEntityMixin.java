@@ -26,7 +26,7 @@ public abstract class SignBlockEntityMixin {
         SignBlockEntity self = (SignBlockEntity) (Object) this;
         Level level = self.getLevel();
         
-        LOGGER.info("[商店调试] Mixin updateSignText 触发 - 玩家: {}, 正面: {}, 世界: {}", 
+        LOGGER.info("[商店调试] Mixin钩子(updateSignText)触发 - 玩家: {}, 正面: {}, 世界: {}",
                 player.getName().getString(), frontText, level != null ? !level.isClientSide() : "null");
         
         if (level == null || level.isClientSide()) {
@@ -47,11 +47,11 @@ public abstract class SignBlockEntityMixin {
 
         ShopManager shopManager = ShopManager.getInstance(serverPlayer.level().getServer());
         if (shopManager == null) {
-            LOGGER.warn("[商店调试] ShopManager 为 null");
+            LOGGER.warn("[商店调试] 商店管理器为空");
             return;
         }
 
-        LOGGER.info("[商店调试] ShopManager 获取成功，准备调用 SignChangeHandler");
+        LOGGER.info("[商店调试] 商店管理器获取成功，准备调用告示牌变更处理器");
         
         SignChangeHandler handler = new SignChangeHandler(shopManager);
         handler.handleSignChange(serverPlayer, self, lines, frontText);
