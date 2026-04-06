@@ -1,0 +1,21 @@
+﻿
+> Configure project :
+Fabric Loom: 1.15.5
+
+> Task :compileJava
+> Task :processResources UP-TO-DATE
+> Task :classes
+> Task :processIncludeJars UP-TO-DATE
+> Task :sourcesJar
+> Task :compileTestJava NO-SOURCE
+> Task :processTestResources NO-SOURCE
+> Task :testClasses UP-TO-DATE
+> Task :test NO-SOURCE
+> Task :validateAccessWidener UP-TO-DATE
+> Task :check UP-TO-DATE
+> Task :jar
+> Task :assemble
+> Task :build
+
+BUILD SUCCESSFUL in 1s
+6 actionable tasks: 3 executed, 3 up-to-date

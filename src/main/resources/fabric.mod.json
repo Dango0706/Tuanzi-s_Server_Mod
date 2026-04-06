@@ -19,7 +19,8 @@
       "me.tuanzi.TuanzisServerMod",
       "me.tuanzi.statistics.StatisticsModule",
       "me.tuanzi.auth.AuthModule",
-      "me.tuanzi.economy.EconomyModule"
+      "me.tuanzi.economy.EconomyModule",
+      "me.tuanzi.shop.ShopModule"
     ],
     "fabric-datagen": [
       "me.tuanzi.TuanzisServerModDataGenerator"
@@ -27,7 +28,8 @@
   },
   "mixins": [
     "tuanzis-server.mixins.json",
-    "tuanzis-server-auth.mixins.json"
+    "tuanzis-server-auth.mixins.json",
+    "tuanzis-server-shop.mixins.json"
   ],
   "accessWidener": "tuanzis-server.accesswidener",
   "depends": {

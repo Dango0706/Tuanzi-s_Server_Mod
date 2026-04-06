@@ -13,9 +13,9 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
+import java.util.Locale;
 import java.util.Map;
 
 public class StatsCommand {
@@ -27,7 +27,7 @@ public class StatsCommand {
                         String playerName = player.getName().getString();
                         showPlayerStats(context.getSource(), playerName);
                     } else {
-                        context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
+                        StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                     }
                     return 1;
                 })
@@ -66,7 +66,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showKillsStats(context.getSource(), playerName, null);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
+                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                             }
                             return 1;
                         })
@@ -76,9 +76,10 @@ public class StatsCommand {
                                     if (player != null) {
                                         String playerName = player.getName().getString();
                                         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                                        String language = getPreferredLanguage(context.getSource());
                                         return SharedSuggestionProvider.suggest(
                                                 stats.getKillsByEntityType().keySet().stream()
-                                                        .map(type -> "\"" + translateEntityType(type) + "\""),
+                                                        .map(type -> "\"" + translateEntityType(type, language) + "\""),
                                                 builder
                                         );
                                     }
@@ -102,7 +103,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showDeathsStats(context.getSource(), playerName, null);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
+                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                             }
                             return 1;
                         })
@@ -112,9 +113,10 @@ public class StatsCommand {
                                     if (player != null) {
                                         String playerName = player.getName().getString();
                                         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                                        String language = getPreferredLanguage(context.getSource());
                                         return SharedSuggestionProvider.suggest(
                                                 stats.getDeathsByEntityType().keySet().stream()
-                                                        .map(type -> "\"" + translateEntityType(type) + "\""),
+                                                        .map(type -> "\"" + translateEntityType(type, language) + "\""),
                                                 builder
                                         );
                                     }
@@ -138,7 +140,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showBlocksStats(context.getSource(), playerName, null);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
+                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                             }
                             return 1;
                         })
@@ -149,7 +151,7 @@ public class StatsCommand {
                                         String playerName = player.getName().getString();
                                         showBlocksPlacedStats(context.getSource(), playerName, null);
                                     } else {
-                                        context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
+                                        StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                                     }
                                     return 1;
                                 })
@@ -185,7 +187,7 @@ public class StatsCommand {
                                         String playerName = player.getName().getString();
                                         showBlocksBrokenStats(context.getSource(), playerName, null);
                                     } else {
-                                        context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
+                                        StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                                     }
                                     return 1;
                                 })
@@ -222,7 +224,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showDamageStats(context.getSource(), playerName);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
+                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                             }
                             return 1;
                         })
@@ -233,7 +235,7 @@ public class StatsCommand {
                                         String playerName = player.getName().getString();
                                         showDamageDealtStats(context.getSource(), playerName, null);
                                     } else {
-                                        context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
+                                        StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                                     }
                                     return 1;
                                 })
@@ -243,9 +245,10 @@ public class StatsCommand {
                                             if (player != null) {
                                                 String playerName = player.getName().getString();
                                                 PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                                                String language = getPreferredLanguage(context.getSource());
                                                 return SharedSuggestionProvider.suggest(
                                                         stats.getDamageDealtByEntityType().keySet().stream()
-                                                                .map(type -> "\"" + translateEntityType(type) + "\""),
+                                                                .map(type -> "\"" + translateEntityType(type, language) + "\""),
                                                         builder
                                                 );
                                             }
@@ -269,7 +272,7 @@ public class StatsCommand {
                                         String playerName = player.getName().getString();
                                         showDamageTakenStats(context.getSource(), playerName, null);
                                     } else {
-                                        context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
+                                        StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                                     }
                                     return 1;
                                 })
@@ -279,9 +282,10 @@ public class StatsCommand {
                                             if (player != null) {
                                                 String playerName = player.getName().getString();
                                                 PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                                                String language = getPreferredLanguage(context.getSource());
                                                 return SharedSuggestionProvider.suggest(
                                                         stats.getDamageTakenByEntityType().keySet().stream()
-                                                                .map(type -> "\"" + translateEntityType(type) + "\""),
+                                                                .map(type -> "\"" + translateEntityType(type, language) + "\""),
                                                         builder
                                                 );
                                             }
@@ -306,7 +310,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showFishingStats(context.getSource(), playerName, null);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
+                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                             }
                             return 1;
                         })
@@ -342,7 +346,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showCraftingStats(context.getSource(), playerName, null);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
+                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                             }
                             return 1;
                         })
@@ -378,7 +382,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showDropsStats(context.getSource(), playerName, null);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
+                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                             }
                             return 1;
                         })
@@ -414,7 +418,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showPlayerInfoStats(context.getSource(), playerName);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
+                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                             }
                             return 1;
                         })
@@ -426,7 +430,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showActivityStats(context.getSource(), playerName);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
+                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                             }
                             return 1;
                         })
@@ -438,7 +442,7 @@ public class StatsCommand {
                                 String playerName = player.getName().getString();
                                 showExtendedStats(context.getSource(), playerName);
                             } else {
-                                context.getSource().sendSuccess(() -> Component.translatable("stats.command.player_only"), false);
+                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                             }
                             return 1;
                         })
@@ -492,6 +496,7 @@ public class StatsCommand {
 
     private static void showKillsStats(CommandSourceStack source, String playerName, String entityType) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+        String language = getPreferredLanguage(source);
 
         if (entityType == null || entityType.isEmpty()) {
             StatsTranslationHelper.sendSuccess(source, "stats.header.kills", playerName);
@@ -505,14 +510,14 @@ public class StatsCommand {
                 for (Map.Entry<String, Integer> entry : killsByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
-                    String displayName = translateEntityType(type);
+                    String displayName = translateEntityType(type, language);
                     StatsTranslationHelper.sendSuccess(source, "stats.kills.entity_count", displayName, count);
                 }
             }
         } else {
-            String originalType = findOriginalEntityType(stats.getKillsByEntityType(), entityType);
-            int kills = stats.getKillsByEntityType().getOrDefault(originalType, 0);
-            String displayName = translateEntityType(originalType != null ? originalType : entityType);
+            String resolvedType = resolveEntityInput(entityType, stats.getKillsByEntityType(), language);
+            int kills = stats.getKillsByEntityType().getOrDefault(resolvedType, 0);
+            String displayName = translateEntityType(resolvedType, language);
             StatsTranslationHelper.sendSuccess(source, "stats.header.kills", playerName);
             StatsTranslationHelper.sendSuccess(source, "stats.kills.by_entity", displayName, kills);
         }
@@ -520,6 +525,7 @@ public class StatsCommand {
 
     private static void showDeathsStats(CommandSourceStack source, String playerName, String entityType) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+        String language = getPreferredLanguage(source);
 
         if (entityType == null || entityType.isEmpty()) {
             StatsTranslationHelper.sendSuccess(source, "stats.header.deaths", playerName);
@@ -533,14 +539,14 @@ public class StatsCommand {
                 for (Map.Entry<String, Integer> entry : deathsByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
-                    String displayName = translateEntityType(type);
+                    String displayName = translateEntityType(type, language);
                     StatsTranslationHelper.sendSuccess(source, "stats.deaths.entity_count", displayName, count);
                 }
             }
         } else {
-            String originalType = findOriginalEntityType(stats.getDeathsByEntityType(), entityType);
-            int deaths = stats.getDeathsByEntityType().getOrDefault(originalType, 0);
-            String displayName = translateEntityType(originalType != null ? originalType : entityType);
+            String resolvedType = resolveEntityInput(entityType, stats.getDeathsByEntityType(), language);
+            int deaths = stats.getDeathsByEntityType().getOrDefault(resolvedType, 0);
+            String displayName = translateEntityType(resolvedType, language);
             StatsTranslationHelper.sendSuccess(source, "stats.header.deaths", playerName);
             StatsTranslationHelper.sendSuccess(source, "stats.deaths.by_entity", displayName, deaths);
         }
@@ -560,26 +566,26 @@ public class StatsCommand {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (blockType == null || blockType.isEmpty()) {
-            source.sendSuccess(() -> Component.translatable("stats.header.blocks_placed", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.blocks.total_placed", stats.getBlocksPlaced()), false);
-            source.sendSuccess(() -> Component.translatable("stats.blocks.by_type_header"), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.blocks_placed", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.blocks.total_placed", stats.getBlocksPlaced());
+            StatsTranslationHelper.sendSuccess(source, "stats.blocks.by_type_header");
 
             Map<String, Integer> blocksByType = stats.getBlocksPlacedByType();
             if (blocksByType.isEmpty()) {
-                source.sendSuccess(() -> Component.translatable("stats.blocks.no_placed_records"), false);
+                StatsTranslationHelper.sendSuccess(source, "stats.blocks.no_placed_records");
             } else {
                 for (Map.Entry<String, Integer> entry : blocksByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
                     String displayName = TranslationHelper.translateBlockKey(type);
-                    source.sendSuccess(() -> Component.translatable("stats.blocks.placed_count", displayName, count), false);
+                    StatsTranslationHelper.sendSuccess(source, "stats.blocks.placed_count", displayName, count);
                 }
             }
         } else {
             int placed = stats.getBlocksPlacedByType().getOrDefault(blockType, 0);
             String displayName = TranslationHelper.translateBlockKey(blockType);
-            source.sendSuccess(() -> Component.translatable("stats.header.blocks_placed", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.blocks.placed_detail", displayName, placed), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.blocks_placed", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.blocks.placed_detail", displayName, placed);
         }
     }
 
@@ -587,172 +593,183 @@ public class StatsCommand {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         if (blockType == null || blockType.isEmpty()) {
-            source.sendSuccess(() -> Component.translatable("stats.header.blocks_broken", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.blocks.total_broken", stats.getBlocksBroken()), false);
-            source.sendSuccess(() -> Component.translatable("stats.blocks.by_type_header"), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.blocks_broken", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.blocks.total_broken", stats.getBlocksBroken());
+            StatsTranslationHelper.sendSuccess(source, "stats.blocks.by_type_header");
 
             Map<String, Integer> blocksByType = stats.getBlocksBrokenByType();
             if (blocksByType.isEmpty()) {
-                source.sendSuccess(() -> Component.translatable("stats.blocks.no_broken_records"), false);
+                StatsTranslationHelper.sendSuccess(source, "stats.blocks.no_broken_records");
             } else {
                 for (Map.Entry<String, Integer> entry : blocksByType.entrySet()) {
                     String type = entry.getKey();
                     int count = entry.getValue();
                     String displayName = TranslationHelper.translateBlockKey(type);
-                    source.sendSuccess(() -> Component.translatable("stats.blocks.broken_count", displayName, count), false);
+                    StatsTranslationHelper.sendSuccess(source, "stats.blocks.broken_count", displayName, count);
                 }
             }
         } else {
             int broken = stats.getBlocksBrokenByType().getOrDefault(blockType, 0);
             String displayName = TranslationHelper.translateBlockKey(blockType);
-            source.sendSuccess(() -> Component.translatable("stats.header.blocks_broken", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.blocks.broken_detail", displayName, broken), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.blocks_broken", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.blocks.broken_detail", displayName, broken);
         }
     }
 
     private static void showDamageStats(CommandSourceStack source, String playerName) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
-        source.sendSuccess(() -> Component.translatable("stats.header.damage", playerName), false);
-        source.sendSuccess(() -> Component.translatable("stats.damage.total_dealt", stats.getDamageDealt()), false);
-        source.sendSuccess(() -> Component.translatable("stats.damage.total_taken", stats.getDamageTaken()), false);
-        source.sendSuccess(() -> Component.translatable("stats.damage.dealt_hint"), false);
-        source.sendSuccess(() -> Component.translatable("stats.damage.taken_hint"), false);
+        StatsTranslationHelper.sendSuccess(source, "stats.header.damage", playerName);
+        StatsTranslationHelper.sendSuccess(source, "stats.damage.total_dealt", stats.getDamageDealt());
+        StatsTranslationHelper.sendSuccess(source, "stats.damage.total_taken", stats.getDamageTaken());
+        StatsTranslationHelper.sendSuccess(source, "stats.damage.dealt_hint");
+        StatsTranslationHelper.sendSuccess(source, "stats.damage.taken_hint");
     }
 
     private static void showDamageDealtStats(CommandSourceStack source, String playerName, String entityType) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+        String language = getPreferredLanguage(source);
 
         if (entityType == null || entityType.isEmpty()) {
-            source.sendSuccess(() -> Component.translatable("stats.header.damage_dealt", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.damage.total_dealt", stats.getDamageDealt()), false);
-            source.sendSuccess(() -> Component.translatable("stats.damage.by_type_header"), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.damage_dealt", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.damage.total_dealt", stats.getDamageDealt());
+            StatsTranslationHelper.sendSuccess(source, "stats.damage.by_type_header");
 
             Map<String, Long> damageByType = stats.getDamageDealtByEntityType();
             if (damageByType.isEmpty()) {
-                source.sendSuccess(() -> Component.translatable("stats.damage.no_dealt_records"), false);
+                StatsTranslationHelper.sendSuccess(source, "stats.damage.no_dealt_records");
             } else {
                 for (Map.Entry<String, Long> entry : damageByType.entrySet()) {
                     String type = entry.getKey();
                     long damage = entry.getValue();
-                    String displayName = translateEntityType(type);
-                    source.sendSuccess(() -> Component.translatable("stats.damage.dealt_to", displayName, damage), false);
+                    String displayName = translateEntityType(type, language);
+                    StatsTranslationHelper.sendSuccess(source, "stats.damage.dealt_to", displayName, damage);
                 }
             }
         } else {
-            String originalType = findOriginalEntityTypeForDamage(stats.getDamageDealtByEntityType(), entityType);
-            long damage = stats.getDamageDealtByEntityType().getOrDefault(originalType, 0L);
-            String displayName = translateEntityType(originalType != null ? originalType : entityType);
-            source.sendSuccess(() -> Component.translatable("stats.header.damage_dealt", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.damage.dealt_detail", displayName, damage), false);
+            String resolvedType = resolveEntityInput(entityType, stats.getDamageDealtByEntityType(), language);
+            long damage = stats.getDamageDealtByEntityType().getOrDefault(resolvedType, 0L);
+            String displayName = translateEntityType(resolvedType, language);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.damage_dealt", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.damage.dealt_detail", displayName, damage);
         }
     }
 
     private static void showDamageTakenStats(CommandSourceStack source, String playerName, String entityType) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+        String language = getPreferredLanguage(source);
 
         if (entityType == null || entityType.isEmpty()) {
-            source.sendSuccess(() -> Component.translatable("stats.header.damage_taken", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.damage.total_taken", stats.getDamageTaken()), false);
-            source.sendSuccess(() -> Component.translatable("stats.damage.by_type_header"), false);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.damage_taken", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.damage.total_taken", stats.getDamageTaken());
+            StatsTranslationHelper.sendSuccess(source, "stats.damage.by_type_header");
 
             Map<String, Long> damageByType = stats.getDamageTakenByEntityType();
             if (damageByType.isEmpty()) {
-                source.sendSuccess(() -> Component.translatable("stats.damage.no_taken_records"), false);
+                StatsTranslationHelper.sendSuccess(source, "stats.damage.no_taken_records");
             } else {
                 for (Map.Entry<String, Long> entry : damageByType.entrySet()) {
                     String type = entry.getKey();
                     long damage = entry.getValue();
-                    String displayName = translateEntityType(type);
-                    source.sendSuccess(() -> Component.translatable("stats.damage.taken_from", displayName, damage), false);
+                    String displayName = translateEntityType(type, language);
+                    StatsTranslationHelper.sendSuccess(source, "stats.damage.taken_from", displayName, damage);
                 }
             }
         } else {
-            String originalType = findOriginalEntityTypeForDamage(stats.getDamageTakenByEntityType(), entityType);
-            long damage = stats.getDamageTakenByEntityType().getOrDefault(originalType, 0L);
-            String displayName = translateEntityType(originalType != null ? originalType : entityType);
-            source.sendSuccess(() -> Component.translatable("stats.header.damage_taken", playerName), false);
-            source.sendSuccess(() -> Component.translatable("stats.damage.taken_detail", displayName, damage), false);
+            String resolvedType = resolveEntityInput(entityType, stats.getDamageTakenByEntityType(), language);
+            long damage = stats.getDamageTakenByEntityType().getOrDefault(resolvedType, 0L);
+            String displayName = translateEntityType(resolvedType, language);
+            StatsTranslationHelper.sendSuccess(source, "stats.header.damage_taken", playerName);
+            StatsTranslationHelper.sendSuccess(source, "stats.damage.taken_detail", displayName, damage);
         }
     }
 
-    private static String findOriginalEntityTypeForDamage(Map<String, Long> map, String displayName) {
-        for (String key : map.keySet()) {
-            if (translateEntityType(key).equals(displayName)) {
-                return key;
+    private static String getPreferredLanguage(CommandSourceStack source) {
+        ServerPlayer player = source.getPlayer();
+        if (player == null) {
+            return "zh_cn";
+        }
+        String language = player.clientInformation().language();
+        if (language == null || language.isBlank()) {
+            return "zh_cn";
+        }
+        String normalized = language.toLowerCase(Locale.ROOT);
+        return normalized.startsWith("zh") ? "zh_cn" : "en_us";
+    }
+
+    private static String resolveEntityInput(String input, Map<String, ? extends Number> entityStats, String language) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+
+        String normalizedInput = input.trim();
+        if (entityStats.containsKey(normalizedInput)) {
+            return normalizedInput;
+        }
+
+        for (String entityType : entityStats.keySet()) {
+            if (matchesEntityInput(normalizedInput, entityType, language)) {
+                return entityType;
             }
         }
-        return displayName;
+
+        return normalizedInput;
     }
 
-    private static String findOriginalEntityType(Map<String, Integer> map, String displayName) {
-        for (String key : map.keySet()) {
-            if (translateEntityType(key).equals(displayName)) {
-                return key;
-            }
+    private static boolean matchesEntityInput(String input, String entityType, String language) {
+        if (entityType.equalsIgnoreCase(input)) {
+            return true;
         }
-        return displayName;
+
+        String entityId = entityType;
+        if (entityId.startsWith("entity.minecraft.")) {
+            entityId = entityId.substring("entity.minecraft.".length());
+        }
+        if (entityId.equalsIgnoreCase(input)) {
+            return true;
+        }
+
+        String preferredName = translateEntityType(entityType, language);
+        if (preferredName.equalsIgnoreCase(input)) {
+            return true;
+        }
+
+        String zhName = translateEntityType(entityType, "zh_cn");
+        if (zhName.equalsIgnoreCase(input)) {
+            return true;
+        }
+
+        String enName = translateEntityType(entityType, "en_us");
+        return enName.equalsIgnoreCase(input);
     }
 
-    private static String translateEntityType(String entityType) {
+    private static String translateEntityType(String entityType, String language) {
         if (entityType == null || entityType.isEmpty()) {
-            return Component.translatable("entity.minecraft.unknown").getString();
+            return StatsTranslationHelper.translate("entity.minecraft.unknown", language);
         }
 
-        String lower = entityType.toLowerCase();
-        if (lower.contains("zombie")) {
-            return Component.translatable("entity.minecraft.zombie").getString();
-        } else if (lower.contains("skeleton")) {
-            return Component.translatable("entity.minecraft.skeleton").getString();
-        } else if (lower.contains("creeper")) {
-            return Component.translatable("entity.minecraft.creeper").getString();
-        } else if (lower.contains("spider")) {
-            return Component.translatable("entity.minecraft.spider").getString();
-        } else if (lower.contains("enderman")) {
-            return Component.translatable("entity.minecraft.enderman").getString();
-        } else if (lower.contains("blaze")) {
-            return Component.translatable("entity.minecraft.blaze").getString();
-        } else if (lower.contains("ghast")) {
-            return Component.translatable("entity.minecraft.ghast").getString();
-        } else if (lower.contains("witch")) {
-            return Component.translatable("entity.minecraft.witch").getString();
-        } else if (lower.contains("slime")) {
-            return Component.translatable("entity.minecraft.slime").getString();
-        } else if (lower.contains("pig")) {
-            return Component.translatable("entity.minecraft.pig").getString();
-        } else if (lower.contains("cow")) {
-            return Component.translatable("entity.minecraft.cow").getString();
-        } else if (lower.contains("sheep")) {
-            return Component.translatable("entity.minecraft.sheep").getString();
-        } else if (lower.contains("chicken")) {
-            return Component.translatable("entity.minecraft.chicken").getString();
-        } else if (lower.contains("player")) {
-            return Component.translatable("entity.minecraft.player").getString();
-        } else if (lower.contains("villager")) {
-            return Component.translatable("entity.minecraft.villager").getString();
-        } else if (lower.contains("pillager")) {
-            return Component.translatable("entity.minecraft.pillager").getString();
-        } else if (lower.contains("drowned")) {
-            return Component.translatable("entity.minecraft.drowned").getString();
-        } else if (lower.contains("phantom")) {
-            return Component.translatable("entity.minecraft.phantom").getString();
-        } else if (lower.contains("wither")) {
-            return Component.translatable("entity.minecraft.wither").getString();
-        } else if (lower.contains("warden")) {
-            return Component.translatable("entity.minecraft.warden").getString();
-        } else if (lower.contains("guardian")) {
-            return Component.translatable("entity.minecraft.guardian").getString();
-        } else if (lower.contains("elder")) {
-            return Component.translatable("entity.minecraft.elder_guardian").getString();
-        } else if (lower.contains("dragon")) {
-            return Component.translatable("entity.minecraft.ender_dragon").getString();
-        } else if (lower.contains("iron_golem") || lower.contains("irongolem")) {
-            return Component.translatable("entity.minecraft.iron_golem").getString();
-        } else if (lower.contains("snow_golem") || lower.contains("snowgolem")) {
-            return Component.translatable("entity.minecraft.snow_golem").getString();
+        String key = normalizeEntityTranslationKey(entityType);
+        String translated = StatsTranslationHelper.translate(key, language);
+        if (!translated.equals(key)) {
+            return translated;
         }
 
-        return entityType;
+        String fallback = entityType;
+        if (fallback.startsWith("entity.minecraft.")) {
+            fallback = fallback.substring("entity.minecraft.".length());
+        }
+        return fallback.replace('_', ' ');
+    }
+
+    private static String normalizeEntityTranslationKey(String entityType) {
+        String normalized = entityType.toLowerCase(Locale.ROOT);
+        if (normalized.startsWith("entity.")) {
+            return normalized;
+        }
+        if (normalized.contains(":")) {
+            return "entity." + normalized.replace(':', '.');
+        }
+        return "entity.minecraft." + normalized;
     }
 
     private static void showFishingStats(CommandSourceStack source, String playerName, String itemType) {
@@ -910,3 +927,4 @@ public class StatsCommand {
         StatsTranslationHelper.sendSuccess(source, "stats.extended.farthest_death_distance", stats.getFarthestDeathDistance());
     }
 }
+
