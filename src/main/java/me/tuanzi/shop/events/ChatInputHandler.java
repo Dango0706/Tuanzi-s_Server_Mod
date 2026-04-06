@@ -224,9 +224,6 @@ public class ChatInputHandler {
         shopManager.markDirty();
         DevFlowLogger.param("物品修改流程", "新物品", pending.newItem.getDisplayName().getString());
 
-        updateSignText(player, shop, pending.newItem);
-        DevFlowLogger.status("物品修改流程", "告示牌文本已更新");
-
         MinecraftServer server = player.level().getServer();
         if (server != null) {
             ShopModule instance = ShopModule.getInstance(server);
@@ -236,15 +233,12 @@ public class ChatInputHandler {
                     instance.getDisplayManager().updateDisplayItem(shop.getShopId(), pending.newItem, serverLevel);
                     LOGGER.info("[商店调试] 物品修改(聊天确认) - 已更新商店{} 的悬浮物品显示", shop.getShopId());
                     DevFlowLogger.status("物品修改流程", "悬浮物品显示已更新");
+                    
+                    // 使用 SignUpdateHelper 统一更新告示牌文本
+                    SignUpdateHelper.updateSignForShop(shop, serverLevel);
+                    DevFlowLogger.status("物品修改流程", "告示牌已通过SignUpdateHelper刷新");
                 }
             }
-        }
-
-        DevFlowLogger.step("物品修改流程", "使用SignUpdateHelper强制刷新告示牌");
-        if (player.level() instanceof ServerLevel chatServerLevel) {
-            SignUpdateHelper.updateSignForShop(shop, chatServerLevel);
-            LOGGER.info("[商店调试] 物品修改(聊天确认) - 已通过SignUpdateHelper刷新告示牌 - 商店ID: {}", shop.getShopId());
-            DevFlowLogger.status("物品修改流程", "告示牌已通过SignUpdateHelper刷新");
         }
 
         player.sendSystemMessage(ShopTranslationHelper.translatable("item.change.success", pending.newItem.getDisplayName().getString()));
@@ -294,9 +288,6 @@ public class ChatInputHandler {
         DevFlowLogger.step("物品修改流程", "更新商店物品数据");
         DevFlowLogger.param("物品修改流程", "newItem", pending.newItem.getDisplayName().getString());
 
-        updateSignText(player, shop, pending.newItem);
-        DevFlowLogger.status("物品修改流程", "已调用updateSignText方法");
-
         MinecraftServer serverCmd = player.level().getServer();
         if (serverCmd != null) {
             ShopModule instanceCmd = ShopModule.getInstance(serverCmd);
@@ -304,15 +295,12 @@ public class ChatInputHandler {
                 if (player.level() instanceof ServerLevel serverLevelCmd) {
                     instanceCmd.getDisplayManager().updateDisplayItem(shop.getShopId(), pending.newItem, serverLevelCmd);
                     LOGGER.info("[商店调试] 物品修改(命令确认) - 已更新商店{} 的悬浮物品显示", shop.getShopId());
+                    
+                    // 使用 SignUpdateHelper 统一更新告示牌文本
+                    SignUpdateHelper.updateSignForShop(shop, serverLevelCmd);
+                    DevFlowLogger.status("物品修改流程", "告示牌已通过SignUpdateHelper刷新");
                 }
             }
-        }
-
-        DevFlowLogger.step("物品修改流程", "使用SignUpdateHelper强制刷新告示牌");
-        if (player.level() instanceof ServerLevel signServerLevel) {
-            SignUpdateHelper.updateSignForShop(shop, signServerLevel);
-            LOGGER.info("[商店调试] 物品修改(命令确认) - 已通过SignUpdateHelper刷新告示牌 - 商店ID: {}", shop.getShopId());
-            DevFlowLogger.status("物品修改流程", "告示牌已通过SignUpdateHelper刷新");
         }
 
         player.sendSystemMessage(ShopTranslationHelper.translatable("item.change.success", pending.newItem.getDisplayName().getString()));
@@ -894,7 +882,9 @@ public class ChatInputHandler {
                 }
             }
 
-            updateSignText(player, shop, pending.item);
+            if (player.level() instanceof net.minecraft.server.level.ServerLevel level) {
+                SignUpdateHelper.updateSignForShop(shop, level);
+            }
 
             player.sendSystemMessage(ShopTranslationHelper.colored("§a========================================"));
             player.sendSystemMessage(ShopTranslationHelper.translatable("shop.creation.success"));

@@ -147,14 +147,14 @@ public class ShopDisplayManager {
             UUID displayId = entry.getValue();
             Optional<ShopInstance> shopOpt = shopManager.getShopById(shopId);
             if (shopOpt.isEmpty() || !shopOpt.get().isValid()) {
-                removeDisplayReference(shopId, displayId);
+                removeDisplayForShop(shopId, level);
                 continue;
             }
 
             ShopInstance shop = shopOpt.get();
             Entity entity = level.getEntity(displayId);
             if (!(entity instanceof ItemEntity itemEntity) || !entity.isAlive()) {
-                removeDisplayReference(shopId, displayId);
+                removeDisplayForShop(shopId, level);
                 createDisplayForShop(shop, level);
                 continue;
             }

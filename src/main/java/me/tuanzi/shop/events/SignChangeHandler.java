@@ -166,6 +166,11 @@ public class SignChangeHandler {
         waxSign(signEntity);
         LOGGER.info("[商店调试] 告示牌已自动涂蜡");
 
+        // 立即更新告示牌文本，确保物品名等显示正确（包括客户端本地化）
+        if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            me.tuanzi.shop.util.SignUpdateHelper.updateSignForShop(shop, serverLevel);
+        }
+
         MinecraftServer server = player.level().getServer();
         if (server != null) {
             ShopModule instance = ShopModule.getInstance(server);

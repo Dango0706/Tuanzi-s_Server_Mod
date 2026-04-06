@@ -58,7 +58,7 @@ public class SignUpdateHelper {
                 .setMessage(0, Component.literal(line0))
                 .setMessage(1, shop.getTradeItem().getDisplayName())
                 .setMessage(2, Component.literal(line2))
-                .setMessage(3, Component.literal(""));
+                .setMessage(3, Component.literal(shop.getDescription() != null ? shop.getDescription() : ""));
 
         signEntity.setText(frontText, true);
         signEntity.setChanged();
