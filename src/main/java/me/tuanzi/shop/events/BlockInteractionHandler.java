@@ -293,12 +293,16 @@ public class BlockInteractionHandler {
         DevFlowLogger.status("购买交易子流程", "余额检查通过");
 
         DevFlowLogger.step("购买交易子流程", "执行资金转账（从玩家到商店所有者）");
-        if (!shop.isAdminShop()) {
+        if (!shop.isAdminShop() && !shop.isInfinite()) {
             shopManager.transferMoney(player.getUUID(), shop.getOwnerId(), 
                     shop.getWalletTypeId(), totalPrice);
             DevFlowLogger.status("购买交易子流程", "转账完成 - 从玩家到商店所有者: " + totalPrice);
+        } else if (shop.isAdminShop()) {
+            shopManager.withdrawFromPlayer(player.getUUID(), shop.getWalletTypeId(), totalPrice);
+            DevFlowLogger.status("购买交易子流程", "已扣除玩家余额（管理员商店）");
         } else {
-            DevFlowLogger.status("购买交易子流程", "跳过转账（管理员商店）");
+            shopManager.withdrawFromPlayer(player.getUUID(), shop.getWalletTypeId(), totalPrice);
+            DevFlowLogger.status("购买交易子流程", "已扣除玩家余额（无限商店模式，不向所有者转账）");
         }
 
         DevFlowLogger.step("购买交易子流程", "从商店箱子移除物品");
@@ -399,13 +403,13 @@ public class BlockInteractionHandler {
         }
 
         DevFlowLogger.step("出售交易子流程", "执行资金转账（从商店所有者到玩家）");
-        if (!shop.isAdminShop()) {
+        if (!shop.isAdminShop() && !shop.isInfinite()) {
             shopManager.transferMoney(shop.getOwnerId(), player.getUUID(), 
                     shop.getWalletTypeId(), totalPrice);
             DevFlowLogger.status("出售交易子流程", "转账完成 - 从商店所有者到玩家: " + totalPrice);
         } else {
             shopManager.depositToPlayer(player.getUUID(), shop.getWalletTypeId(), totalPrice);
-            DevFlowLogger.status("出售交易子流程", "系统向玩家发放: " + totalPrice + "（管理员商店）");
+            DevFlowLogger.status("出售交易子流程", "系统向玩家发放: " + totalPrice + "（管理员或无限商店模式）");
         }
 
         DevFlowLogger.step("出售交易子流程", "从玩家收取物品");

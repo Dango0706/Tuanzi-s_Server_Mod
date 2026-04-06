@@ -358,7 +358,19 @@
   "admin.shop.price_set": "§a已设置商店价格: §e%.2f",
   "admin.shop.currency_set": "§a已设置商店货币: §f%s",
   "admin.shop.timeout_set": "§a输入超时时间已设置为: §f%d秒",
-  "admin.no_permission": "§c您没有管理员权限！"
+  "admin.shop.min_price_set": "§a已设置商店最小价格: §e%.2f",
+  "admin.shop.max_price_set": "§a已设置商店最大价格: §e%.2f",
+  "admin.shop.config_reloaded": "§a商店配置已重新加载",
+  "admin.shop.list.header": "§a=== 商店列表 (%d) ===",
+  "admin.shop.tp.success": "§a已传送到商店 x:%.1f y:%.1f z:%.1f",
+  "admin.shop.tp.not_found": "§c未找到ID开头为 %s 的商店",
+  "admin.shop.set_owner.not_supported": "§c暂不支持直接修改所有者。当前所有者: %s",
+  "admin.shop.set_owner.hint": "§7建议删除并重新创建商店以转移所有权。",
+  "admin.no_permission": "§c您没有管理员权限！",
+  "common.yes": "§a是",
+  "common.no": "§c否",
+  "common.enabled": "§a开启",
+  "common.disabled": "§c关闭"
 }
 
 

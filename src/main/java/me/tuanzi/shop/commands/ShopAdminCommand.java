@@ -116,7 +116,7 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.literal("cThis command can only be used by players"));
+            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
             return 0;
         }
 
@@ -167,7 +167,7 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.literal("cThis command can only be used by players"));
+            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
             return 0;
         }
 
@@ -190,8 +190,8 @@ public class ShopAdminCommand {
         LOGGER.info("[商店管理] 管理员 {} 设置商店 {} 的无限模式为: {}",
                 player.getName().getString(), shop.getShopId(), value);
 
-        boolean finalValue = value;
-        source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.set_infinite", finalValue ? "aYes" : "cNo"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.set_infinite", 
+                value ? ShopTranslationHelper.getRawTranslation("common.yes") : ShopTranslationHelper.getRawTranslation("common.no")), false);
         return 1;
     }
 
@@ -199,7 +199,7 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.literal("cThis command can only be used by players"));
+            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
             return 0;
         }
 
@@ -224,11 +224,11 @@ public class ShopAdminCommand {
 
         if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             SignUpdateHelper.updateSignForShop(shop, serverLevel);
-            LOGGER.info("[商店管理] 告示牌已同步更新（动态定价切换） - 商店ID: {}", shop.getShopId());
         }
 
         boolean newValue = shop.isDynamicPricing();
-        source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.dynamic_toggled", newValue ? "aEnabled" : "cDisabled"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.dynamic_toggled", 
+                newValue ? ShopTranslationHelper.getRawTranslation("common.enabled") : ShopTranslationHelper.getRawTranslation("common.disabled")), false);
         return 1;
     }
 
@@ -236,7 +236,7 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.literal("cThis command can only be used by players"));
+            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
             return 0;
         }
 
@@ -262,7 +262,6 @@ public class ShopAdminCommand {
 
         if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             SignUpdateHelper.updateSignForShop(shop, serverLevel);
-            LOGGER.info("[商店管理] 告示牌已同步更新 - 商店ID: {}", shop.getShopId());
         }
 
         source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.price_set", price), false);
@@ -273,7 +272,7 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.literal("cThis command can only be used by players"));
+            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
             return 0;
         }
 
@@ -291,7 +290,7 @@ public class ShopAdminCommand {
 
         Optional<WalletType> walletTypeOpt = shopManager.findWalletTypeById(currencyId);
         if (walletTypeOpt.isEmpty()) {
-            source.sendFailure(ShopTranslationHelper.colored("cCurrency ID not found: " + currencyId));
+            source.sendFailure(ShopTranslationHelper.colored("§cCurrency ID not found: " + currencyId));
             return 0;
         }
 
@@ -305,7 +304,6 @@ public class ShopAdminCommand {
 
         if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             SignUpdateHelper.updateSignForShop(shop, serverLevel);
-            LOGGER.info("[商店管理] 告示牌已同步更新 - 商店ID: {}", shop.getShopId());
         }
 
         source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.currency_set", currencyName), false);
@@ -316,7 +314,7 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.literal("cThis command can only be used by players"));
+            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
             return 0;
         }
 
@@ -336,7 +334,7 @@ public class ShopAdminCommand {
         shop.setMinPrice(price);
         shopManager.markDirty();
 
-        source.sendSuccess(() -> ShopTranslationHelper.colored("aSet shop min price: e" + price), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.min_price_set", price), false);
         return 1;
     }
 
@@ -344,7 +342,7 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.literal("cThis command can only be used by players"));
+            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
             return 0;
         }
 
@@ -364,7 +362,7 @@ public class ShopAdminCommand {
         shop.setMaxPrice(price);
         shopManager.markDirty();
 
-        source.sendSuccess(() -> ShopTranslationHelper.colored("aSet shop max price: e" + price), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.max_price_set", price), false);
         return 1;
     }
 
@@ -373,7 +371,7 @@ public class ShopAdminCommand {
         
         ShopConfig config = ShopModule.getConfig();
         if (config == null) {
-            source.sendFailure(ShopTranslationHelper.colored("cConfig not initialized"));
+            source.sendFailure(ShopTranslationHelper.colored("§cConfig not initialized"));
             return 0;
         }
 
@@ -386,7 +384,7 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.literal("cThis command can only be used by players"));
+            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
             return 0;
         }
 
@@ -412,7 +410,7 @@ public class ShopAdminCommand {
         player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.id", shop.getShopId().toString().substring(0, 8)));
         player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.owner", shop.getOwnerId().toString().substring(0, 8)));
         player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.type", 
-                shop.getShopType() == ShopType.SELL ? "bSell Shop" : "bBuy Shop"));
+                shop.getShopType() == ShopType.SELL ? ShopTranslationHelper.getRawTranslation("shop.type.sell") : ShopTranslationHelper.getRawTranslation("shop.type.buy")));
         player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.item", 
                 shop.getTradeItem().getDisplayName().getString()));
         
@@ -425,9 +423,9 @@ public class ShopAdminCommand {
         player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.stats", 
                 shop.getTotalSold(), shop.getTotalBought()));
         player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.infinite", 
-                shop.isInfinite() ? "aYes" : "cNo"));
+                shop.isInfinite() ? ShopTranslationHelper.getRawTranslation("common.yes") : ShopTranslationHelper.getRawTranslation("common.no")));
         player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.dynamic", 
-                shop.isDynamicPricing() ? "aEnabled" : "cDisabled"));
+                shop.isDynamicPricing() ? ShopTranslationHelper.getRawTranslation("common.enabled") : ShopTranslationHelper.getRawTranslation("common.disabled")));
     }
 
     private static int reloadConfig(CommandContext<CommandSourceStack> context) {
@@ -435,12 +433,12 @@ public class ShopAdminCommand {
         
         ShopConfig config = ShopModule.getConfig();
         if (config == null) {
-            source.sendFailure(ShopTranslationHelper.colored("cConfig not initialized"));
+            source.sendFailure(ShopTranslationHelper.colored("§cConfig not initialized"));
             return 0;
         }
 
         config.load();
-        source.sendSuccess(() -> ShopTranslationHelper.colored("aShop config reloaded"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.config_reloaded"), false);
         return 1;
     }
 
@@ -454,7 +452,7 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.literal("cThis command can only be used by players"));
+            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
             return 0;
         }
 
@@ -466,12 +464,12 @@ public class ShopAdminCommand {
 
         Collection<ShopInstance> shopsCollection = shopManager.getAllShops();
         if (shopsCollection.isEmpty()) {
-            source.sendSuccess(() -> ShopTranslationHelper.colored("eNo shops found"), false);
+            source.sendSuccess(() -> ShopTranslationHelper.colored("§eNo shops found"), false);
             return 1;
         }
 
         List<ShopInstance> shops = new ArrayList<>(shopsCollection);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("a=== Shop List (" + shops.size() + ") ==="), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.list.header", shops.size()), false);
         for (int i = 0; i < Math.min(shops.size(), 10); i++) {
             ShopInstance shop = shops.get(i);
             String shopId = shop.getShopId().toString().substring(0, 8);
@@ -479,13 +477,13 @@ public class ShopAdminCommand {
             String type = shop.getShopType() == ShopType.SELL ? "Sell" : "Buy";
             BlockPos pos = shop.getShopPos();
             source.sendSuccess(() -> ShopTranslationHelper.colored(
-                    String.format("7[%s] f%s 7(%s) at x:%d y:%d z:%d", 
+                    String.format("§7[%s] §f%s §7(%s) at x:%d y:%d z:%d", 
                             shopId, itemName, type, pos.getX(), pos.getY(), pos.getZ())), false);
         }
         
         if (shops.size() > 10) {
             int remaining = shops.size() - 10;
-            source.sendSuccess(() -> ShopTranslationHelper.colored("7... and " + remaining + " more shops"), false);
+            source.sendSuccess(() -> ShopTranslationHelper.colored("§7... and " + remaining + " more shops"), false);
         }
         
         return 1;
@@ -495,7 +493,7 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.literal("cThis command can only be used by players"));
+            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
             return 0;
         }
 
@@ -514,13 +512,13 @@ public class ShopAdminCommand {
         }
 
         if (targetShop == null) {
-            source.sendFailure(ShopTranslationHelper.colored("cShop not found with ID: " + shopIdStr));
+            source.sendFailure(ShopTranslationHelper.translatable("admin.shop.tp.not_found", shopIdStr));
             return 0;
         }
 
         BlockPos pos = targetShop.getShopPos();
         player.teleportTo(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("aTeleported to shop at x:" + pos.getX() + " y:" + pos.getY() + " z:" + pos.getZ()), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.tp.success", (double)pos.getX(), (double)pos.getY(), (double)pos.getZ()), false);
         return 1;
     }
 
@@ -528,7 +526,7 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.literal("cThis command can only be used by players"));
+            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
             return 0;
         }
 
@@ -547,10 +545,8 @@ public class ShopAdminCommand {
         ShopInstance shop = shopOpt.get();
         UUID oldOwner = shop.getOwnerId();
         
-        source.sendSuccess(() -> ShopTranslationHelper.colored(
-                "cNote: Owner change is not supported. Current owner: " + oldOwner), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored(
-                "7To transfer ownership, delete and recreate the shop."), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.set_owner.not_supported", oldOwner.toString()), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.set_owner.hint"), false);
         
         return 1;
     }
@@ -558,20 +554,20 @@ public class ShopAdminCommand {
     private static int showHelp(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         
-        source.sendSuccess(() -> ShopTranslationHelper.colored("a=== ShopAdmin Commands ==="), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shopadmin delete - Delete shop (look at it)"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shopadmin setInfinite <true/false> - Set infinite mode"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shopadmin toggleDynamic - Toggle dynamic pricing"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shopadmin setPrice <price> - Set shop price"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shopadmin setCurrency <id> - Set currency type"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shopadmin setMinPrice <price> - Set minimum price"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shopadmin setMaxPrice <price> - Set maximum price"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shopadmin setTimeout <seconds> - Set input timeout"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shopadmin info - Show shop info"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shopadmin reload - Reload config"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shopadmin list - List all shops"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shopadmin tp <shopId> - Teleport to shop"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shopadmin setOwner <player> - Set shop owner"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§a=== ShopAdmin Commands ==="), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin delete - Delete shop (look at it)"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setInfinite <true/false> - Set infinite mode"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin toggleDynamic - Toggle dynamic pricing"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setPrice <price> - Set shop price"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setCurrency <id> - Set currency type"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setMinPrice <price> - Set minimum price"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setMaxPrice <price> - Set maximum price"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setTimeout <seconds> - Set input timeout"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin info - Show shop info"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin reload - Reload config"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin list - List all shops"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin tp <shopId> - Teleport to shop"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setOwner <player> - Set shop owner"), false);
         
         return 1;
     }

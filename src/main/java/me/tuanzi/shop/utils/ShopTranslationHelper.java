@@ -67,7 +67,7 @@ public class ShopTranslationHelper {
     public static Component translatable(String key) {
         String text = getTranslationTemplate(key, DEFAULT_LANGUAGE);
         if (text != null) {
-            return Component.literal(text);
+            return Component.literal(parseColor(text));
         }
         return Component.translatable(key);
     }
@@ -76,20 +76,38 @@ public class ShopTranslationHelper {
         String template = getTranslationTemplate(key, DEFAULT_LANGUAGE);
         if (template != null) {
             try {
-                return Component.literal(String.format(Locale.ROOT, template, args));
+                Object[] parsedArgs = new Object[args.length];
+                for (int i = 0; i < args.length; i++) {
+                    if (args[i] instanceof String s) {
+                        parsedArgs[i] = parseColor(s);
+                    } else {
+                        parsedArgs[i] = args[i];
+                    }
+                }
+                return Component.literal(parseColor(String.format(Locale.ROOT, template, parsedArgs)));
             } catch (Exception ignored) {
-                return Component.literal(template);
+                return Component.literal(parseColor(template));
             }
         }
         return Component.translatable(key, args);
     }
 
     public static Component literal(String text) {
-        return Component.literal(text);
+        return Component.literal(parseColor(text));
     }
 
     public static Component colored(String text) {
-        return Component.literal(text);
+        return Component.literal(parseColor(text));
+    }
+
+    public static String parseColor(String text) {
+        if (text == null) return "";
+        // If the text starts with a single letter color code (like 'a', 'c', 'e') and is followed by content, 
+        // it's likely a shortcut used in the command classes.
+        if (text.length() > 1 && "0123456789abcdefklmnor".indexOf(text.charAt(0)) != -1 && text.charAt(1) != ' ') {
+            text = "§" + text;
+        }
+        return text.replace("&", "§");
     }
 
     public static String getRawTranslation(String key) {

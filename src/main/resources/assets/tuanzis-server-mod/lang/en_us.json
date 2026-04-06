@@ -358,7 +358,19 @@
   "admin.shop.price_set": "§aSet shop price: §e%.2f",
   "admin.shop.currency_set": "§aSet shop currency: §f%s",
   "admin.shop.timeout_set": "§aInput timeout set to: §f%d seconds",
-  "admin.no_permission": "§cYou don't have admin permission!"
+  "admin.shop.min_price_set": "§aSet shop minimum price: §e%.2f",
+  "admin.shop.max_price_set": "§aSet shop maximum price: §e%.2f",
+  "admin.shop.config_reloaded": "§aShop configuration reloaded",
+  "admin.shop.list.header": "§a=== Shop List (%d) ===",
+  "admin.shop.tp.success": "§aTeleported to shop at x:%.1f y:%.1f z:%.1f",
+  "admin.shop.tp.not_found": "§cNo shop found with ID starting with %s",
+  "admin.shop.set_owner.not_supported": "§cDirect owner change is not supported. Current: %s",
+  "admin.shop.set_owner.hint": "§7Consider deleting and recreating the shop to transfer ownership.",
+  "admin.no_permission": "§cYou don't have admin permission!",
+  "common.yes": "§aYes",
+  "common.no": "§cNo",
+  "common.enabled": "§aEnabled",
+  "common.disabled": "§cDisabled"
 }
 
 
