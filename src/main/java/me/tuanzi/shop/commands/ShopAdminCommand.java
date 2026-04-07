@@ -161,19 +161,21 @@ public class ShopAdminCommand {
             return 0;
         }
 
-        shopManager.deleteShop(shopId);
-        deleteConfirmations.remove(playerId);
-
+        // 1. 先移除世界中的悬浮展示实体 (必须在删除内存/存档数据前)
         ShopModule moduleInstance = ShopModule.getInstance(player.level().getServer());
         if (moduleInstance != null && moduleInstance.getDisplayManager() != null) {
             if (player.level() instanceof net.minecraft.server.level.ServerLevel adminServerLevel) {
                 moduleInstance.getDisplayManager().removeDisplayForShop(shopId, adminServerLevel);
-                LOGGER.info("[商店管理] 管理员 {} 删除了商店 {}，并移除了悬浮展示实体",
+                LOGGER.info("[商店管理] 管理员 {} 正在删除商店 {}，已触发悬浮展示实体清理",
                         player.getName().getString(), shopId);
             }
         }
 
-        LOGGER.info("[商店管理] 管理员 {} 删除了商店 {}，位置 {}",
+        // 2. 然后删除商店数据记录
+        shopManager.deleteShop(shopId);
+        deleteConfirmations.remove(playerId);
+
+        LOGGER.info("[商店管理] 管理员 {} 已成功删除商店 {}，位置 {}",
                 player.getName().getString(), shopId, shop.getShopPos());
         source.sendSuccess(() -> ShopTranslationHelper.translatable("shop.deleted.success"), false);
         return 1;
@@ -514,26 +516,49 @@ public class ShopAdminCommand {
     }
 
     private static void sendDetailedShopInfo(ServerPlayer player, ShopInstance shop, ShopManager shopManager) {
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.title"));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.id", shop.getShopId().toString().substring(0, 8)));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.owner", shop.getOwnerId().toString().substring(0, 8)));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.type", 
-                shop.getShopType() == ShopType.SELL ? ShopTranslationHelper.getRawTranslation("shop.type.sell") : ShopTranslationHelper.getRawTranslation("shop.type.buy")));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.item", 
-                shop.getTradeItem().getDisplayName().getString()));
-        
         String currencyName = shopManager.getCurrencyDisplayName(shop.getWalletTypeId());
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.price", 
-                shop.getCurrentPrice(), currencyName));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.currency", currencyName));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.stock", 
-                shop.isInfinite() ? -1 : 0));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.stats", 
-                shop.getTotalSold(), shop.getTotalBought()));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.infinite", 
-                shop.isInfinite() ? ShopTranslationHelper.getRawTranslation("common.yes") : ShopTranslationHelper.getRawTranslation("common.no")));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.dynamic", 
-                shop.isDynamicPricing() ? ShopTranslationHelper.getRawTranslation("common.enabled") : ShopTranslationHelper.getRawTranslation("common.disabled")));
+        BlockPos pos = shop.getShopPos();
+
+        player.sendSystemMessage(ShopTranslationHelper.colored("§e================ [商店详细信息] ================"));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§bID: §f" + shop.getShopId().toString().substring(0, 8)));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b位置: §f" + String.format("x:%d y:%d z:%d", pos.getX(), pos.getY(), pos.getZ())));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b所有者: §f" + shop.getOwnerId().toString().substring(0, 8)));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b类型: §f" + (shop.getShopType() == ShopType.SELL ? "§e出售 (玩家买)" : "§a收购 (玩家卖)")));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b物品: §f" + shop.getTradeItem().getDisplayName().getString()));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b基础单价: §e" + String.format("%.2f %s", shop.getBasePrice(), currencyName)));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b当前成交价: §6" + String.format("%.2f %s", shop.getCurrentPrice(), currencyName)));
+
+        // 动态定价相关
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b动态定价: " + (shop.isDynamicPricing() ? "§a开启" : "§7关闭")));
+        if (shop.isDynamicPricing()) {
+            player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 最低价(x): §f" + String.format("%.2f", shop.getMinPrice())));
+            player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 最高价(y): §f" + String.format("%.2f", shop.getMaxPrice())));
+            player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 半衰常数(K): §f" + String.format("%.2f", shop.getHalfLifeConstant())));
+            player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 系统压力(S): §f" + String.format("%.2f", shop.getSystemStock())));
+            player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 每日衰减率: §f" + String.format("%.1f%%", shop.getDecayRate() * 100)));
+        }
+
+        // 统计数据
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b累计交易统计:"));
+        player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 累计售出(玩家买入): §f" + shop.getTotalSold()));
+        player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 累计收购(玩家卖出): §f" + shop.getTotalBought()));
+
+        // 库存/模式状态
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b商店模式: " + (shop.isInfinite() ? "§d无限库存" : "§f标准")));
+        if (!shop.isInfinite()) {
+            ShopModule module = ShopModule.getInstance(player.level().getServer());
+            if (module != null && module.getInteractionHandler() != null) {
+                int stock = module.getInteractionHandler().getShopStock(shop);
+                int capacity = module.getInteractionHandler().getChestAvailableSpace(shop);
+                if (shop.getShopType() == ShopType.SELL) {
+                    player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 当前库存: §f" + stock));
+                } else {
+                    player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 剩余容量: §f" + capacity));
+                }
+            }
+        }
+        
+        player.sendSystemMessage(ShopTranslationHelper.colored("§e============================================"));
     }
 
     private static int reloadConfig(CommandContext<CommandSourceStack> context) {

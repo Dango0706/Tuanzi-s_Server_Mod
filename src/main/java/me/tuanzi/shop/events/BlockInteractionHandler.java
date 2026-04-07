@@ -493,7 +493,7 @@ public class BlockInteractionHandler {
         return true;
     }
 
-    private int getShopStock(ShopInstance shop) {
+    public int getShopStock(ShopInstance shop) {
         Level level = shopManager.getServer().getLevel(Level.OVERWORLD);
         if (level == null) return 0;
 
@@ -513,7 +513,7 @@ public class BlockInteractionHandler {
         return count;
     }
 
-    private int getChestAvailableSpace(ShopInstance shop) {
+    public int getChestAvailableSpace(ShopInstance shop) {
         Level level = shopManager.getServer().getLevel(Level.OVERWORLD);
         if (level == null) return 0;
 

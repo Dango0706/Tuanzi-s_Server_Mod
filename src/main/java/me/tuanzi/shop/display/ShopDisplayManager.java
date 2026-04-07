@@ -25,7 +25,7 @@ public class ShopDisplayManager {
     private static final String SHOP_DISPLAY_TAG = "shop_display";
     private static final double DISPLAY_XZ_OFFSET = 0.5D;
     private static final double DISPLAY_Y_OFFSET = 0.9D;
-    private static final double DISPLAY_SEARCH_RADIUS = 1.2D;
+    private static final double DISPLAY_SEARCH_RADIUS = 0.4D;
     private static final double DISPLAY_POSITION_EPSILON_SQR = 1.0E-4D;
     private static final double DISPLAY_VELOCITY_EPSILON_SQR = 1.0E-6D;
     private final ShopManager shopManager;
@@ -97,13 +97,18 @@ public class ShopDisplayManager {
             Entity entity = level.getEntity(displayId);
             if (entity != null) {
                 entity.discard();
-                LOGGER.info("[商店展示] 悬浮物品已移除 - 展示实体ID: {}, 商店ID: {}", displayId, shopId);
-            } else {
-                LOGGER.warn("[商店展示] 未找到悬浮物品实体 - 展示实体ID: {}, 商店ID: {}", displayId, shopId);
+                LOGGER.info("[商店展示] 悬浮物品已通过引用移除 - 展示实体ID: {}, 商店ID: {}", displayId, shopId);
             }
-        } else {
-            LOGGER.warn("[商店展示] 商店没有关联的悬浮物品 - 商店ID: {}", shopId);
         }
+
+        // 强力兜底逻辑：无论 Map 中是否存在，都扫描该商店位置周围的展示实体并清理
+        // 这解决了“只有创建新商店时才会消失”的问题，因为它不再依赖 Map 记录
+        shopManager.getShopById(shopId).ifPresent(shop -> {
+            int removed = removeLegacyItemDisplayNearShop(shop, level);
+            if (removed > 0) {
+                LOGGER.info("[商店展示] 悬浮物品已通过位置扫描强力移除 - 商店ID: {}, 数量: {}", shopId, removed);
+            }
+        });
     }
 
     public void updateDisplayItem(UUID shopId, ItemStack newItem, ServerLevel level) {
@@ -214,6 +219,7 @@ public class ShopDisplayManager {
 
     private int removeLegacyItemDisplayNearShop(ShopInstance shop, ServerLevel level) {
         Vec3 expectedPos = getExpectedDisplayPos(shop);
+        // 稍微扩大搜索半径以应对可能的微小位移
         AABB searchBox = new AABB(
                 expectedPos.x - DISPLAY_SEARCH_RADIUS, expectedPos.y - DISPLAY_SEARCH_RADIUS, expectedPos.z - DISPLAY_SEARCH_RADIUS,
                 expectedPos.x + DISPLAY_SEARCH_RADIUS, expectedPos.y + DISPLAY_SEARCH_RADIUS, expectedPos.z + DISPLAY_SEARCH_RADIUS
@@ -221,27 +227,33 @@ public class ShopDisplayManager {
 
         int removed = 0;
         ItemStack expectedItem = toDisplayItem(shop.getTradeItem());
+        
+        // 1. 清理旧版 ItemDisplay
         for (Display.ItemDisplay displayEntity : level.getEntitiesOfClass(Display.ItemDisplay.class, searchBox)) {
-            if (displayEntity.entityTags().contains(SHOP_DISPLAY_TAG)
-                    || ItemStack.isSameItemSameComponents(displayEntity.getItemStack(), expectedItem)) {
+            if (displayEntity.entityTags().contains(SHOP_DISPLAY_TAG)) {
                 displayEntity.discard();
                 removed++;
             }
         }
 
+        // 2. 清理当前使用的 ItemEntity
         for (ItemEntity itemEntity : level.getEntitiesOfClass(ItemEntity.class, searchBox)) {
-            ItemStack stack = itemEntity.getItem();
-            if (stack.isEmpty()) {
+            // 只要带有 shop_display 标签，就无条件清理（最可靠的方式）
+            if (itemEntity.entityTags().contains(SHOP_DISPLAY_TAG)) {
+                itemEntity.discard();
+                removed++;
                 continue;
             }
 
-            boolean sameItem = ItemStack.isSameItemSameComponents(stack, expectedItem) || stack.is(expectedItem.getItem());
-            boolean hasDisplayTag = itemEntity.entityTags().contains(SHOP_DISPLAY_TAG);
-            boolean looksLikeOldDisplay = itemEntity.isNoGravity() && itemEntity.isCustomNameVisible() && itemEntity.hasPickUpDelay();
-            boolean looksLikeDisplay = hasDisplayTag || looksLikeOldDisplay;
-            if (sameItem && looksLikeDisplay) {
-                itemEntity.discard();
-                removed++;
+            // 兜底：如果标签丢失，根据物理特性判定
+            ItemStack stack = itemEntity.getItem();
+            if (!stack.isEmpty()) {
+                boolean sameItem = stack.is(expectedItem.getItem());
+                boolean looksLikeDisplay = itemEntity.isNoGravity() && itemEntity.noPhysics;
+                if (sameItem && looksLikeDisplay) {
+                    itemEntity.discard();
+                    removed++;
+                }
             }
         }
         return removed;
