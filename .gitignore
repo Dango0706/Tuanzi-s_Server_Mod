@@ -1,40 +1,28 @@
-# gradle
-
-.gradle/
+.gradle
 build/
-out/
-classes/
+!gradle/wrapper/gradle-wrapper.jar
 
-# eclipse
+# User requested exclusions
+.gradle-user-home
+.trae
+.vs
+docs
+gradle
+gradle-9.4.1
+META-INF
+net
+temp_sources
+temp_sources2
+template-mod-template-26.1.zip
+GEMINI.md
+*.log
 
-*.launch
+# Project Cache
+cache/
 
-# idea
-
-.idea/
+# IDE files
+.idea
 *.iml
-*.ipr
-*.iws
-
-# vscode
-
-.settings/
-.vscode/
 bin/
-.classpath
-.project
-
-# macos
-
-*.DS_Store
-
-# fabric
-
+out/
 run/
-
-# java
-
-hs_err_*.log
-replay_*.log
-*.hprof
-*.jfr
