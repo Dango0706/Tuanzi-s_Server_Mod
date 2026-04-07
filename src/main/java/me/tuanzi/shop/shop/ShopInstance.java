@@ -19,6 +19,9 @@ public class ShopInstance {
     private boolean dynamicPricing;
     private double minPrice;
     private double maxPrice;
+    private double halfLifeConstant;
+    private double systemStock;
+    private double decayRate;
     private long totalSold;
     private long totalBought;
     private String walletTypeId;
@@ -40,8 +43,11 @@ public class ShopInstance {
         this.isAdminShop = false;
         this.isInfinite = false;
         this.dynamicPricing = false;
-        this.minPrice = basePrice * 0.1;
-        this.maxPrice = basePrice * 10.0;
+        this.minPrice = -1.0;
+        this.maxPrice = -1.0;
+        this.halfLifeConstant = -1.0;
+        this.systemStock = 0.0;
+        this.decayRate = 0.01;
         this.totalSold = 0;
         this.totalBought = 0;
         this.walletTypeId = walletTypeId;
@@ -131,6 +137,34 @@ public class ShopInstance {
 
     public void setMaxPrice(double maxPrice) {
         this.maxPrice = maxPrice;
+    }
+
+    public double getHalfLifeConstant() {
+        return halfLifeConstant;
+    }
+
+    public void setHalfLifeConstant(double halfLifeConstant) {
+        this.halfLifeConstant = halfLifeConstant;
+    }
+
+    public double getSystemStock() {
+        return systemStock;
+    }
+
+    public void setSystemStock(double systemStock) {
+        this.systemStock = systemStock;
+    }
+
+    public double getDecayRate() {
+        return decayRate;
+    }
+
+    public void setDecayRate(double decayRate) {
+        this.decayRate = decayRate;
+    }
+
+    public void incrementSystemStock(double amount) {
+        this.systemStock += amount;
     }
 
     public long getTotalSold() {

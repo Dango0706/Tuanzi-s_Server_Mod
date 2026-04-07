@@ -99,6 +99,10 @@ public class BlockInteractionHandler {
 
         if (isShiftDown) {
             int quantity = 64;
+            if (shop.isDynamicPricing()) {
+                chatHandler.startDynamicConfirmation(player, shop, quantity);
+                return true;
+            }
             String type = shop.getShopType() == ShopType.SELL ? "buy" : "sell";
             return executeTransaction(player, shop.getShopId(), type, quantity);
         }
@@ -119,8 +123,14 @@ public class BlockInteractionHandler {
         player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.title"));
         player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.item", 
                 shop.getTradeItem().getDisplayName().getString()));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.price", 
-                price, currencyName));
+        
+        if (shop.isDynamicPricing()) {
+            player.sendSystemMessage(ShopTranslationHelper.colored("§b当前单价: §e" + String.format("%.2f %s", price, currencyName)));
+            player.sendSystemMessage(ShopTranslationHelper.colored("§7(动态价格随库存实时波动)"));
+        } else {
+            player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.price", 
+                    price, currencyName));
+        }
 
         if (!shop.isAdminShop() && !shop.isInfinite()) {
             if (shop.getShopType() == ShopType.SELL) {
@@ -136,9 +146,13 @@ public class BlockInteractionHandler {
     private void sendShopInteractionMessage(ServerPlayer player, ShopInstance shop, boolean isShiftDown) {
         WalletType walletType = shopManager.getWalletType(shop.getWalletTypeId()).orElse(null);
         String currencyName = walletType != null ? walletType.displayName().getString() : "Unknown";
-        double price = DynamicPricing.calculatePrice(shop);
+        
+        boolean isBuy = shop.getShopType() == ShopType.SELL;
         int quantity = isShiftDown ? 64 : 1;
-        double totalPrice = price * quantity;
+        double price = DynamicPricing.calculatePrice(shop);
+        double totalPrice = shop.isDynamicPricing() ? 
+                DynamicPricing.calculateBulkPrice(shop, quantity, isBuy) : 
+                price * quantity;
 
         Component shopTypeComponent = ShopTranslationHelper.shopTypeDisplayName(shop.getShopType() == ShopType.SELL);
         Component itemName = shop.getTradeItem().getDisplayName();
@@ -154,9 +168,16 @@ public class BlockInteractionHandler {
                 .append(ShopTranslationHelper.colored("§b物品: §f"))
                 .append(itemName));
 
-        player.sendSystemMessage(Component.empty()
-                .append(ShopTranslationHelper.colored("§b单价: §e"))
-                .append(ShopTranslationHelper.literal(String.format("%.2f %s", price, currencyName))));
+        if (shop.isDynamicPricing()) {
+            player.sendSystemMessage(Component.empty()
+                    .append(ShopTranslationHelper.colored("§b当前单价: §e"))
+                    .append(ShopTranslationHelper.literal(String.format("%.2f %s", price, currencyName))));
+            player.sendSystemMessage(ShopTranslationHelper.colored("§7(动态价格：买卖越多，价格波动越大)"));
+        } else {
+            player.sendSystemMessage(Component.empty()
+                    .append(ShopTranslationHelper.colored("§b单价: §e"))
+                    .append(ShopTranslationHelper.literal(String.format("%.2f %s", price, currencyName))));
+        }
 
         if (!shop.isAdminShop() && !shop.isInfinite()) {
             if (shop.getShopType() == ShopType.SELL) {
@@ -184,6 +205,15 @@ public class BlockInteractionHandler {
         String buttonText = isSellShop ? 
                 ShopTranslationHelper.getRawTranslation("transaction.click_to_buy") :
                 ShopTranslationHelper.getRawTranslation("transaction.click_to_sell");
+
+        // 如果是动态定价且是 Shift 点击，点击按钮也应该走确认流程
+        if (shop.isDynamicPricing() && quantity > 1) {
+             Style style = Style.EMPTY
+                .withClickEvent(new ClickEvent.RunCommand("/shopconfirm yes"))
+                .withHoverEvent(new HoverEvent.ShowText(
+                        Component.literal(String.format("§e预计总价: %.2f %s\n§7点击确认交易", totalPrice, currencyName))));
+             return Component.literal(buttonText).setStyle(style);
+        }
 
         String command = String.format("/shop %s %d", 
                 isSellShop ? "buy" : "sell", quantity);
@@ -236,14 +266,17 @@ public class BlockInteractionHandler {
         }
 
         String currencyName = walletType.displayName().getString();
-        double price = DynamicPricing.calculatePrice(shop);
-        double totalPrice = price * quantity;
+        
+        // 使用新的批量计算逻辑
+        boolean isBuy = transactionType.equals("buy");
+        double totalPrice = shop.isDynamicPricing() ? 
+                DynamicPricing.calculateBulkPrice(shop, quantity, isBuy) : 
+                DynamicPricing.calculatePrice(shop) * quantity;
 
         DevFlowLogger.param("交易执行流程", "currencyName", currencyName);
-        DevFlowLogger.param("交易执行流程", "unitPrice", price);
         DevFlowLogger.param("交易执行流程", "totalPrice", totalPrice);
 
-        if (transactionType.equals("buy")) {
+        if (isBuy) {
             boolean result = executeBuyTransaction(player, shop, quantity, totalPrice, currencyName, walletType);
             DevFlowLogger.endFlow("交易执行流程", result ? true : false, 
                     result ? "购买成功" : "购买失败");
@@ -318,7 +351,9 @@ public class BlockInteractionHandler {
         DevFlowLogger.status("购买交易子流程", "已向玩家发放 " + quantity + " 个物品");
 
         DevFlowLogger.step("购买交易子流程", "更新动态价格和保存数据");
-        DynamicPricing.updatePriceAfterTransaction(shop, true);
+        if (shop.isDynamicPricing()) {
+            DynamicPricing.updatePriceAfterTransaction(shop, quantity, true);
+        }
         shopManager.markDirty();
         DevFlowLogger.param("购买交易子流程", "新价格", shop.getCurrentPrice());
 
@@ -425,7 +460,9 @@ public class BlockInteractionHandler {
         }
 
         DevFlowLogger.step("出售交易子流程", "更新动态价格和保存数据");
-        DynamicPricing.updatePriceAfterTransaction(shop, false);
+        if (shop.isDynamicPricing()) {
+            DynamicPricing.updatePriceAfterTransaction(shop, quantity, false);
+        }
         shopManager.markDirty();
         DevFlowLogger.param("出售交易子流程", "新价格", shop.getCurrentPrice());
 

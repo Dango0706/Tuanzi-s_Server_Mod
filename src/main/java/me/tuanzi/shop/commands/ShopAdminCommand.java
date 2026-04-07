@@ -11,6 +11,7 @@ import me.tuanzi.economy.currency.WalletType;
 import me.tuanzi.shop.ShopModule;
 import me.tuanzi.shop.config.ShopConfig;
 import me.tuanzi.shop.display.ShopDisplayManager;
+import me.tuanzi.shop.events.ChatInputHandler;
 import me.tuanzi.shop.shop.ShopInstance;
 import me.tuanzi.shop.shop.ShopManager;
 import me.tuanzi.shop.shop.ShopType;
@@ -53,6 +54,21 @@ public class ShopAdminCommand {
                 )
                 .then(Commands.literal("toggleDynamic")
                         .executes(ShopAdminCommand::toggleDynamicPricing)
+                )
+                .then(Commands.literal("setHalfLife")
+                        .then(Commands.argument("value", DoubleArgumentType.doubleArg(1.0))
+                                .executes(context -> setHalfLife(context, DoubleArgumentType.getDouble(context, "value")))
+                        )
+                )
+                .then(Commands.literal("setSystemStock")
+                        .then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0))
+                                .executes(context -> setSystemStock(context, DoubleArgumentType.getDouble(context, "value")))
+                        )
+                )
+                .then(Commands.literal("adjustSystemStock")
+                        .then(Commands.argument("percentage", DoubleArgumentType.doubleArg(0.0))
+                                .executes(context -> adjustSystemStock(context, DoubleArgumentType.getDouble(context, "percentage")))
+                        )
                 )
                 .then(Commands.literal("setPrice")
                         .then(Commands.argument("price", DoubleArgumentType.doubleArg(0.01))
@@ -216,11 +232,24 @@ public class ShopAdminCommand {
         }
 
         ShopInstance shop = shopOpt.get();
-        shop.setDynamicPricing(!shop.isDynamicPricing());
-        shopManager.markDirty();
+        ChatInputHandler chatHandler = ShopModule.getInstance(player.level().getServer()).getChatInputHandler();
 
-        LOGGER.info("[商店管理] 管理员 {} 切换商店 {} 的动态定价状态为: {}",
-                player.getName().getString(), shop.getShopId(), shop.isDynamicPricing());
+        // 开启动态定价前进行变量检查
+        if (!shop.isDynamicPricing()) {
+            // 如果变量为初始值 -1.0，则引导设置
+            if (shop.getMinPrice() < 0 || shop.getMaxPrice() < 0 || shop.getHalfLifeConstant() < 0) {
+                if (chatHandler != null) {
+                    chatHandler.startDynamicSetup(player, shop);
+                    return 1;
+                }
+            }
+        }
+
+        shop.setDynamicPricing(!shop.isDynamicPricing());
+        
+        // 实时更新价格
+        shop.setCurrentPrice(me.tuanzi.shop.pricing.DynamicPricing.calculatePrice(shop));
+        shopManager.markDirty();
 
         if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             SignUpdateHelper.updateSignForShop(shop, serverLevel);
@@ -229,6 +258,73 @@ public class ShopAdminCommand {
         boolean newValue = shop.isDynamicPricing();
         source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.dynamic_toggled", 
                 newValue ? ShopTranslationHelper.getRawTranslation("common.enabled") : ShopTranslationHelper.getRawTranslation("common.disabled")), false);
+        return 1;
+    }
+
+    private static int setHalfLife(CommandContext<CommandSourceStack> context, double value) {
+        CommandSourceStack source = context.getSource();
+        ServerPlayer player = getPlayer(source);
+        if (player == null) return 0;
+
+        ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
+        Optional<ShopInstance> shopOpt = shopManager.getShopPlayerLookingAt(player);
+        if (shopOpt.isEmpty()) return 0;
+
+        ShopInstance shop = shopOpt.get();
+        shop.setHalfLifeConstant(value);
+        
+        // 实时更新价格和告示牌
+        shop.setCurrentPrice(me.tuanzi.shop.pricing.DynamicPricing.calculatePrice(shop));
+        shopManager.markDirty();
+        if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            SignUpdateHelper.updateSignForShop(shop, serverLevel);
+        }
+
+        source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.halflife_set", value), false);
+        return 1;
+    }
+
+    private static int setSystemStock(CommandContext<CommandSourceStack> context, double value) {
+        CommandSourceStack source = context.getSource();
+        ServerPlayer player = getPlayer(source);
+        if (player == null) return 0;
+
+        ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
+        Optional<ShopInstance> shopOpt = shopManager.getShopPlayerLookingAt(player);
+        if (shopOpt.isEmpty()) return 0;
+
+        ShopInstance shop = shopOpt.get();
+        shop.setSystemStock(value);
+        
+        // 实时更新价格和告示牌
+        shop.setCurrentPrice(me.tuanzi.shop.pricing.DynamicPricing.calculatePrice(shop));
+        shopManager.markDirty();
+        if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            SignUpdateHelper.updateSignForShop(shop, serverLevel);
+        }
+
+        source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.system_stock_set", value), false);
+        return 1;
+    }
+
+    private static int adjustSystemStock(CommandContext<CommandSourceStack> context, double percentage) {
+        CommandSourceStack source = context.getSource();
+        ServerPlayer player = getPlayer(source);
+        if (player == null) return 0;
+
+        ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
+        Optional<ShopInstance> shopOpt = shopManager.getShopPlayerLookingAt(player);
+        if (shopOpt.isEmpty()) {
+            source.sendFailure(ShopTranslationHelper.translatable("shop.not_looking"));
+            return 0;
+        }
+
+        ShopInstance shop = shopOpt.get();
+        shop.setDecayRate(percentage);
+        shopManager.markDirty();
+
+        source.sendSuccess(() -> ShopTranslationHelper.colored(
+                String.format("§a已将该商店的每日系统库存衰减率设置为: §e%.1f%%", percentage * 100)), false);
         return 1;
     }
 
@@ -332,7 +428,13 @@ public class ShopAdminCommand {
 
         ShopInstance shop = shopOpt.get();
         shop.setMinPrice(price);
+        
+        // 实时更新价格和告示牌
+        shop.setCurrentPrice(me.tuanzi.shop.pricing.DynamicPricing.calculatePrice(shop));
         shopManager.markDirty();
+        if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            SignUpdateHelper.updateSignForShop(shop, serverLevel);
+        }
 
         source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.min_price_set", price), false);
         return 1;
@@ -360,7 +462,13 @@ public class ShopAdminCommand {
 
         ShopInstance shop = shopOpt.get();
         shop.setMaxPrice(price);
+        
+        // 实时更新价格和告示牌
+        shop.setCurrentPrice(me.tuanzi.shop.pricing.DynamicPricing.calculatePrice(shop));
         shopManager.markDirty();
+        if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            SignUpdateHelper.updateSignForShop(shop, serverLevel);
+        }
 
         source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.max_price_set", price), false);
         return 1;
@@ -558,6 +666,9 @@ public class ShopAdminCommand {
         source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin delete - Delete shop (look at it)"), false);
         source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setInfinite <true/false> - Set infinite mode"), false);
         source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin toggleDynamic - Toggle dynamic pricing"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setHalfLife <K> - Set half-life constant"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setSystemStock <S> - Set system stock"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin adjustSystemStock <%> - Set daily system stock decay rate"), false);
         source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setPrice <price> - Set shop price"), false);
         source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setCurrency <id> - Set currency type"), false);
         source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setMinPrice <price> - Set minimum price"), false);

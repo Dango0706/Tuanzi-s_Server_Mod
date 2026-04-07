@@ -36,6 +36,7 @@ public class ChatInputHandler {
     private final Map<UUID, PendingTransaction> pendingTransactions = new ConcurrentHashMap<>();
     private final Map<UUID, PendingItemChange> pendingItemChanges = new ConcurrentHashMap<>();
     private final Map<UUID, PendingShopCreation> pendingShopCreations = new ConcurrentHashMap<>();
+    private final Map<UUID, PendingDynamicSetup> pendingDynamicSetups = new ConcurrentHashMap<>();
 
     public ChatInputHandler(ShopManager shopManager, TransactionLogger transactionLogger) {
         this.shopManager = shopManager;
@@ -100,11 +101,116 @@ public class ChatInputHandler {
             return handleItemChangeInput(player, message.trim().toLowerCase());
         }
 
+        if (pendingDynamicSetups.containsKey(playerId)) {
+            return handleDynamicSetupInput(player, message.trim());
+        }
+
         if (pendingTransactions.containsKey(playerId)) {
             return handleTransactionInput(player, message.trim());
         }
 
         return false;
+    }
+
+    public void startDynamicSetup(ServerPlayer player, ShopInstance shop) {
+        int timeout = ShopModule.getConfig().getInputTimeoutSeconds();
+        long expireTime = System.currentTimeMillis() + (timeout * 1000L);
+
+        PendingDynamicSetup pending = new PendingDynamicSetup(shop.getShopId(), expireTime);
+        pendingDynamicSetups.put(player.getUUID(), pending);
+
+        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b正在引导设置动态定价变量..."));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§f当前基础价格: §e" + shop.getBasePrice()));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b1. 请输入最低收购价(保底价):"));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
+    }
+
+    private boolean handleDynamicSetupInput(ServerPlayer player, String input) {
+        UUID playerId = player.getUUID();
+        PendingDynamicSetup pending = pendingDynamicSetups.get(playerId);
+
+        if (pending == null) return false;
+
+        if (System.currentTimeMillis() > pending.expireTime) {
+            pendingDynamicSetups.remove(playerId);
+            player.sendSystemMessage(ShopTranslationHelper.translatable("transaction.input.timeout"));
+            return true;
+        }
+
+        if (input.equalsIgnoreCase("cancel") || input.equalsIgnoreCase("取消")) {
+            pendingDynamicSetups.remove(playerId);
+            player.sendSystemMessage(ShopTranslationHelper.colored("§c已取消动态定价设置"));
+            return true;
+        }
+
+        try {
+            double value = Double.parseDouble(input);
+            if (value <= 0) {
+                player.sendSystemMessage(ShopTranslationHelper.colored("§c数值必须大于 0"));
+                return true;
+            }
+
+            switch (pending.state) {
+                case INPUTTING_MIN_PRICE:
+                    pending.minPrice = value;
+                    pending.state = ShopDynamicSetupState.INPUTTING_MAX_PRICE;
+                    player.sendSystemMessage(ShopTranslationHelper.colored("§a已设置最低价: " + value));
+                    player.sendSystemMessage(ShopTranslationHelper.colored("§b2. 请输入最高收购价(缺货价):"));
+                    break;
+                case INPUTTING_MAX_PRICE:
+                    if (value <= pending.minPrice) {
+                        player.sendSystemMessage(ShopTranslationHelper.colored("§c最高价必须大于最低价(" + pending.minPrice + ")"));
+                        return true;
+                    }
+                    pending.maxPrice = value;
+                    pending.state = ShopDynamicSetupState.INPUTTING_HALF_LIFE;
+                    player.sendSystemMessage(ShopTranslationHelper.colored("§a已设置最高价: " + value));
+                    player.sendSystemMessage(ShopTranslationHelper.colored("§b3. 请输入半衰常数 K (卖出多少个后利润减半):"));
+                    break;
+                case INPUTTING_HALF_LIFE:
+                    pendingDynamicSetups.remove(playerId);
+                    completeDynamicSetup(player, pending, value);
+                    break;
+            }
+            // 每次输入成功后重置超时
+            pending.expireTime = System.currentTimeMillis() + (ShopModule.getConfig().getInputTimeoutSeconds() * 1000L);
+        } catch (NumberFormatException e) {
+            player.sendSystemMessage(ShopTranslationHelper.colored("§c请输入有效的数字"));
+        }
+
+        return true;
+    }
+
+    private void completeDynamicSetup(ServerPlayer player, PendingDynamicSetup pending, double halfLife) {
+        Optional<ShopInstance> shopOpt = shopManager.getShopById(pending.shopId);
+        if (shopOpt.isEmpty()) {
+            player.sendSystemMessage(ShopTranslationHelper.translatable("shop.not_found"));
+            return;
+        }
+
+        ShopInstance shop = shopOpt.get();
+        shop.setMinPrice(pending.minPrice);
+        shop.setMaxPrice(pending.maxPrice);
+        shop.setHalfLifeConstant(halfLife);
+        shop.setDynamicPricing(true);
+        
+        // 实时更新当前价格
+        double newPrice = me.tuanzi.shop.pricing.DynamicPricing.calculatePrice(shop);
+        shop.setCurrentPrice(newPrice);
+        shopManager.markDirty();
+
+        if (player.level() instanceof ServerLevel level) {
+            SignUpdateHelper.updateSignForShop(shop, level);
+        }
+
+        player.sendSystemMessage(ShopTranslationHelper.colored("§a========================================"));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§6动态定价设置成功并已开启！"));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§f最低价: §e" + pending.minPrice));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§f最高价: §e" + pending.maxPrice));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§f半衰常数: §e" + halfLife));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§7当前计算单价: " + String.format("%.2f", newPrice)));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§a========================================"));
     }
 
     private boolean handleTransactionInput(ServerPlayer player, String input) {
@@ -128,6 +234,27 @@ public class ChatInputHandler {
             return true;
         }
 
+        // 如果已经在等待确认 (动态定价流程)
+        if (pending.quantity > 0) {
+            boolean confirmed = lowerInput.equals("yes") || lowerInput.equals("是") || lowerInput.equals("confirm");
+            boolean cancelled = lowerInput.equals("no") || lowerInput.equals("否");
+
+            if (confirmed) {
+                pendingTransactions.remove(playerId);
+                Optional<ShopInstance> shopOpt = shopManager.getShopById(pending.shopId);
+                if (shopOpt.isPresent()) {
+                    executeTransaction(player, shopOpt.get(), pending.quantity);
+                }
+                return true;
+            } else if (cancelled) {
+                pendingTransactions.remove(playerId);
+                player.sendSystemMessage(ShopTranslationHelper.translatable("transaction.input.cancelled"));
+                return true;
+            }
+            return false; // 继续等待有效输入
+        }
+
+        // 处理初始数量输入
         int quantity;
         try {
             quantity = Integer.parseInt(input);
@@ -145,24 +272,57 @@ public class ChatInputHandler {
             return true;
         }
 
-        pendingTransactions.remove(playerId);
-
         Optional<ShopInstance> shopOpt = shopManager.getShopById(pending.shopId);
-        if (shopOpt.isEmpty()) {
+        if (shopOpt.isEmpty() || !shopOpt.get().isValid()) {
+            pendingTransactions.remove(playerId);
             player.sendSystemMessage(ShopTranslationHelper.translatable("shop.not_found"));
             return true;
         }
 
         ShopInstance shop = shopOpt.get();
-        
-        if (!shop.isValid()) {
-            player.sendSystemMessage(ShopTranslationHelper.colored("§c此商店已不存在"));
+
+        // 动态定价需要二次确认
+        if (shop.isDynamicPricing()) {
+            startDynamicConfirmation(player, shop, quantity);
             return true;
         }
-        
-        executeTransaction(player, shop, quantity);
 
+        pendingTransactions.remove(playerId);
+        executeTransaction(player, shop, quantity);
         return true;
+    }
+
+    public void startDynamicConfirmation(ServerPlayer player, ShopInstance shop, int quantity) {
+        boolean isBuy = shop.getShopType() == ShopType.SELL;
+        double totalPrice = me.tuanzi.shop.pricing.DynamicPricing.calculateBulkPrice(shop, quantity, isBuy);
+        String currencyName = shopManager.getCurrencyDisplayName(shop.getWalletTypeId());
+
+        int timeout = ShopModule.getConfig().getInputTimeoutSeconds();
+        long expireTime = System.currentTimeMillis() + (timeout * 1000L);
+
+        PendingTransaction pending = new PendingTransaction(shop.getShopId(), expireTime);
+        pending.quantity = quantity;
+        pendingTransactions.put(player.getUUID(), pending);
+
+        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b动态价格确认:"));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§f交易数量: §e" + quantity));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§f预计总价: §e" + String.format("%.2f", totalPrice) + " " + currencyName));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§7(每个物品的价格随库存实时变动)"));
+        
+        Component confirmBtn = Component.literal(ShopTranslationHelper.getRawTranslation("item.change.confirm"))
+                .setStyle(Style.EMPTY
+                        .withClickEvent(new ClickEvent.RunCommand("/shopconfirm yes"))
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("§a点击确认交易"))));
+
+        Component cancelBtn = Component.literal(ShopTranslationHelper.getRawTranslation("item.change.cancel"))
+                .setStyle(Style.EMPTY
+                        .withClickEvent(new ClickEvent.RunCommand("/shopconfirm no"))
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("§c点击取消交易"))));
+
+        player.sendSystemMessage(Component.empty().append(confirmBtn).append(Component.literal(" ")).append(cancelBtn));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§7或输入 'yes/是' 确认, 'no/否' 取消"));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
     }
 
     private boolean handleItemChangeInput(ServerPlayer player, String input) {
@@ -322,6 +482,10 @@ public class ChatInputHandler {
             return handleConfirmCommand(player, confirmed);
         }
 
+        if (pendingTransactions.containsKey(playerId)) {
+            return handleTransactionInput(player, action);
+        }
+
         return false;
     }
 
@@ -472,6 +636,7 @@ public class ChatInputHandler {
     private static class PendingTransaction {
         final UUID shopId;
         final long expireTime;
+        int quantity = -1;
 
         PendingTransaction(UUID shopId, long expireTime) {
             this.shopId = shopId;
@@ -487,6 +652,26 @@ public class ChatInputHandler {
         PendingItemChange(UUID shopId, ItemStack newItem, long expireTime) {
             this.shopId = shopId;
             this.newItem = newItem;
+            this.expireTime = expireTime;
+        }
+    }
+
+    private enum ShopDynamicSetupState {
+        INPUTTING_MIN_PRICE,
+        INPUTTING_MAX_PRICE,
+        INPUTTING_HALF_LIFE
+    }
+
+    private static class PendingDynamicSetup {
+        final UUID shopId;
+        ShopDynamicSetupState state;
+        double minPrice;
+        double maxPrice;
+        long expireTime;
+
+        PendingDynamicSetup(UUID shopId, long expireTime) {
+            this.shopId = shopId;
+            this.state = ShopDynamicSetupState.INPUTTING_MIN_PRICE;
             this.expireTime = expireTime;
         }
     }

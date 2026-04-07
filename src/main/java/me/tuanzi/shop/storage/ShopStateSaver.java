@@ -20,6 +20,7 @@ import java.util.UUID;
 public class ShopStateSaver extends SavedData {
     private static final String MOD_ID = "shop-module";
     private final ShopData data;
+    private int accumulatedTicks = 0;
 
     public ShopStateSaver() {
         this.data = new ShopData();
@@ -27,6 +28,20 @@ public class ShopStateSaver extends SavedData {
 
     public ShopData getData() {
         return data;
+    }
+
+    public int getAccumulatedTicks() {
+        return accumulatedTicks;
+    }
+
+    public void setAccumulatedTicks(int accumulatedTicks) {
+        this.accumulatedTicks = accumulatedTicks;
+        this.setDirty();
+    }
+
+    public void addTick() {
+        this.accumulatedTicks++;
+        this.setDirty();
     }
 
     private record BlockPosDto(int x, int y, int z) {
@@ -89,7 +104,10 @@ public class ShopStateSaver extends SavedData {
             double currentPrice,
             double minPrice,
             double maxPrice,
-            boolean dynamicPricing
+            boolean dynamicPricing,
+            double halfLifeConstant,
+            double systemStock,
+            double decayRate
     ) {
         private static final Codec<ShopPriceDto> CODEC = RecordCodecBuilder.create(instance ->
                 instance.group(
@@ -97,7 +115,10 @@ public class ShopStateSaver extends SavedData {
                         Codec.DOUBLE.fieldOf("currentPrice").forGetter(ShopPriceDto::currentPrice),
                         Codec.DOUBLE.fieldOf("minPrice").forGetter(ShopPriceDto::minPrice),
                         Codec.DOUBLE.fieldOf("maxPrice").forGetter(ShopPriceDto::maxPrice),
-                        Codec.BOOL.fieldOf("dynamicPricing").forGetter(ShopPriceDto::dynamicPricing)
+                        Codec.BOOL.fieldOf("dynamicPricing").forGetter(ShopPriceDto::dynamicPricing),
+                        Codec.DOUBLE.fieldOf("halfLifeConstant").orElse(500.0).forGetter(ShopPriceDto::halfLifeConstant),
+                        Codec.DOUBLE.fieldOf("systemStock").orElse(0.0).forGetter(ShopPriceDto::systemStock),
+                        Codec.DOUBLE.fieldOf("decayRate").orElse(0.01).forGetter(ShopPriceDto::decayRate)
                 ).apply(instance, ShopPriceDto::new)
         );
 
@@ -107,7 +128,10 @@ public class ShopStateSaver extends SavedData {
                     shop.getCurrentPrice(),
                     shop.getMinPrice(),
                     shop.getMaxPrice(),
-                    shop.isDynamicPricing()
+                    shop.isDynamicPricing(),
+                    shop.getHalfLifeConstant(),
+                    shop.getSystemStock(),
+                    shop.getDecayRate()
             );
         }
     }
@@ -177,6 +201,9 @@ public class ShopStateSaver extends SavedData {
             shop.setDynamicPricing(price().dynamicPricing());
             shop.setMinPrice(price().minPrice());
             shop.setMaxPrice(price().maxPrice());
+            shop.setHalfLifeConstant(price().halfLifeConstant());
+            shop.setSystemStock(price().systemStock());
+            shop.setDecayRate(price().decayRate());
             for (long i = 0; i < stats().totalSold(); i++) {
                 shop.incrementTotalSold(1);
             }
@@ -190,15 +217,25 @@ public class ShopStateSaver extends SavedData {
 
     private static final Codec<List<ShopDataDto>> SHOP_LIST_CODEC = Codec.list(ShopDataDto.CODEC);
 
-    private static final Codec<ShopStateSaver> CODEC = SHOP_LIST_CODEC.xmap(
-            shopDtos -> {
+    private record RootDto(List<ShopDataDto> shops, int accumulatedTicks) {
+        private static final Codec<RootDto> CODEC = RecordCodecBuilder.create(instance ->
+                instance.group(
+                        SHOP_LIST_CODEC.fieldOf("shops").forGetter(RootDto::shops),
+                        Codec.INT.fieldOf("accumulatedTicks").orElse(0).forGetter(RootDto::accumulatedTicks)
+                ).apply(instance, RootDto::new)
+        );
+    }
+
+    private static final Codec<ShopStateSaver> CODEC = RootDto.CODEC.xmap(
+            rootDto -> {
                 ShopStateSaver saver = new ShopStateSaver();
-                for (ShopDataDto dto : shopDtos) {
+                for (ShopDataDto dto : rootDto.shops()) {
                     ShopInstance shop = dto.toShop();
                     if (shop != null) {
                         saver.data.addShop(shop);
                     }
                 }
+                saver.accumulatedTicks = rootDto.accumulatedTicks();
                 return saver;
             },
             saver -> {
@@ -206,7 +243,7 @@ public class ShopStateSaver extends SavedData {
                 for (ShopInstance shop : saver.data.getAllShops()) {
                     shops.add(ShopDataDto.fromShop(shop));
                 }
-                return shops;
+                return new RootDto(shops, saver.accumulatedTicks);
             }
     );
 

@@ -15,6 +15,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -22,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class ShopManager {
+    private static final Logger LOGGER = LoggerFactory.getLogger("ShopModule/ShopManager");
     private static ShopManager instance;
     private final MinecraftServer server;
     private final ShopRegistry registry;
@@ -243,6 +246,28 @@ public class ShopManager {
 
     public void markDirty() {
         ShopStateSaver.getServerState(server).setDirty();
+    }
+
+    public void decaySystemStock(net.minecraft.server.level.ServerLevel level) {
+        boolean changed = false;
+        for (ShopInstance shop : getAllShops()) {
+            if (shop.isDynamicPricing() && shop.getSystemStock() > 0) {
+                // 使用商店独立的衰减率
+                double rate = 1.0 - shop.getDecayRate();
+                shop.setSystemStock(shop.getSystemStock() * rate);
+                shop.setCurrentPrice(me.tuanzi.shop.pricing.DynamicPricing.calculatePrice(shop));
+                
+                // 立即更新该商店的告示牌
+                if (level != null) {
+                    me.tuanzi.shop.util.SignUpdateHelper.updateSignForShop(shop, level);
+                }
+                changed = true;
+            }
+        }
+        if (changed) {
+            markDirty();
+            LOGGER.info("[商店系统] 已完成基于各商店衰减率的每日系统库存衰减并刷新了告示牌");
+        }
     }
 
     public MinecraftServer getServer() {

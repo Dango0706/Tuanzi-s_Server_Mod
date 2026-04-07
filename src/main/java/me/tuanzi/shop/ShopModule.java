@@ -12,6 +12,7 @@ import me.tuanzi.shop.logging.TransactionLogger;
 import me.tuanzi.shop.shop.ShopInstance;
 import me.tuanzi.shop.shop.ShopManager;
 import me.tuanzi.shop.shop.ShopRegistry;
+import me.tuanzi.shop.storage.ShopStateSaver;
 import me.tuanzi.shop.utils.ShopTranslationHelper;
 import me.tuanzi.shop.util.DevFlowLogger;
 import net.fabricmc.api.ModInitializer;
@@ -99,10 +100,22 @@ public class ShopModule implements ModInitializer {
 
         ServerTickEvents.START_SERVER_TICK.register(server -> {
             ShopModule instance = getInstance(server);
-            if (instance != null && instance.displayManager != null) {
+            if (instance != null) {
                 ServerLevel overworld = server.getLevel(Level.OVERWORLD);
                 if (overworld != null) {
-                    instance.displayManager.maintainAllDisplays(overworld);
+                    if (instance.displayManager != null) {
+                        instance.displayManager.maintainAllDisplays(overworld);
+                    }
+                    
+                    // 每日系统库存衰减逻辑 (积攒到 24000 tick)
+                    ShopStateSaver saver = ShopStateSaver.getServerState(server);
+                    saver.addTick();
+                    if (saver.getAccumulatedTicks() >= 24000) {
+                        if (instance.shopManager != null) {
+                            instance.shopManager.decaySystemStock(overworld);
+                        }
+                        saver.setAccumulatedTicks(0);
+                    }
                 }
             }
         });
