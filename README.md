@@ -134,4 +134,4 @@
 | **计分板**| `/statsboard interval/update` | 管理员 | 设置计分板的切换间隔或数据更新频率 |
 
 ---
-*Created by Tuanzi's Server Mod Team - 2026*
+* 所有代码/图片均由AI生成.
