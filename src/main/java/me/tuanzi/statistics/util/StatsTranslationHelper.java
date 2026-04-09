@@ -61,6 +61,18 @@ public class StatsTranslationHelper {
         defaultLanguage = normalizeLanguage(lang);
     }
 
+    public static String getLanguage(Object source) {
+        if (source instanceof net.minecraft.commands.CommandSourceStack css) {
+            net.minecraft.server.level.ServerPlayer player = css.getPlayer();
+            if (player != null) return getLanguage(player);
+        }
+        if (source instanceof ServerPlayer player) {
+            String lang = player.clientInformation().language();
+            return lang != null ? normalizeLanguage(lang) : defaultLanguage;
+        }
+        return defaultLanguage;
+    }
+
     public static String translate(String key, String languageCode) {
         String normalizedLanguage = normalizeLanguage(languageCode);
         Map<String, String> translations = "zh_cn".equals(normalizedLanguage) ? zhCnTranslations : enUsTranslations;
@@ -82,7 +94,11 @@ public class StatsTranslationHelper {
         if (template.equals(key)) {
             return key;
         }
-        return String.format(template, args);
+        try {
+            return String.format(template, args);
+        } catch (Exception e) {
+            return template;
+        }
     }
 
     public static Component translateToComponent(String key, String languageCode) {
@@ -94,27 +110,27 @@ public class StatsTranslationHelper {
     }
 
     public static void sendMessage(ServerPlayer player, String key) {
-        player.sendSystemMessage(Component.literal(translate(key, defaultLanguage)));
+        player.sendSystemMessage(Component.literal(translate(key, getLanguage(player))));
     }
 
     public static void sendMessage(ServerPlayer player, String key, Object... args) {
-        player.sendSystemMessage(Component.literal(translate(key, defaultLanguage, args)));
+        player.sendSystemMessage(Component.literal(translate(key, getLanguage(player), args)));
     }
 
     public static void sendSuccess(net.minecraft.commands.CommandSourceStack source, String key) {
-        source.sendSuccess(() -> Component.literal(translate(key, defaultLanguage)), false);
+        source.sendSuccess(() -> Component.literal(translate(key, getLanguage(source))), false);
     }
 
     public static void sendSuccess(net.minecraft.commands.CommandSourceStack source, String key, Object... args) {
-        source.sendSuccess(() -> Component.literal(translate(key, defaultLanguage, args)), false);
+        source.sendSuccess(() -> Component.literal(translate(key, getLanguage(source), args)), false);
     }
 
     public static void sendFailure(net.minecraft.commands.CommandSourceStack source, String key) {
-        source.sendFailure(Component.literal(translate(key, defaultLanguage)));
+        source.sendFailure(Component.literal(translate(key, getLanguage(source))));
     }
 
     public static void sendFailure(net.minecraft.commands.CommandSourceStack source, String key, Object... args) {
-        source.sendFailure(Component.literal(translate(key, defaultLanguage, args)));
+        source.sendFailure(Component.literal(translate(key, getLanguage(source), args)));
     }
 
     private static String normalizeLanguage(String language) {

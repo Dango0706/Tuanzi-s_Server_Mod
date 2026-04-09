@@ -50,10 +50,10 @@ public class ChatInputHandler {
         PendingTransaction pending = new PendingTransaction(shop.getShopId(), expireTime);
         pendingTransactions.put(player.getUUID(), pending);
 
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("transaction.input.prompt", timeout));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§7输入 'cancel' 或 '取消' 可取消交易"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "transaction.header"));
+        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.prompt", timeout));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§7" + ShopTranslationHelper.getRawTranslation(player, "transaction.confirm_hint_cancel")));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "transaction.header"));
     }
 
     public void startItemChangeConfirmation(ServerPlayer player, ShopInstance shop, ItemStack newItem) {
@@ -70,22 +70,22 @@ public class ChatInputHandler {
         PendingItemChange pending = new PendingItemChange(shop.getShopId(), newItem.copy(), expireTime);
         pendingItemChanges.put(player.getUUID(), pending);
 
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("item.change.prompt", newItem.getDisplayName().getString()));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "item.change.header"));
+        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "item.change.prompt", newItem.getDisplayName().getString()));
 
-        Component confirmBtn = Component.literal(ShopTranslationHelper.getRawTranslation("item.change.confirm"))
+        Component confirmBtn = Component.literal("[" + ShopTranslationHelper.getRawTranslation(player, "item.change.confirm_btn") + "]")
                 .setStyle(Style.EMPTY
                         .withClickEvent(new ClickEvent.RunCommand("/shopconfirm yes"))
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("§a点击确认更换"))));
+                        .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "item.change.click_confirm"))));
 
-        Component cancelBtn = Component.literal(ShopTranslationHelper.getRawTranslation("item.change.cancel"))
+        Component cancelBtn = Component.literal("[" + ShopTranslationHelper.getRawTranslation(player, "item.change.cancel_btn") + "]")
                 .setStyle(Style.EMPTY
                         .withClickEvent(new ClickEvent.RunCommand("/shopconfirm no"))
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("§c点击取消更换"))));
+                        .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "item.change.click_cancel"))));
 
         player.sendSystemMessage(Component.empty().append(confirmBtn).append(Component.literal(" ")).append(cancelBtn));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§7或输入 'yes/是' 确认, 'no/否' 取消"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§7" + ShopTranslationHelper.getRawTranslation(player, "transaction.confirm_hint")));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "item.change.header"));
 
         DevFlowLogger.status("物品修改流程", "已向玩家发送确认提示，等待确认");
     }
@@ -119,11 +119,11 @@ public class ChatInputHandler {
         PendingDynamicSetup pending = new PendingDynamicSetup(shop.getShopId(), expireTime);
         pendingDynamicSetups.put(player.getUUID(), pending);
 
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b正在引导设置动态定价变量..."));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§f当前基础价格: §e" + shop.getBasePrice()));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b1. 请输入最低收购价(保底价):"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "common.dynamic_pricing"));
+        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "admin.shop.dynamic.setup_header"));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§f" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.dynamic.base_price_fmt") + shop.getBasePrice()));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.dynamic.min_price_prompt")));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "common.dynamic_pricing"));
     }
 
     private boolean handleDynamicSetupInput(ServerPlayer player, String input) {
@@ -134,20 +134,20 @@ public class ChatInputHandler {
 
         if (System.currentTimeMillis() > pending.expireTime) {
             pendingDynamicSetups.remove(playerId);
-            player.sendSystemMessage(ShopTranslationHelper.translatable("transaction.input.timeout"));
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.timeout"));
             return true;
         }
 
         if (input.equalsIgnoreCase("cancel") || input.equalsIgnoreCase("取消")) {
             pendingDynamicSetups.remove(playerId);
-            player.sendSystemMessage(ShopTranslationHelper.colored("§c已取消动态定价设置"));
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "admin.shop.dynamic.cancelled"));
             return true;
         }
 
         try {
             double value = Double.parseDouble(input);
             if (value <= 0) {
-                player.sendSystemMessage(ShopTranslationHelper.colored("§c数值必须大于 0"));
+                player.sendSystemMessage(ShopTranslationHelper.translatable(player, "admin.shop.dynamic.invalid_value"));
                 return true;
             }
 
@@ -155,18 +155,18 @@ public class ChatInputHandler {
                 case INPUTTING_MIN_PRICE:
                     pending.minPrice = value;
                     pending.state = ShopDynamicSetupState.INPUTTING_MAX_PRICE;
-                    player.sendSystemMessage(ShopTranslationHelper.colored("§a已设置最低价: " + value));
-                    player.sendSystemMessage(ShopTranslationHelper.colored("§b2. 请输入最高收购价(缺货价):"));
+                    player.sendSystemMessage(ShopTranslationHelper.colored("§a" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.dynamic.min_price_set") + value));
+                    player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.dynamic.max_price_prompt")));
                     break;
                 case INPUTTING_MAX_PRICE:
                     if (value <= pending.minPrice) {
-                        player.sendSystemMessage(ShopTranslationHelper.colored("§c最高价必须大于最低价(" + pending.minPrice + ")"));
+                        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "admin.shop.dynamic.max_less_than_min"));
                         return true;
                     }
                     pending.maxPrice = value;
                     pending.state = ShopDynamicSetupState.INPUTTING_HALF_LIFE;
-                    player.sendSystemMessage(ShopTranslationHelper.colored("§a已设置最高价: " + value));
-                    player.sendSystemMessage(ShopTranslationHelper.colored("§b3. 请输入半衰常数 K (卖出多少个后利润减半):"));
+                    player.sendSystemMessage(ShopTranslationHelper.colored("§a" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.dynamic.max_price_set") + value));
+                    player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.dynamic.halflife_prompt")));
                     break;
                 case INPUTTING_HALF_LIFE:
                     pendingDynamicSetups.remove(playerId);
@@ -176,7 +176,7 @@ public class ChatInputHandler {
             // 每次输入成功后重置超时
             pending.expireTime = System.currentTimeMillis() + (ShopModule.getConfig().getInputTimeoutSeconds() * 1000L);
         } catch (NumberFormatException e) {
-            player.sendSystemMessage(ShopTranslationHelper.colored("§c请输入有效的数字"));
+            player.sendSystemMessage(ShopTranslationHelper.colored("§c" + ShopTranslationHelper.getRawTranslation(player, "common.invalid_number")));
         }
 
         return true;
@@ -185,7 +185,7 @@ public class ChatInputHandler {
     private void completeDynamicSetup(ServerPlayer player, PendingDynamicSetup pending, double halfLife) {
         Optional<ShopInstance> shopOpt = shopManager.getShopById(pending.shopId);
         if (shopOpt.isEmpty()) {
-            player.sendSystemMessage(ShopTranslationHelper.translatable("shop.not_found"));
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.not_found"));
             return;
         }
 
@@ -204,13 +204,13 @@ public class ChatInputHandler {
             SignUpdateHelper.updateSignForShop(shop, level);
         }
 
-        player.sendSystemMessage(ShopTranslationHelper.colored("§a========================================"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§6动态定价设置成功并已开启！"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§f最低价: §e" + pending.minPrice));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§f最高价: §e" + pending.maxPrice));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§f半衰常数: §e" + halfLife));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§7当前计算单价: " + String.format("%.2f", newPrice)));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§a========================================"));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "common.dynamic_pricing"));
+        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "admin.shop.dynamic.setup_success"));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§f" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.min_price") + ": §e" + pending.minPrice));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§f" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.max_price") + ": §e" + pending.maxPrice));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§f" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.half_life") + ": §e" + halfLife));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§7" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.dynamic.current_unit_price") + String.format("%.2f", newPrice)));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "common.dynamic_pricing"));
     }
 
     private boolean handleTransactionInput(ServerPlayer player, String input) {
@@ -223,14 +223,14 @@ public class ChatInputHandler {
 
         if (System.currentTimeMillis() > pending.expireTime) {
             pendingTransactions.remove(playerId);
-            player.sendSystemMessage(ShopTranslationHelper.translatable("transaction.input.timeout"));
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.timeout"));
             return true;
         }
 
         String lowerInput = input.toLowerCase();
         if (lowerInput.equals("cancel") || lowerInput.equals("取消")) {
             pendingTransactions.remove(playerId);
-            player.sendSystemMessage(ShopTranslationHelper.translatable("transaction.input.cancelled"));
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.cancelled"));
             return true;
         }
 
@@ -248,10 +248,13 @@ public class ChatInputHandler {
                 return true;
             } else if (cancelled) {
                 pendingTransactions.remove(playerId);
-                player.sendSystemMessage(ShopTranslationHelper.translatable("transaction.input.cancelled"));
+                player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.cancelled"));
                 return true;
             }
-            return false; // 继续等待有效输入
+            // 输入无效，取消并提示
+            pendingTransactions.remove(playerId);
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.invalid"));
+            return true;
         }
 
         // 处理初始数量输入
@@ -259,23 +262,26 @@ public class ChatInputHandler {
         try {
             quantity = Integer.parseInt(input);
             if (quantity <= 0) {
-                player.sendSystemMessage(ShopTranslationHelper.translatable("transaction.input.invalid"));
+                pendingTransactions.remove(playerId);
+                player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.invalid"));
                 return true;
             }
             int maxQty = ShopModule.getConfig().getMaxTransactionQuantity();
             if (quantity > maxQty) {
-                player.sendSystemMessage(ShopTranslationHelper.colored("§c数量超过最大限制: " + maxQty));
+                pendingTransactions.remove(playerId);
+                player.sendSystemMessage(ShopTranslationHelper.colored("§c" + ShopTranslationHelper.getRawTranslation(player, "transaction.too_many_items") + ": " + maxQty));
                 return true;
             }
         } catch (NumberFormatException e) {
-            player.sendSystemMessage(ShopTranslationHelper.translatable("transaction.input.invalid"));
+            pendingTransactions.remove(playerId);
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.invalid"));
             return true;
         }
 
         Optional<ShopInstance> shopOpt = shopManager.getShopById(pending.shopId);
         if (shopOpt.isEmpty() || !shopOpt.get().isValid()) {
             pendingTransactions.remove(playerId);
-            player.sendSystemMessage(ShopTranslationHelper.translatable("shop.not_found"));
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.not_found"));
             return true;
         }
 
@@ -304,107 +310,84 @@ public class ChatInputHandler {
         pending.quantity = quantity;
         pendingTransactions.put(player.getUUID(), pending);
 
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b动态价格确认:"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§f交易数量: §e" + quantity));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§f预计总价: §e" + String.format("%.2f", totalPrice) + " " + currencyName));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§7(每个物品的价格随库存实时变动)"));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "common.dynamic_pricing"));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "transaction.dynamic_confirm_header") + ":"));
         
-        Component confirmBtn = Component.literal(ShopTranslationHelper.getRawTranslation("item.change.confirm"))
+        // 物品悬浮展示 (使用 26.1 API)
+        ItemStack stack = shop.getTradeItem();
+        net.minecraft.world.item.ItemStackTemplate template = net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(stack);
+        Component itemComp = stack.getDisplayName().copy().withStyle(s -> 
+            s.withHoverEvent(new net.minecraft.network.chat.HoverEvent.ShowItem(template)));
+        
+        player.sendSystemMessage(Component.empty()
+                .append(ShopTranslationHelper.colored("§f" + ShopTranslationHelper.getRawTranslation(player, "common.item") + ": "))
+                .append(itemComp));
+        
+        player.sendSystemMessage(ShopTranslationHelper.colored("§f" + ShopTranslationHelper.getRawTranslation(player, "transaction.quantity") + ": §e" + quantity));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§f" + ShopTranslationHelper.getRawTranslation(player, "transaction.total_price") + ": §e" + String.format("%.2f", totalPrice) + " " + currencyName));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§7(" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.dynamic_desc") + ")"));
+        
+        Component confirmBtn = Component.literal("[" + ShopTranslationHelper.getRawTranslation(player, "item.change.confirm_btn") + "]")
                 .setStyle(Style.EMPTY
                         .withClickEvent(new ClickEvent.RunCommand("/shopconfirm yes"))
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("§a点击确认交易"))));
+                        .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "transaction.click_to_confirm"))));
 
-        Component cancelBtn = Component.literal(ShopTranslationHelper.getRawTranslation("item.change.cancel"))
+        Component cancelBtn = Component.literal("[" + ShopTranslationHelper.getRawTranslation(player, "item.change.cancel_btn") + "]")
                 .setStyle(Style.EMPTY
                         .withClickEvent(new ClickEvent.RunCommand("/shopconfirm no"))
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("§c点击取消交易"))));
+                        .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "transaction.click_to_cancel"))));
 
         player.sendSystemMessage(Component.empty().append(confirmBtn).append(Component.literal(" ")).append(cancelBtn));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§7或输入 'yes/是' 确认, 'no/否' 取消"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§7" + ShopTranslationHelper.getRawTranslation(player, "transaction.confirm_hint")));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "common.dynamic_pricing"));
     }
 
     private boolean handleItemChangeInput(ServerPlayer player, String input) {
-        DevFlowLogger.step("物品修改流程", "处理玩家确认输入", "输入=", input);
-
         UUID playerId = player.getUUID();
         PendingItemChange pending = pendingItemChanges.get(playerId);
 
-        if (pending == null) {
-            DevFlowLogger.warning("物品修改流程", "未找到待处理的物品修改请求");
-            return false;
-        }
+        if (pending == null) return false;
 
         if (System.currentTimeMillis() > pending.expireTime) {
-            DevFlowLogger.warning("物品修改流程", "请求已超时");
             pendingItemChanges.remove(playerId);
-            player.sendSystemMessage(ShopTranslationHelper.translatable("item.change.timeout"));
-            DevFlowLogger.endFlow("物品修改流程", false, "请求超时");
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "item.change.timeout"));
             return true;
         }
 
         boolean confirmed = input.equals("yes") || input.equals("是") || input.equals("confirm");
         boolean cancelled = input.equals("no") || input.equals("否") || input.equals("cancel");
 
-        if (!confirmed && !cancelled) {
-            return false;
-        }
+        if (!confirmed && !cancelled) return false;
 
         pendingItemChanges.remove(playerId);
 
         if (cancelled) {
-            DevFlowLogger.status("物品修改流程", "玩家取消物品修改");
-            player.sendSystemMessage(ShopTranslationHelper.translatable("item.change.cancelled"));
-            DevFlowLogger.endFlow("物品修改流程", false, "玩家取消");
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "item.change.cancelled"));
             return true;
         }
 
-        DevFlowLogger.status("物品修改流程", "玩家确认修改，开始执行");
-
         Optional<ShopInstance> shopOpt = shopManager.getShopById(pending.shopId);
-        if (shopOpt.isEmpty()) {
-            DevFlowLogger.error("物品修改流程", "商店不存在: " + pending.shopId);
-            player.sendSystemMessage(ShopTranslationHelper.translatable("shop.not_found"));
-            DevFlowLogger.endFlow("物品修改流程", false, "商店不存在");
+        if (shopOpt.isEmpty() || !shopOpt.get().isValid()) {
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.not_found"));
             return true;
         }
 
         ShopInstance shop = shopOpt.get();
-        
-        if (!shop.isValid()) {
-            DevFlowLogger.error("物品修改流程", "商店已被删除");
-            player.sendSystemMessage(ShopTranslationHelper.colored("§c此商店已不存在"));
-            DevFlowLogger.endFlow("物品修改流程", false, "商店已删除");
-            return true;
-        }
-        
-        DevFlowLogger.step("物品修改流程", "更新商店物品");
         shop.setTradeItem(pending.newItem.copy());
         shopManager.markDirty();
-        DevFlowLogger.param("物品修改流程", "新物品", pending.newItem.getDisplayName().getString());
 
         MinecraftServer server = player.level().getServer();
         if (server != null) {
             ShopModule instance = ShopModule.getInstance(server);
             if (instance != null && instance.getDisplayManager() != null) {
                 if (player.level() instanceof ServerLevel serverLevel) {
-                    DevFlowLogger.step("物品修改流程", "更新悬浮物品显示");
                     instance.getDisplayManager().updateDisplayItem(shop.getShopId(), pending.newItem, serverLevel);
-                    LOGGER.info("[商店调试] 物品修改(聊天确认) - 已更新商店{} 的悬浮物品显示", shop.getShopId());
-                    DevFlowLogger.status("物品修改流程", "悬浮物品显示已更新");
-                    
-                    // 使用 SignUpdateHelper 统一更新告示牌文本
                     SignUpdateHelper.updateSignForShop(shop, serverLevel);
-                    DevFlowLogger.status("物品修改流程", "告示牌已通过SignUpdateHelper刷新");
                 }
             }
         }
 
-        player.sendSystemMessage(ShopTranslationHelper.translatable("item.change.success", pending.newItem.getDisplayName().getString()));
-
-        DevFlowLogger.endFlow("物品修改流程", true, 
-                "物品修改成功 - 新物品: " + pending.newItem.getDisplayName().getString());
+        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "item.change.success", pending.newItem.getDisplayName().getString()));
         return true;
     }
 
@@ -412,41 +395,30 @@ public class ChatInputHandler {
         UUID playerId = player.getUUID();
         PendingItemChange pending = pendingItemChanges.get(playerId);
 
-        if (pending == null) {
-            return false;
-        }
+        if (pending == null) return false;
 
         if (System.currentTimeMillis() > pending.expireTime) {
             pendingItemChanges.remove(playerId);
-            player.sendSystemMessage(ShopTranslationHelper.translatable("item.change.timeout"));
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "item.change.timeout"));
             return true;
         }
 
         pendingItemChanges.remove(playerId);
 
         if (!confirmed) {
-            player.sendSystemMessage(ShopTranslationHelper.translatable("item.change.cancelled"));
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "item.change.cancelled"));
             return true;
         }
 
         Optional<ShopInstance> shopOpt = shopManager.getShopById(pending.shopId);
-        if (shopOpt.isEmpty()) {
-            player.sendSystemMessage(ShopTranslationHelper.translatable("shop.not_found"));
+        if (shopOpt.isEmpty() || !shopOpt.get().isValid()) {
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.not_found"));
             return true;
         }
 
         ShopInstance shop = shopOpt.get();
-        
-        if (!shop.isValid()) {
-            player.sendSystemMessage(ShopTranslationHelper.colored("§c此商店已不存在"));
-            return true;
-        }
-        
         shop.setTradeItem(pending.newItem.copy());
         shopManager.markDirty();
-
-        DevFlowLogger.step("物品修改流程", "更新商店物品数据");
-        DevFlowLogger.param("物品修改流程", "newItem", pending.newItem.getDisplayName().getString());
 
         MinecraftServer serverCmd = player.level().getServer();
         if (serverCmd != null) {
@@ -454,19 +426,12 @@ public class ChatInputHandler {
             if (instanceCmd != null && instanceCmd.getDisplayManager() != null) {
                 if (player.level() instanceof ServerLevel serverLevelCmd) {
                     instanceCmd.getDisplayManager().updateDisplayItem(shop.getShopId(), pending.newItem, serverLevelCmd);
-                    LOGGER.info("[商店调试] 物品修改(命令确认) - 已更新商店{} 的悬浮物品显示", shop.getShopId());
-                    
-                    // 使用 SignUpdateHelper 统一更新告示牌文本
                     SignUpdateHelper.updateSignForShop(shop, serverLevelCmd);
-                    DevFlowLogger.status("物品修改流程", "告示牌已通过SignUpdateHelper刷新");
                 }
             }
         }
 
-        player.sendSystemMessage(ShopTranslationHelper.translatable("item.change.success", pending.newItem.getDisplayName().getString()));
-
-        DevFlowLogger.endFlow("物品修改流程", true, 
-                "物品修改成功 - 新物品: " + pending.newItem.getDisplayName().getString());
+        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "item.change.success", pending.newItem.getDisplayName().getString()));
         return true;
     }
 
@@ -493,13 +458,11 @@ public class ChatInputHandler {
         UUID playerId = player.getUUID();
         PendingShopCreation pending = pendingShopCreations.get(playerId);
 
-        if (pending == null) {
-            return false;
-        }
+        if (pending == null) return false;
 
         if (System.currentTimeMillis() > pending.expireTime) {
             pendingShopCreations.remove(playerId);
-            player.sendSystemMessage(ShopTranslationHelper.translatable("transaction.input.timeout"));
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.timeout"));
             return true;
         }
 
@@ -508,13 +471,11 @@ public class ChatInputHandler {
                 boolean confirmed = action.equals("yes") || action.equals("是");
                 boolean cancelled = action.equals("no") || action.equals("否");
                 
-                if (!confirmed && !cancelled) {
-                    return false;
-                }
+                if (!confirmed && !cancelled) return false;
                 
                 if (cancelled) {
                     pendingShopCreations.remove(playerId);
-                    player.sendSystemMessage(ShopTranslationHelper.colored("§c已取消创建商店"));
+                    player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.cancelled"));
                     return true;
                 }
                 
@@ -528,57 +489,15 @@ public class ChatInputHandler {
         }
     }
 
-    private void updateSignText(ServerPlayer player, ShopInstance shop, ItemStack newItem) {
-        MinecraftServer server = player.level().getServer();
-        if (server == null) return;
-
-        ServerLevel level = player.level();
-        if (level == null) return;
-
-        BlockPos signPos = shop.getSignPos();
-        if (!(level.getBlockEntity(signPos) instanceof SignBlockEntity signEntity)) return;
-
-        boolean isSellShop = shop.getShopType() == ShopType.SELL;
-        String currencyName = shopManager.getCurrencyDisplayName(shop.getWalletTypeId());
-        double price = me.tuanzi.shop.pricing.DynamicPricing.calculatePrice(shop);
-
-        var frontText = signEntity.getFrontText()
-                .setMessage(0, Component.literal(isSellShop ? "[出售]" : "[收购]"))
-                .setMessage(1, newItem.getDisplayName())
-                .setMessage(2, Component.literal(String.format("%.2f %s", price, currencyName)))
-                .setMessage(3, Component.literal(""));
-        signEntity.setText(frontText, true);
-        signEntity.setChanged();
-        
-        level.sendBlockUpdated(signPos, level.getBlockState(signPos), level.getBlockState(signPos), 3);
-        
-        LOGGER.info("[商店调试] 告示牌文字已更新 - 商店ID: {}, 位置: {}, 已标记数据为脏数据等待保存", shop.getShopId(), signPos);
-    }
-
-    private void executeTransaction(ServerPlayer player, ShopInstance shop, int quantity) {
-        boolean isBuy = shop.getShopType() == ShopType.SELL;
-        String transactionType = isBuy ? "buy" : "sell";
-
-        MinecraftServer server = player.level().getServer();
-        if (server == null) {
-            player.sendSystemMessage(ShopTranslationHelper.colored("§c服务器错误"));
-            return;
-        }
-
-        BlockInteractionHandler handler = ShopModule.getInstance(server).getInteractionHandler();
-        if (handler == null) {
-            player.sendSystemMessage(ShopTranslationHelper.colored("§c交易处理器未初始化"));
-            return;
-        }
-
-        handler.executeTransaction(player, shop.getShopId(), transactionType, quantity);
-    }
-
     public void cleanupExpired() {
         long currentTime = System.currentTimeMillis();
+        MinecraftServer server = shopManager.getServer();
+        if (server == null) return;
 
         pendingTransactions.entrySet().removeIf(entry -> {
             if (currentTime > entry.getValue().expireTime) {
+                ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
+                if (player != null) player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.timeout"));
                 return true;
             }
             return false;
@@ -586,6 +505,26 @@ public class ChatInputHandler {
 
         pendingItemChanges.entrySet().removeIf(entry -> {
             if (currentTime > entry.getValue().expireTime) {
+                ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
+                if (player != null) player.sendSystemMessage(ShopTranslationHelper.translatable(player, "item.change.timeout"));
+                return true;
+            }
+            return false;
+        });
+
+        pendingShopCreations.entrySet().removeIf(entry -> {
+            if (currentTime > entry.getValue().expireTime) {
+                ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
+                if (player != null) player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.timeout"));
+                return true;
+            }
+            return false;
+        });
+
+        pendingDynamicSetups.entrySet().removeIf(entry -> {
+            if (currentTime > entry.getValue().expireTime) {
+                ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
+                if (player != null) player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.timeout"));
                 return true;
             }
             return false;
@@ -593,44 +532,9 @@ public class ChatInputHandler {
     }
 
     public void cleanupForShop(UUID shopId) {
-        LOGGER.info("清理商店相关的待处理状态 - 商店ID: {}", shopId);
-        
-        pendingTransactions.entrySet().removeIf(entry -> 
-            entry.getValue().shopId.equals(shopId));
-        
-        pendingItemChanges.entrySet().removeIf(entry -> 
-            entry.getValue().shopId.equals(shopId));
-        
-        LOGGER.info("商店状态清理完成 - 商店ID: {}", shopId);
-    }
-
-    public boolean hasPendingTransaction(UUID playerId) {
-        PendingTransaction pending = pendingTransactions.get(playerId);
-        if (pending == null) {
-            return false;
-        }
-        if (System.currentTimeMillis() > pending.expireTime) {
-            pendingTransactions.remove(playerId);
-            return false;
-        }
-        return true;
-    }
-
-    public boolean cancelPendingTransaction(UUID playerId) {
-        PendingTransaction pending = pendingTransactions.remove(playerId);
-        return pending != null;
-    }
-
-    public boolean hasPendingItemChange(UUID playerId) {
-        PendingItemChange pending = pendingItemChanges.get(playerId);
-        if (pending == null) {
-            return false;
-        }
-        if (System.currentTimeMillis() > pending.expireTime) {
-            pendingItemChanges.remove(playerId);
-            return false;
-        }
-        return true;
+        pendingTransactions.entrySet().removeIf(entry -> entry.getValue().shopId.equals(shopId));
+        pendingItemChanges.entrySet().removeIf(entry -> entry.getValue().shopId.equals(shopId));
+        pendingDynamicSetups.entrySet().removeIf(entry -> entry.getValue().shopId.equals(shopId));
     }
 
     private static class PendingTransaction {
@@ -703,388 +607,231 @@ public class ChatInputHandler {
         }
     }
 
+    public boolean hasPendingTransaction(UUID playerId) {
+        PendingTransaction pending = pendingTransactions.get(playerId);
+        return pending != null && System.currentTimeMillis() <= pending.expireTime;
+    }
+
+    public boolean cancelPendingTransaction(UUID playerId) {
+        return pendingTransactions.remove(playerId) != null;
+    }
+
     public boolean hasPendingShopCreation(UUID playerId) {
         PendingShopCreation pending = pendingShopCreations.get(playerId);
-        if (pending == null) {
-            return false;
-        }
-        if (System.currentTimeMillis() > pending.expireTime) {
-            pendingShopCreations.remove(playerId);
-            return false;
-        }
-        return true;
+        return pending != null && System.currentTimeMillis() <= pending.expireTime;
     }
 
     public void startShopCreation(ServerPlayer player, BlockPos signPos, ItemStack item, BlockPos containerPos) {
-        DevFlowLogger.startFlow("商店创建流程(聊天)");
-        DevFlowLogger.param("商店创建流程(聊天)", "player", player.getName().getString());
-        DevFlowLogger.param("商店创建流程(聊天)", "playerUUID", player.getUUID());
-        DevFlowLogger.param("商店创建流程(聊天)", "signPos", signPos);
-        DevFlowLogger.param("商店创建流程(聊天)", "containerPos", containerPos);
-        DevFlowLogger.param("商店创建流程(聊天)", "item", item.getDisplayName().getString());
-
         int timeout = ShopModule.getConfig().getInputTimeoutSeconds();
         long expireTime = System.currentTimeMillis() + (timeout * 1000L);
 
-        DevFlowLogger.step("商店创建流程(聊天)", "初始化待处理状态", "超时时间=", timeout, "秒");
         PendingShopCreation pending = new PendingShopCreation(signPos, containerPos, item, expireTime);
         pendingShopCreations.put(player.getUUID(), pending);
-        DevFlowLogger.status("商店创建流程(聊天)", "已将玩家添加到待处理列表，等待确认");
-        DevFlowLogger.param("商店创建流程(聊天)", "expireTime", expireTime);
-        DevFlowLogger.param("商店创建流程(聊天)", "当前状态", "WAITING_CONFIRM");
 
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("shop.creation.prompt", item.getDisplayName().getString()));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
+        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.prompt", item.getDisplayName().getString()));
         
-        Component confirmBtn = Component.literal(ShopTranslationHelper.getRawTranslation("item.change.confirm"))
+        Component confirmBtn = Component.literal("[" + ShopTranslationHelper.getRawTranslation(player, "item.change.confirm_btn") + "]")
                 .setStyle(Style.EMPTY
                 .withClickEvent(new ClickEvent.RunCommand("/shopconfirm yes"))
-                .withHoverEvent(new HoverEvent.ShowText(Component.literal("§a点击确认创建"))));
+                .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "transaction.click_to_confirm"))));
         
-        Component cancelBtn = Component.literal(ShopTranslationHelper.getRawTranslation("item.change.cancel"))
+        Component cancelBtn = Component.literal("[" + ShopTranslationHelper.getRawTranslation(player, "item.change.cancel_btn") + "]")
                 .setStyle(Style.EMPTY
                 .withClickEvent(new ClickEvent.RunCommand("/shopconfirm no"))
-                .withHoverEvent(new HoverEvent.ShowText(Component.literal("§c点击取消创建"))));
+                .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "transaction.click_to_cancel"))));
         
         player.sendSystemMessage(Component.empty().append(confirmBtn).append(Component.literal(" ")).append(cancelBtn));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§7或输入 'yes/是' 确认, 'no/否' 取消"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-
-        DevFlowLogger.status("商店创建流程(聊天)", "已向玩家发送确认提示消息");
+        player.sendSystemMessage(ShopTranslationHelper.colored("§7" + ShopTranslationHelper.getRawTranslation(player, "transaction.confirm_hint")));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
     }
 
     private boolean handleShopCreationInput(ServerPlayer player, String input) {
         UUID playerId = player.getUUID();
         PendingShopCreation pending = pendingShopCreations.get(playerId);
 
-        if (pending == null) {
-            return false;
-        }
+        if (pending == null) return false;
 
         if (System.currentTimeMillis() > pending.expireTime) {
             pendingShopCreations.remove(playerId);
-            player.sendSystemMessage(ShopTranslationHelper.translatable("transaction.input.timeout"));
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.timeout"));
             return true;
         }
 
         switch (pending.state) {
-            case WAITING_CONFIRM:
-                return handleCreationConfirm(player, pending, input);
-            case SELECTING_TYPE:
-                return handleCreationType(player, pending, input);
-            case INPUTTING_PRICE:
-                return handleCreationPrice(player, pending, input);
-            case INPUTTING_CURRENCY:
-                return handleCreationCurrency(player, pending, input);
-            case INPUTTING_NOTE:
-                return handleCreationNote(player, pending, input);
-            default:
-                return false;
+            case WAITING_CONFIRM: return handleCreationConfirm(player, pending, input);
+            case SELECTING_TYPE: return handleCreationType(player, pending, input);
+            case INPUTTING_PRICE: return handleCreationPrice(player, pending, input);
+            case INPUTTING_CURRENCY: return handleCreationCurrency(player, pending, input);
+            case INPUTTING_NOTE: return handleCreationNote(player, pending, input);
+            default: return false;
         }
     }
 
     private boolean handleCreationConfirm(ServerPlayer player, PendingShopCreation pending, String input) {
-        DevFlowLogger.step("商店创建流程(聊天)", "处理确认输入", "玩家输入=", input);
-
         boolean confirmed = input.equalsIgnoreCase("yes") || input.equalsIgnoreCase("是") || input.equalsIgnoreCase("confirm");
         boolean cancelled = input.equalsIgnoreCase("no") || input.equalsIgnoreCase("否") || input.equalsIgnoreCase("cancel");
 
-        if (!confirmed && !cancelled) {
-            DevFlowLogger.status("商店创建流程(聊天)", "无效输入，等待重新输入");
-            return false;
-        }
+        if (!confirmed && !cancelled) return false;
 
         if (cancelled) {
-            DevFlowLogger.step("商店创建流程(聊天)", "玩家取消创建");
             pendingShopCreations.remove(player.getUUID());
-            player.sendSystemMessage(ShopTranslationHelper.colored("§c已取消创建商店"));
-            DevFlowLogger.endFlow("商店创建流程(聊天)", false, "玩家主动取消");
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.cancelled"));
             return true;
         }
 
-        DevFlowLogger.status("商店创建流程(聊天)", "玩家确认创建，进入类型选择阶段");
-        
         pending.state = ShopCreationState.SELECTING_TYPE;
-        int timeout = 15;
-        long expireTime = System.currentTimeMillis() + (timeout * 1000L);
-        pending.expireTime = expireTime;
-        DevFlowLogger.param("商店创建流程(聊天)", "新状态", "SELECTING_TYPE");
-        DevFlowLogger.param("商店创建流程(聊天)", "新超时时间", timeout + "秒");
+        pending.expireTime = System.currentTimeMillis() + (15 * 1000L);
 
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b请选择商店类型:"));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
+        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.type_prompt"));
         
-        Component sellBtn = Component.literal("§a[出售]")
+        Component sellBtn = Component.literal("§a[" + ShopTranslationHelper.getRawTranslation(player, "shop.type.sell_btn") + "]")
                 .setStyle(Style.EMPTY
                 .withClickEvent(new ClickEvent.RunCommand("/shopconfirm sell"))
-                .withHoverEvent(new HoverEvent.ShowText(Component.literal("§a点击创建出售商店"))));
+                .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "shop.creation.sell_btn_hover"))));
         
-        Component buyBtn = Component.literal("§a[收购]")
+        Component buyBtn = Component.literal("§a[" + ShopTranslationHelper.getRawTranslation(player, "shop.type.buy_btn") + "]")
                 .setStyle(Style.EMPTY
                 .withClickEvent(new ClickEvent.RunCommand("/shopconfirm buy"))
-                .withHoverEvent(new HoverEvent.ShowText(Component.literal("§a点击创建收购商店"))));
+                .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "shop.creation.buy_btn_hover"))));
         
         player.sendSystemMessage(Component.empty().append(sellBtn).append(Component.literal(" ")).append(buyBtn));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§7或输入 'sell/出售' 或 'buy/收购'"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-
-        DevFlowLogger.status("商店创建流程(聊天)", "已向玩家发送类型选择提示");
+        player.sendSystemMessage(ShopTranslationHelper.colored("§7" + ShopTranslationHelper.getRawTranslation(player, "shop.creation.type_hint")));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
         return true;
     }
 
     private boolean handleCreationType(ServerPlayer player, PendingShopCreation pending, String input) {
-        DevFlowLogger.step("商店创建流程(聊天)", "处理类型选择", "玩家输入=", input);
-
         String lowerInput = input.toLowerCase();
         boolean isSell = lowerInput.equals("sell") || lowerInput.equals("出售");
         boolean isBuy = lowerInput.equals("buy") || lowerInput.equals("收购");
 
+        if (input.equals("sell")) isSell = true;
+        if (input.equals("buy")) isBuy = true;
+
         if (!isSell && !isBuy) {
-            DevFlowLogger.warning("商店创建流程(聊天)", "无效的类型输入: " + input);
-            player.sendSystemMessage(ShopTranslationHelper.colored("§c无效的类型，请输入 'sell/出售' 或 'buy/收购'"));
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.invalid_type"));
             return true;
         }
 
-        DevFlowLogger.status("商店创建流程(聊天)", "类型选择成功: " + (isSell ? "出售" : "收购"));
-
         pending.state = ShopCreationState.INPUTTING_PRICE;
-        int timeout = 15;
-        long expireTime = System.currentTimeMillis() + (timeout * 1000L);
-        pending.expireTime = expireTime;
-
+        pending.expireTime = System.currentTimeMillis() + (15 * 1000L);
         pending.note = isSell ? "出售" : "收购";
-        DevFlowLogger.param("商店创建流程(聊天)", "新状态", "INPUTTING_PRICE");
-        DevFlowLogger.param("商店创建流程(聊天)", "选择的类型", isSell ? "SELL(出售)" : "BUY(收购)");
 
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b请输入价格(数字):"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-
-        DevFlowLogger.status("商店创建流程(聊天)", "已向玩家发送价格输入提示");
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
+        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.price_prompt"));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
         return true;
     }
 
     private boolean handleCreationPrice(ServerPlayer player, PendingShopCreation pending, String input) {
-        DevFlowLogger.step("商店创建流程(聊天)", "处理价格输入", "玩家输入=", input);
-
         try {
             double price = Double.parseDouble(input);
             if (price <= 0) {
-                DevFlowLogger.warning("商店创建流程(聊天)", "价格必须大于0，输入: " + price);
-                player.sendSystemMessage(ShopTranslationHelper.colored("§c价格必须大于 0"));
+                player.sendSystemMessage(ShopTranslationHelper.translatable(player, "admin.shop.dynamic.invalid_value"));
                 return true;
             }
 
-            DevFlowLogger.param("商店创建流程(聊天)", "price", price);
             pending.price = price;
             pending.state = ShopCreationState.INPUTTING_CURRENCY;
-            int timeout = 15;
-            long expireTime = System.currentTimeMillis() + (timeout * 1000L);
-            pending.expireTime = expireTime;
+            pending.expireTime = System.currentTimeMillis() + (15 * 1000L);
 
-            DevFlowLogger.param("商店创建流程(聊天)", "新状态", "INPUTTING_CURRENCY");
-
-            player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-            player.sendSystemMessage(ShopTranslationHelper.colored("§b请选择货币 (输入名称或ID):"));
+            player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.currency_prompt"));
             
             java.util.Collection<me.tuanzi.economy.currency.WalletType> walletTypes = shopManager.getEconomyAPI().getAllWalletTypes();
             if (walletTypes.isEmpty()) {
-                DevFlowLogger.error("商店创建流程(聊天)", "没有可用的货币类型！");
-                player.sendSystemMessage(ShopTranslationHelper.colored("§c当前没有可用的货币类型！请联系管理员添加货币。"));
+                player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.no_currencies"));
                 return true;
             }
             
-            StringBuilder currencyList = new StringBuilder("§a");
+            StringBuilder currencyList = new StringBuilder("§a" + ShopTranslationHelper.getRawTranslation(player, "shop.creation.currency_list_header"));
             int index = 0;
             for (me.tuanzi.economy.currency.WalletType wt : walletTypes) {
-                if (index > 0) {
-                    currencyList.append("§7、");
-                }
-                currencyList.append(wt.displayName().getString())
-                          .append("(")
-                          .append("§e")
-                          .append(wt.id())
-                          .append("§a")
-                          .append(")");
+                if (index > 0) currencyList.append("§7、");
+                currencyList.append(wt.displayName().getString()).append("(§e").append(wt.id()).append("§a)");
                 index++;
             }
             
             player.sendSystemMessage(ShopTranslationHelper.colored(currencyList.toString()));
-            player.sendSystemMessage(ShopTranslationHelper.colored("§7示例: 输入 '金币' 或 'gold_coin'"));
-            player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-
-            DevFlowLogger.status("商店创建流程(聊天)", "已向玩家发送货币选择提示");
-            DevFlowLogger.param("商店创建流程(聊天)", "可用货币数量", walletTypes.size());
+            player.sendSystemMessage(ShopTranslationHelper.colored("§7" + ShopTranslationHelper.getRawTranslation(player, "shop.creation.currency_resolve_hint")));
+            player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
         } catch (NumberFormatException e) {
-            DevFlowLogger.warning("商店创建流程(聊天)", "无效的数字格式: " + input);
-            player.sendSystemMessage(ShopTranslationHelper.colored("§c请输入有效的数字"));
+            player.sendSystemMessage(ShopTranslationHelper.colored("§c" + ShopTranslationHelper.getRawTranslation(player, "common.invalid_number")));
         }
         return true;
     }
 
     private boolean handleCreationCurrency(ServerPlayer player, PendingShopCreation pending, String input) {
-        DevFlowLogger.step("商店创建流程(聊天)", "处理货币选择", "玩家输入=", input);
-
         String userInput = input.trim();
+        if (userInput.isEmpty()) return true;
         
-        if (userInput.isEmpty()) {
-            DevFlowLogger.warning("商店创建流程(聊天)", "货币输入为空");
-            player.sendSystemMessage(ShopTranslationHelper.colored("§c输入不能为空，请重新输入货币名称或ID"));
-            return true;
-        }
-        
-        DevFlowLogger.step("商店创建流程(聊天)", "解析货币类型");
         Optional<me.tuanzi.economy.currency.WalletType> walletType = resolveWalletType(userInput);
-        
         if (walletType.isEmpty()) {
-            DevFlowLogger.warning("商店创建流程(聊天)", "未找到匹配的货币: " + input);
-            player.sendSystemMessage(ShopTranslationHelper.colored("§c未找到匹配的货币: " + input));
-            player.sendSystemMessage(ShopTranslationHelper.colored("§7提示: 请输入货币名称（如 '金币'）或ID（如 'gold_coin'）"));
-            
-            java.util.Collection<me.tuanzi.economy.currency.WalletType> allTypes = shopManager.getEconomyAPI().getAllWalletTypes();
-            if (!allTypes.isEmpty()) {
-                StringBuilder availableList = new StringBuilder("§a可用货币: ");
-                int idx = 0;
-                for (me.tuanzi.economy.currency.WalletType wt : allTypes) {
-                    if (idx > 0) availableList.append(", ");
-                    availableList.append(wt.displayName().getString()).append("(").append(wt.id()).append(")");
-                    idx++;
-                }
-                player.sendSystemMessage(ShopTranslationHelper.colored(availableList.toString()));
-            }
+            player.sendSystemMessage(ShopTranslationHelper.colored("§c" + ShopTranslationHelper.getRawTranslation(player, "economy.pay.wallet_not_found", input)));
             return true;
         }
         
         me.tuanzi.economy.currency.WalletType selectedType = walletType.get();
         pending.currencyId = selectedType.id();
         pending.state = ShopCreationState.INPUTTING_NOTE;
-        int timeout = 15;
-        long expireTime = System.currentTimeMillis() + (timeout * 1000L);
-        pending.expireTime = expireTime;
+        pending.expireTime = System.currentTimeMillis() + (15 * 1000L);
 
-        DevFlowLogger.param("商店创建流程(聊天)", "selectedCurrency", selectedType.displayName().getString() + "(" + selectedType.id() + ")");
-        DevFlowLogger.param("商店创建流程(聊天)", "新状态", "INPUTTING_NOTE");
-
-        player.sendSystemMessage(ShopTranslationHelper.colored("§a已选择货币: " + selectedType.displayName().getString() + " (" + selectedType.id() + ")"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b请输入备注(输入 {None} 表示无备注，15秒内不输入则取消创建):"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-
-        DevFlowLogger.status("商店创建流程(聊天)", "已向玩家发送备注输入提示");
+        player.sendSystemMessage(ShopTranslationHelper.colored("§a" + ShopTranslationHelper.getRawTranslation(player, "shop.creation.currency_selected") + selectedType.displayName().getString() + " (" + selectedType.id() + ")"));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
+        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.note_prompt", 15));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
         return true;
     }
 
     private Optional<me.tuanzi.economy.currency.WalletType> resolveWalletType(String input) {
         String normalizedInput = input.toLowerCase().trim();
-        
         java.util.Collection<me.tuanzi.economy.currency.WalletType> allWalletTypes = shopManager.getEconomyAPI().getAllWalletTypes();
-        
         for (me.tuanzi.economy.currency.WalletType wt : allWalletTypes) {
-            if (wt.id().equalsIgnoreCase(normalizedInput)) {
-                return Optional.of(wt);
-            }
+            if (wt.id().equalsIgnoreCase(normalizedInput) || wt.displayName().getString().equalsIgnoreCase(input.trim())) return Optional.of(wt);
         }
-        
-        for (me.tuanzi.economy.currency.WalletType wt : allWalletTypes) {
-            if (wt.displayName().getString().equalsIgnoreCase(input.trim())) {
-                return Optional.of(wt);
-            }
-        }
-        
-        for (me.tuanzi.economy.currency.WalletType wt : allWalletTypes) {
-            if (wt.displayName().getString().toLowerCase().contains(normalizedInput) || 
-                normalizedInput.contains(wt.displayName().getString().toLowerCase())) {
-                return Optional.of(wt);
-            }
-        }
-        
-        for (me.tuanzi.economy.currency.WalletType wt : allWalletTypes) {
-            if (wt.id().toLowerCase().contains(normalizedInput) || 
-                normalizedInput.contains(wt.id().toLowerCase())) {
-                return Optional.of(wt);
-            }
-        }
-        
         return Optional.empty();
     }
 
     private boolean handleCreationNote(ServerPlayer player, PendingShopCreation pending, String input) {
-        DevFlowLogger.step("商店创建流程(聊天)", "处理备注输入", "玩家输入=", input);
-
-        if (input.equalsIgnoreCase("{None}")) {
-            DevFlowLogger.status("商店创建流程(聊天)", "玩家选择无备注");
-            pending.note = "";
-        } else if (input.isEmpty()) {
-            DevFlowLogger.warning("商店创建流程(聊天)", "备注输入为空，取消创建");
+        if (input.equalsIgnoreCase("{None}")) pending.note = "";
+        else if (input.isEmpty()) {
             pendingShopCreations.remove(player.getUUID());
-            player.sendSystemMessage(ShopTranslationHelper.colored("§c已取消创建商店"));
-            DevFlowLogger.endFlow("商店创建流程(聊天)", false, "玩家未输入备注，超时取消");
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.cancelled"));
             return true;
-        } else {
-            pending.note = input.trim();
-            DevFlowLogger.param("商店创建流程(聊天)", "note", pending.note);
-        }
+        } else pending.note = input.trim();
 
         completeShopCreation(player, pending);
         return true;
     }
 
     private void completeShopCreation(ServerPlayer player, PendingShopCreation pending) {
-        DevFlowLogger.step("商店创建流程(聊天)", "完成商店创建");
-
         ShopType shopType = pending.note.equals("出售") ? ShopType.SELL : ShopType.BUY;
-        DevFlowLogger.param("商店创建流程(聊天)", "最终shopType", shopType);
-        DevFlowLogger.param("商店创建流程(聊天)", "最终price", pending.price);
-        DevFlowLogger.param("商店创建流程(聊天)", "最终currencyId", pending.currencyId);
-        DevFlowLogger.param("商店创建流程(聊天)", "最终note", pending.note.equals("出售") || pending.note.equals("收购") ? "" : pending.note);
-
-        DevFlowLogger.step("商店创建流程(聊天)", "调用ShopManager.createShop()");
-        ShopInstance shop = shopManager.createShop(
-                player.getUUID(),
-                pending.containerPos,
-                pending.signPos,
-                shopType,
-                pending.item.copy(),
-                pending.price,
-                pending.currencyId,
-                pending.note.equals("出售") || pending.note.equals("收购") ? "" : pending.note
-        );
+        ShopInstance shop = shopManager.createShop(player.getUUID(), pending.containerPos, pending.signPos, shopType, pending.item.copy(), pending.price, pending.currencyId, (pending.note.equals("出售") || pending.note.equals("收购")) ? "" : pending.note);
 
         pendingShopCreations.remove(player.getUUID());
-
         if (shop != null) {
-            DevFlowLogger.status("商店创建流程(聊天)", "商店对象创建成功");
-
             MinecraftServer server = player.level().getServer();
             if (server != null) {
                 ShopModule instance = ShopModule.getInstance(server);
-                if (instance != null && instance.getDisplayManager() != null) {
-                    if (player.level() instanceof net.minecraft.server.level.ServerLevel level) {
-                        DevFlowLogger.step("商店创建流程(聊天)", "创建悬浮物品显示");
-                        instance.getDisplayManager().createDisplayForShop(shop, level);
-                        DevFlowLogger.status("商店创建流程(聊天)", "悬浮物品显示已创建");
-                    }
+                if (instance != null && instance.getDisplayManager() != null && player.level() instanceof ServerLevel level) {
+                    instance.getDisplayManager().createDisplayForShop(shop, level);
+                    SignUpdateHelper.updateSignForShop(shop, level);
                 }
             }
-
-            if (player.level() instanceof net.minecraft.server.level.ServerLevel level) {
-                SignUpdateHelper.updateSignForShop(shop, level);
-            }
-
-            player.sendSystemMessage(ShopTranslationHelper.colored("§a========================================"));
-            player.sendSystemMessage(ShopTranslationHelper.translatable("shop.creation.success"));
-            player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-
-            DevFlowLogger.endFlow("商店创建流程(聊天)", true, 
-                    "商店创建完成 - ID: " + shop.getShopId().toString().substring(0, 8) + 
-                    ", 类型: " + shopType + 
-                    ", 价格: " + pending.price +
-                    ", 物品: " + pending.item.getDisplayName().getString());
+            player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.success"));
+            player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
         } else {
-            DevFlowLogger.error("商店创建流程(聊天)", "商店对象创建失败（可能货币ID无效）");
-            player.sendSystemMessage(ShopTranslationHelper.colored("§c商店创建失败，请检查货币ID是否正确"));
-            DevFlowLogger.endFlow("商店创建流程(聊天)", false, "商店创建失败");
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.created.failed"));
         }
     }
-}
 
+    private void executeTransaction(ServerPlayer player, ShopInstance shop, int quantity) {
+        MinecraftServer server = player.level().getServer();
+        if (server == null) return;
+        BlockInteractionHandler handler = ShopModule.getInstance(server).getInteractionHandler();
+        if (handler != null) handler.executeTransaction(player, shop.getShopId(), (shop.getShopType() == ShopType.SELL ? "buy" : "sell"), quantity);
+    }
+}

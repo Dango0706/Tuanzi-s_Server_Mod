@@ -132,19 +132,19 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "auth.command.player_only"));
             return 0;
         }
 
         ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
         if (shopManager == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_found"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_found"));
             return 0;
         }
 
         Optional<ShopInstance> shopOpt = shopManager.getShopPlayerLookingAt(player);
         if (shopOpt.isEmpty()) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_looking"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_looking"));
             return 0;
         }
 
@@ -185,19 +185,19 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "auth.command.player_only"));
             return 0;
         }
 
         ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
         if (shopManager == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_found"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_found"));
             return 0;
         }
 
         Optional<ShopInstance> shopOpt = shopManager.getShopPlayerLookingAt(player);
         if (shopOpt.isEmpty()) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_looking"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_looking"));
             return 0;
         }
 
@@ -217,19 +217,19 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "auth.command.player_only"));
             return 0;
         }
 
         ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
         if (shopManager == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_found"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_found"));
             return 0;
         }
 
         Optional<ShopInstance> shopOpt = shopManager.getShopPlayerLookingAt(player);
         if (shopOpt.isEmpty()) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_looking"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_looking"));
             return 0;
         }
 
@@ -334,19 +334,19 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "auth.command.player_only"));
             return 0;
         }
 
         ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
         if (shopManager == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_found"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_found"));
             return 0;
         }
 
         Optional<ShopInstance> shopOpt = shopManager.getShopPlayerLookingAt(player);
         if (shopOpt.isEmpty()) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_looking"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_looking"));
             return 0;
         }
 
@@ -370,19 +370,19 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "auth.command.player_only"));
             return 0;
         }
 
         ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
         if (shopManager == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_found"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_found"));
             return 0;
         }
 
         Optional<ShopInstance> shopOpt = shopManager.getShopPlayerLookingAt(player);
         if (shopOpt.isEmpty()) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_looking"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_looking"));
             return 0;
         }
 
@@ -412,19 +412,19 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "auth.command.player_only"));
             return 0;
         }
 
         ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
         if (shopManager == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_found"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_found"));
             return 0;
         }
 
         Optional<ShopInstance> shopOpt = shopManager.getShopPlayerLookingAt(player);
         if (shopOpt.isEmpty()) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_looking"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_looking"));
             return 0;
         }
 
@@ -446,19 +446,19 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "auth.command.player_only"));
             return 0;
         }
 
         ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
         if (shopManager == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_found"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_found"));
             return 0;
         }
 
         Optional<ShopInstance> shopOpt = shopManager.getShopPlayerLookingAt(player);
         if (shopOpt.isEmpty()) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_looking"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_looking"));
             return 0;
         }
 
@@ -494,19 +494,19 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "auth.command.player_only"));
             return 0;
         }
 
         ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
         if (shopManager == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_found"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_found"));
             return 0;
         }
 
         Optional<ShopInstance> shopOpt = shopManager.getShopPlayerLookingAt(player);
         if (shopOpt.isEmpty()) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_looking"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_looking"));
             return 0;
         }
 
@@ -659,19 +659,19 @@ public class ShopAdminCommand {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = getPlayer(source);
         if (player == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("auth.command.player_only"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "auth.command.player_only"));
             return 0;
         }
 
         ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
         if (shopManager == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_found"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_found"));
             return 0;
         }
 
         Optional<ShopInstance> shopOpt = shopManager.getShopPlayerLookingAt(player);
         if (shopOpt.isEmpty()) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_looking"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_looking"));
             return 0;
         }
 

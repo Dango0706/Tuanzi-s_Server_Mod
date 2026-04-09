@@ -6,7 +6,8 @@
     "SignBlockEntityMixin",
     "ItemEntityMixin",
     "HopperBlockEntityMixin",
-    "ServerExplosionMixin"
+    "ServerExplosionMixin",
+    "EntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

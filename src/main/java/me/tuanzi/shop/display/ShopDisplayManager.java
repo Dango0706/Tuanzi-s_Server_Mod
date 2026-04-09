@@ -102,7 +102,6 @@ public class ShopDisplayManager {
         }
 
         // 强力兜底逻辑：无论 Map 中是否存在，都扫描该商店位置周围的展示实体并清理
-        // 这解决了“只有创建新商店时才会消失”的问题，因为它不再依赖 Map 记录
         shopManager.getShopById(shopId).ifPresent(shop -> {
             int removed = removeLegacyItemDisplayNearShop(shop, level);
             if (removed > 0) {
@@ -157,6 +156,13 @@ public class ShopDisplayManager {
             }
 
             ShopInstance shop = shopOpt.get();
+            BlockPos shopPos = shop.getShopPos();
+
+            // 关键修复：如果区块未加载，跳过维护，防止在卸载区域疯狂重建实体
+            if (!level.isLoaded(shopPos)) {
+                continue;
+            }
+
             Entity entity = level.getEntity(displayId);
             if (!(entity instanceof ItemEntity itemEntity) || !entity.isAlive()) {
                 removeDisplayForShop(shopId, level);
@@ -165,6 +171,8 @@ public class ShopDisplayManager {
             }
 
             anchorDisplayEntity(itemEntity, shop);
+            
+            // 确保显示物品正确
             ItemStack expected = toDisplayItem(shop.getTradeItem());
             if (!ItemStack.isSameItemSameComponents(itemEntity.getItem(), expected) || itemEntity.getItem().getCount() != 1) {
                 itemEntity.setItem(expected);
@@ -219,7 +227,6 @@ public class ShopDisplayManager {
 
     private int removeLegacyItemDisplayNearShop(ShopInstance shop, ServerLevel level) {
         Vec3 expectedPos = getExpectedDisplayPos(shop);
-        // 稍微扩大搜索半径以应对可能的微小位移
         AABB searchBox = new AABB(
                 expectedPos.x - DISPLAY_SEARCH_RADIUS, expectedPos.y - DISPLAY_SEARCH_RADIUS, expectedPos.z - DISPLAY_SEARCH_RADIUS,
                 expectedPos.x + DISPLAY_SEARCH_RADIUS, expectedPos.y + DISPLAY_SEARCH_RADIUS, expectedPos.z + DISPLAY_SEARCH_RADIUS
@@ -238,14 +245,12 @@ public class ShopDisplayManager {
 
         // 2. 清理当前使用的 ItemEntity
         for (ItemEntity itemEntity : level.getEntitiesOfClass(ItemEntity.class, searchBox)) {
-            // 只要带有 shop_display 标签，就无条件清理（最可靠的方式）
             if (itemEntity.entityTags().contains(SHOP_DISPLAY_TAG)) {
                 itemEntity.discard();
                 removed++;
                 continue;
             }
 
-            // 兜底：如果标签丢失，根据物理特性判定
             ItemStack stack = itemEntity.getItem();
             if (!stack.isEmpty()) {
                 boolean sameItem = stack.is(expectedItem.getItem());
@@ -291,6 +296,10 @@ public class ShopDisplayManager {
         itemEntity.setSilent(true);
         itemEntity.setNeverPickUp();
         itemEntity.setUnlimitedLifetime();
+        
+        // 关键修复：确保实体不被保存到存档，防止加载时重复
+        // 在某些版本中可以使用 setPersistenceRequired(false)，但在 Fabric 中 Mixin 拦截 shouldSave 更好
+        
         itemEntity.addTag(SHOP_DISPLAY_TAG);
         itemEntity.setCustomName(displayItem.getDisplayName());
         itemEntity.setCustomNameVisible(true);

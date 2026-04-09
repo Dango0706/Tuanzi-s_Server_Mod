@@ -106,7 +106,12 @@ public class ShopModule implements ModInitializer {
                     if (instance.displayManager != null) {
                         instance.displayManager.maintainAllDisplays(overworld);
                     }
-                    
+
+                    // 处理交易输入超时清理
+                    if (instance.chatInputHandler != null) {
+                        instance.chatInputHandler.cleanupExpired();
+                    }
+
                     // 每日系统库存衰减逻辑 (积攒到 24000 tick)
                     ShopStateSaver saver = ShopStateSaver.getServerState(server);
                     saver.addTick();
@@ -219,7 +224,8 @@ public class ShopModule implements ModInitializer {
 
             ItemStack heldItem = player.getItemInHand(hand);
             if (heldItem.isEmpty()) {
-                return false;
+                player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.quick_create_hint"));
+                return true;
             }
 
             if (instance.chatInputHandler == null) {
@@ -227,7 +233,7 @@ public class ShopModule implements ModInitializer {
             }
 
             if (instance.chatInputHandler.hasPendingShopCreation(player.getUUID())) {
-                player.sendSystemMessage(ShopTranslationHelper.colored("§c您有一个正在进行的商店创建流程，请先完成或等待超时"));
+                player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.pending_exists"));
                 return true;
             }
 

@@ -59,9 +59,27 @@ public class AuthTranslationHelper {
         defaultLanguage = lang;
     }
 
+    public static String getLanguage(Object source) {
+        if (source instanceof net.minecraft.commands.CommandSourceStack css) {
+            net.minecraft.server.level.ServerPlayer player = css.getPlayer();
+            if (player != null) return getLanguage(player);
+        }
+        if (source instanceof ServerPlayer player) {
+            String lang = player.clientInformation().language();
+            return lang != null ? lang : defaultLanguage;
+        }
+        return defaultLanguage;
+    }
+
     public static String translate(String key, String languageCode) {
-        Map<String, String> translations = "zh_cn".equals(languageCode) ? zhCnTranslations : enUsTranslations;
+        String normalized = languageCode != null ? languageCode.toLowerCase() : defaultLanguage;
+        Map<String, String> translations = normalized.startsWith("zh") ? zhCnTranslations : enUsTranslations;
         String translation = translations.get(key);
+        if (translation == null && normalized.startsWith("zh")) {
+            translation = enUsTranslations.get(key);
+        } else if (translation == null) {
+            translation = zhCnTranslations.get(key);
+        }
         return translation != null ? translation : key;
     }
 
@@ -70,7 +88,11 @@ public class AuthTranslationHelper {
         if (template.equals(key)) {
             return key;
         }
-        return String.format(template, args);
+        try {
+            return String.format(template, args);
+        } catch (Exception e) {
+            return template;
+        }
     }
 
     public static Component translateToComponent(String key, String languageCode) {
@@ -82,26 +104,26 @@ public class AuthTranslationHelper {
     }
 
     public static void sendMessage(ServerPlayer player, String key) {
-        player.sendSystemMessage(Component.literal(translate(key, defaultLanguage)));
+        player.sendSystemMessage(Component.literal(translate(key, getLanguage(player))));
     }
 
     public static void sendMessage(ServerPlayer player, String key, Object... args) {
-        player.sendSystemMessage(Component.literal(translate(key, defaultLanguage, args)));
+        player.sendSystemMessage(Component.literal(translate(key, getLanguage(player), args)));
     }
 
     public static void sendSuccess(net.minecraft.commands.CommandSourceStack source, String key) {
-        source.sendSuccess(() -> Component.literal(translate(key, defaultLanguage)), false);
+        source.sendSuccess(() -> Component.literal(translate(key, getLanguage(source))), false);
     }
 
     public static void sendSuccess(net.minecraft.commands.CommandSourceStack source, String key, Object... args) {
-        source.sendSuccess(() -> Component.literal(translate(key, defaultLanguage, args)), false);
+        source.sendSuccess(() -> Component.literal(translate(key, getLanguage(source), args)), false);
     }
 
     public static void sendFailure(net.minecraft.commands.CommandSourceStack source, String key) {
-        source.sendFailure(Component.literal(translate(key, defaultLanguage)));
+        source.sendFailure(Component.literal(translate(key, getLanguage(source))));
     }
 
     public static void sendFailure(net.minecraft.commands.CommandSourceStack source, String key, Object... args) {
-        source.sendFailure(Component.literal(translate(key, defaultLanguage, args)));
+        source.sendFailure(Component.literal(translate(key, getLanguage(source), args)));
     }
 }

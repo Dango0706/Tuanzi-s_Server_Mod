@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.tuanzi.shop.ShopModule;
+import me.tuanzi.shop.events.BlockInteractionHandler;
 import me.tuanzi.shop.events.ChatInputHandler;
 import me.tuanzi.shop.shop.ShopInstance;
 import me.tuanzi.shop.shop.ShopManager;
@@ -14,7 +15,10 @@ import me.tuanzi.shop.utils.ShopTranslationHelper;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -56,41 +60,34 @@ public class ShopCommand {
     private static int executeShopCommand(CommandContext<CommandSourceStack> context, String type, int quantity) {
         CommandSourceStack source = context.getSource();
         
-        if (!source.isPlayer()) {
-            source.sendFailure(ShopTranslationHelper.literal("cThis command can only be used by players"));
-            return 0;
-        }
-
-        ServerPlayer player;
-        try {
-            player = source.getPlayerOrException();
-        } catch (CommandSyntaxException e) {
-            source.sendFailure(ShopTranslationHelper.literal("cPlayer not found"));
+        ServerPlayer player = source.getPlayer();
+        if (player == null) {
+            source.sendFailure(ShopTranslationHelper.translatable(source, "auth.command.player_only"));
             return 0;
         }
         
         ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
         if (shopManager == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_found"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_found"));
             return 0;
         }
 
         Optional<ShopInstance> shopOpt = shopManager.getShopPlayerLookingAt(player);
         if (shopOpt.isEmpty()) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_looking"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_looking"));
             return 0;
         }
 
         ShopInstance shop = shopOpt.get();
         ChatInputHandler chatHandler = ShopModule.getInstance(player.level().getServer()).getChatInputHandler();
         if (chatHandler != null && chatHandler.hasPendingTransaction(player.getUUID())) {
-            source.sendFailure(ShopTranslationHelper.colored("cYou have a pending transaction, please complete or cancel it first"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "transaction.pending_exists"));
             return 0;
         }
 
-        var interactionHandler = ShopModule.getInstance(player.level().getServer()).getInteractionHandler();
+        BlockInteractionHandler interactionHandler = ShopModule.getInstance(player.level().getServer()).getInteractionHandler();
         if (interactionHandler == null) {
-            source.sendFailure(ShopTranslationHelper.colored("cTransaction handler not initialized"));
+            source.sendFailure(ShopTranslationHelper.colored("§cTransaction handler not initialized"));
             return 0;
         }
 
@@ -99,29 +96,21 @@ public class ShopCommand {
 
     private static int showShopInfo(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        
-        if (!source.isPlayer()) {
-            source.sendFailure(ShopTranslationHelper.literal("cThis command can only be used by players"));
-            return 0;
-        }
-
-        ServerPlayer player;
-        try {
-            player = source.getPlayerOrException();
-        } catch (CommandSyntaxException e) {
-            source.sendFailure(ShopTranslationHelper.literal("cPlayer not found"));
+        ServerPlayer player = source.getPlayer();
+        if (player == null) {
+            source.sendFailure(ShopTranslationHelper.translatable(source, "auth.command.player_only"));
             return 0;
         }
         
         ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
         if (shopManager == null) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_found"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_found"));
             return 0;
         }
 
         Optional<ShopInstance> shopOpt = shopManager.getShopPlayerLookingAt(player);
         if (shopOpt.isEmpty()) {
-            source.sendFailure(ShopTranslationHelper.translatable("shop.not_looking"));
+            source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_looking"));
             return 0;
         }
 
@@ -131,80 +120,95 @@ public class ShopCommand {
     }
 
     private static void sendShopInfo(ServerPlayer player, ShopInstance shop) {
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.title"));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.id", shop.getShopId().toString().substring(0, 8)));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.type", 
-                shop.getShopType() == ShopType.SELL ? "bSell Shop" : "bBuy Shop"));
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.item", 
-                shop.getTradeItem().getDisplayName().getString()));
+        ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
+        String currencyName = shopManager.getCurrencyDisplayName(shop.getWalletTypeId());
+        ItemStack stack = shop.getTradeItem();
         
-        String currencyName = ShopModule.getInstance(player.level().getServer())
-                .getShopManager().getCurrencyDisplayName(shop.getWalletTypeId());
-        player.sendSystemMessage(ShopTranslationHelper.translatable("admin.shop.info.price", 
-                shop.getCurrentPrice(), currencyName));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§e================ [ " + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.title_fmt") + " ] ================"));
+        
+        // 1. 基础信息
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.item") + ": §f" + stack.getDisplayName().getString()));
+        String itemId = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.item_id") + ": §7" + itemId));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.type") + ": §f" + 
+                (shop.getShopType() == ShopType.SELL ? "§e" + ShopTranslationHelper.getRawTranslation(player, "shop.type.sell") : "§a" + ShopTranslationHelper.getRawTranslation(player, "shop.type.buy"))));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.current_price") + ": §6" + 
+                String.format("%.2f %s", shop.getCurrentPrice(), currencyName)));
+
+        // 2. 附魔信息 (基于 26.1 DataComponents)
+        var enchants = stack.get(net.minecraft.core.component.DataComponents.ENCHANTMENTS);
+        if (enchants != null && !enchants.isEmpty()) {
+            player.sendSystemMessage(ShopTranslationHelper.colored("§b附魔明细:"));
+            enchants.entrySet().forEach(entry -> {
+                String enchantName = entry.getKey().getRegisteredName();
+                int level = entry.getIntValue();
+                player.sendSystemMessage(ShopTranslationHelper.colored("  §7- §f" + enchantName + " §e等级 " + level));
+            });
+        }
+
+        // 3. Lore 信息
+        var lore = stack.get(net.minecraft.core.component.DataComponents.LORE);
+        if (lore != null && !lore.lines().isEmpty()) {
+            player.sendSystemMessage(ShopTranslationHelper.colored("§b物品 Lore:"));
+            lore.lines().forEach(line -> {
+                player.sendSystemMessage(Component.literal("  §d").append(line));
+            });
+        }
+
+        // 4. 耐久度 (如果适用)
+        if (stack.isDamageableItem()) {
+            int maxDamage = stack.getMaxDamage();
+            int currentDamage = stack.getDamageValue();
+            player.sendSystemMessage(ShopTranslationHelper.colored("§b耐久度: §f" + (maxDamage - currentDamage) + " / " + maxDamage));
+        }
+
+        // 5. 其他组件/标签简报 (如果有)
+        if (!stack.getComponents().isEmpty()) {
+            player.sendSystemMessage(ShopTranslationHelper.colored("§b组件标签总数: §7" + stack.getComponents().size()));
+        }
+
+        if (shop.isDynamicPricing()) {
+            player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.dynamic_pricing") + ": §a" + ShopTranslationHelper.getRawTranslation(player, "common.enabled")));
+        }
+
+        if (shop.getDescription() != null && !shop.getDescription().isEmpty()) {
+            player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.note") + ": §f" + shop.getDescription()));
+        }
+        
+        player.sendSystemMessage(ShopTranslationHelper.colored("§e============================================"));
     }
 
     private static int handleConfirm(CommandContext<CommandSourceStack> context, String confirm) {
         CommandSourceStack source = context.getSource();
-        
-        if (!source.isPlayer()) {
-            source.sendFailure(ShopTranslationHelper.literal("cThis command can only be used by players"));
-            return 0;
-        }
-
-        ServerPlayer player;
-        try {
-            player = source.getPlayerOrException();
-        } catch (CommandSyntaxException e) {
-            source.sendFailure(ShopTranslationHelper.literal("cPlayer not found"));
-            return 0;
-        }
+        ServerPlayer player = source.getPlayer();
+        if (player == null) return 0;
         
         ChatInputHandler chatHandler = ShopModule.getInstance(player.level().getServer()).getChatInputHandler();
-        if (chatHandler == null) {
-            source.sendFailure(ShopTranslationHelper.colored("cChat handler not initialized"));
-            return 0;
-        }
+        if (chatHandler == null) return 0;
 
-        boolean confirmed = confirm.equalsIgnoreCase("yes");
-        return chatHandler.handleConfirmCommand(player, confirmed) ? 1 : 0;
+        return chatHandler.handleConfirmCommand(player, confirm) ? 1 : 0;
     }
 
     private static int handleCancel(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        
-        if (!source.isPlayer()) {
-            source.sendFailure(ShopTranslationHelper.literal("cThis command can only be used by players"));
-            return 0;
-        }
-
-        ServerPlayer player;
-        try {
-            player = source.getPlayerOrException();
-        } catch (CommandSyntaxException e) {
-            source.sendFailure(ShopTranslationHelper.literal("cPlayer not found"));
-            return 0;
-        }
+        ServerPlayer player = source.getPlayer();
+        if (player == null) return 0;
         
         ChatInputHandler chatHandler = ShopModule.getInstance(player.level().getServer()).getChatInputHandler();
-        if (chatHandler == null) {
-            source.sendFailure(ShopTranslationHelper.colored("cChat handler not initialized"));
-            return 0;
+        if (chatHandler != null) {
+            return chatHandler.handleConfirmCommand(player, "no") ? 1 : 0;
         }
-
-        return chatHandler.handleConfirmCommand(player, false) ? 1 : 0;
+        return 0;
     }
 
     private static int showHelp(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         
-        source.sendSuccess(() -> ShopTranslationHelper.colored("a=== Shop Commands ==="), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shop buy [quantity] - Buy items from shop"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shop sell [quantity] - Sell items to shop"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shop info - Show shop information"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shop confirm <yes/no> - Confirm/cancel pending action"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shop cancel - Cancel pending action"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("e/shop help - Show this help"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§a=== Shop Commands ==="), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shop buy [quantity] - Buy items from shop"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shop sell [quantity] - Sell items to shop"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shop info - Show shop information"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shop help - Show this help"), false);
         
         return 1;
     }

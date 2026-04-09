@@ -64,16 +64,30 @@ public class ShopTranslationHelper {
         return EN_US_TRANSLATIONS.get(key);
     }
 
-    public static Component translatable(String key) {
-        String text = getTranslationTemplate(key, DEFAULT_LANGUAGE);
+    public static String getLanguage(Object source) {
+        if (source instanceof net.minecraft.commands.CommandSourceStack css) {
+            net.minecraft.server.level.ServerPlayer player = css.getPlayer();
+            if (player != null) return getLanguage(player);
+        }
+        if (source instanceof net.minecraft.server.level.ServerPlayer player) {
+            String lang = player.clientInformation().language();
+            return lang != null ? lang : DEFAULT_LANGUAGE;
+        }
+        return DEFAULT_LANGUAGE;
+    }
+
+    public static Component translatable(Object source, String key) {
+        String lang = getLanguage(source);
+        String text = getTranslationTemplate(key, lang);
         if (text != null) {
             return Component.literal(parseColor(text));
         }
         return Component.translatable(key);
     }
 
-    public static Component translatable(String key, Object... args) {
-        String template = getTranslationTemplate(key, DEFAULT_LANGUAGE);
+    public static Component translatable(Object source, String key, Object... args) {
+        String lang = getLanguage(source);
+        String template = getTranslationTemplate(key, lang);
         if (template != null) {
             try {
                 Object[] parsedArgs = new Object[args.length];
@@ -90,6 +104,14 @@ public class ShopTranslationHelper {
             }
         }
         return Component.translatable(key, args);
+    }
+
+    public static Component translatable(String key) {
+        return translatable(null, key);
+    }
+
+    public static Component translatable(String key, Object... args) {
+        return translatable(null, key, args);
     }
 
     public static Component literal(String text) {
@@ -111,14 +133,26 @@ public class ShopTranslationHelper {
     }
 
     public static String getRawTranslation(String key) {
-        String text = getTranslationTemplate(key, DEFAULT_LANGUAGE);
-        return text != null ? text : key;
+        return getRawTranslation(key, DEFAULT_LANGUAGE);
     }
 
     public static String getRawTranslation(String key, String language) {
         String normalizedLang = normalizeLanguage(language);
         String text = getTranslationTemplate(key, normalizedLang);
         return text != null ? text : key;
+    }
+
+    public static String getRawTranslation(Object source, String key) {
+        return getRawTranslation(key, getLanguage(source));
+    }
+
+    public static String getRawTranslation(Object source, String key, Object... args) {
+        String template = getRawTranslation(key, getLanguage(source));
+        try {
+            return String.format(template, args);
+        } catch (Exception e) {
+            return template;
+        }
     }
 
     public static boolean hasTranslation(String key, String language) {
@@ -129,33 +163,47 @@ public class ShopTranslationHelper {
         return MinecraftLanguageHelper.normalizeLanguage(language);
     }
 
-    public static Component getSellPattern() {
-        return Component.literal(getRawTranslation("shop.sign.pattern.sell"));
+    public static Component getSellPattern(String lang) {
+        return Component.literal(getRawTranslation("shop.sign.pattern.sell", lang));
     }
 
-    public static Component getBuyPattern() {
-        return Component.literal(getRawTranslation("shop.sign.pattern.buy"));
+    public static Component getBuyPattern(String lang) {
+        return Component.literal(getRawTranslation("shop.sign.pattern.buy", lang));
     }
 
     public static Component getSellPatternCN() {
-        return Component.literal(getRawTranslation("shop.sign.pattern.sell_cn"));
+        return Component.literal(getRawTranslation("shop.sign.pattern.sell_cn", "zh_cn"));
     }
 
     public static Component getBuyPatternCN() {
-        return Component.literal(getRawTranslation("shop.sign.pattern.buy_cn"));
+        return Component.literal(getRawTranslation("shop.sign.pattern.buy_cn", "zh_cn"));
     }
 
     public static boolean isSellPattern(String text) {
-        return getRawTranslation("shop.sign.pattern.sell").equalsIgnoreCase(text)
-                || getRawTranslation("shop.sign.pattern.sell_cn").equalsIgnoreCase(text);
+        return getRawTranslation("shop.sign.pattern.sell", "en_us").equalsIgnoreCase(text)
+                || getRawTranslation("shop.sign.pattern.sell", "zh_cn").equalsIgnoreCase(text)
+                || getRawTranslation("shop.sign.pattern.sell_cn", "zh_cn").equalsIgnoreCase(text);
     }
 
     public static boolean isBuyPattern(String text) {
-        return getRawTranslation("shop.sign.pattern.buy").equalsIgnoreCase(text)
-                || getRawTranslation("shop.sign.pattern.buy_cn").equalsIgnoreCase(text);
+        return getRawTranslation("shop.sign.pattern.buy", "en_us").equalsIgnoreCase(text)
+                || getRawTranslation("shop.sign.pattern.buy", "zh_cn").equalsIgnoreCase(text)
+                || getRawTranslation("shop.sign.pattern.buy_cn", "zh_cn").equalsIgnoreCase(text);
+    }
+
+    public static Component shopTypeDisplayName(Object source, boolean isSellShop) {
+        return isSellShop ? translatable(source, "shop.type.sell") : translatable(source, "shop.type.buy");
     }
 
     public static Component shopTypeDisplayName(boolean isSellShop) {
-        return isSellShop ? translatable("shop.type.sell") : translatable("shop.type.buy");
+        return shopTypeDisplayName(null, isSellShop);
+    }
+
+    public static Component header(Object source, String key) {
+        Component title = translatable(source, key);
+        return Component.empty()
+                .append(colored("§e========== [ "))
+                .append(title)
+                .append(colored(" §e] =========="));
     }
 }

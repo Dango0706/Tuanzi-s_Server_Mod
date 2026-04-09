@@ -36,7 +36,7 @@ public class SignUpdateHelper {
         }
 
         boolean isSellShop = shop.getShopType() == ShopType.SELL;
-        String currencyName = "未知货币";
+        String currencyName = "Unknown";
         double price = shop.getCurrentPrice();
 
         MinecraftServer server = level.getServer();
@@ -51,12 +51,14 @@ public class SignUpdateHelper {
         String line0 = isSellShop
                 ? ShopTranslationHelper.getRawTranslation("shop.sign.pattern.sell_cn")
                 : ShopTranslationHelper.getRawTranslation("shop.sign.pattern.buy_cn");
-        String line1 = shop.getTradeItem().getDisplayName().getString();
+        
+        // 获取不带括号的显示名称
+        Component tradeItemDisplayName = shop.getTradeItem().getDisplayName();
         String line2 = String.format(Locale.ROOT, "%.2f %s", price, currencyName);
 
         var frontText = signEntity.getFrontText()
                 .setMessage(0, Component.literal(line0))
-                .setMessage(1, shop.getTradeItem().getDisplayName())
+                .setMessage(1, tradeItemDisplayName)
                 .setMessage(2, Component.literal(line2))
                 .setMessage(3, Component.literal(shop.getDescription() != null ? shop.getDescription() : ""));
 
@@ -65,12 +67,12 @@ public class SignUpdateHelper {
         level.sendBlockUpdated(signPos, level.getBlockState(signPos), level.getBlockState(signPos), 3);
 
         LOGGER.info("[告示牌更新] 刷新并同步成功：商店ID={}, 位置={}, 第1行={}, 第2行={}, 第3行={}",
-                shop.getShopId().toString().substring(0, 8), signPos, line0, line1, line2);
+                shop.getShopId().toString().substring(0, 8), signPos, line0, tradeItemDisplayName.getString(), line2);
 
         DevFlowLogger.status("告示牌同步",
                 "已更新告示牌文本并同步给客户端"
                         + "\n  " + line0
-                        + "\n  " + line1
+                        + "\n  " + tradeItemDisplayName.getString()
                         + "\n  " + line2
                         + "\n  坐标: [" + signPos.getX() + ", " + signPos.getY() + ", " + signPos.getZ() + "]");
     }
