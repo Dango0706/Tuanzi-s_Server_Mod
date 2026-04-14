@@ -96,28 +96,45 @@ public class ShopModule implements ModInitializer {
         config.load();
 
         ServerLifecycleEvents.SERVER_STARTING.register(this::onServerStarting);
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            ShopModule instance = getInstance(server);
+            if (instance != null && instance.displayManager != null) {
+                ServerLevel overworld = server.getLevel(Level.OVERWORLD);
+                if (overworld != null) {
+                    instance.displayManager.initializeAllDisplays(overworld);
+                }
+            }
+        });
         ServerLifecycleEvents.SERVER_STOPPED.register(this::onServerStopped);
 
         ServerTickEvents.START_SERVER_TICK.register(server -> {
             ShopModule instance = getInstance(server);
             if (instance != null) {
-                ServerLevel overworld = server.getLevel(Level.OVERWORLD);
-                if (overworld != null) {
-                    if (instance.displayManager != null) {
-                        instance.displayManager.maintainAllDisplays(overworld);
+                // 每 5 tick 维护一次显示，减轻 CPU 压力
+                long serverTicks = server.getTickCount();
+                if (serverTicks % 5 == 0) {
+                    for (ServerLevel level : server.getAllLevels()) {
+                        if (instance.displayManager != null) {
+                            instance.displayManager.maintainAllDisplays(level);
+                        }
                     }
+                }
 
-                    // 处理交易输入超时清理
-                    if (instance.chatInputHandler != null) {
-                        instance.chatInputHandler.cleanupExpired();
-                    }
+                // 处理交易输入超时清理 (每 20 tick 检查一次即可)
+                if (serverTicks % 20 == 0 && instance.chatInputHandler != null) {
+                    instance.chatInputHandler.cleanupExpired();
+                }
 
-                    // 每日系统库存衰减逻辑 (积攒到 24000 tick)
+                // 每日系统库存衰减逻辑
+                if (serverTicks % 20 == 0) {
                     ShopStateSaver saver = ShopStateSaver.getServerState(server);
-                    saver.addTick();
+                    saver.addTicks(20); // 修改为按步长增加
                     if (saver.getAccumulatedTicks() >= 24000) {
                         if (instance.shopManager != null) {
-                            instance.shopManager.decaySystemStock(overworld);
+                            ServerLevel overworld = server.getLevel(Level.OVERWORLD);
+                            if (overworld != null) {
+                                instance.shopManager.decaySystemStock(overworld);
+                            }
                         }
                         saver.setAccumulatedTicks(0);
                     }
@@ -224,8 +241,7 @@ public class ShopModule implements ModInitializer {
 
             ItemStack heldItem = player.getItemInHand(hand);
             if (heldItem.isEmpty()) {
-                player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.quick_create_hint"));
-                return true;
+                return false;
             }
 
             if (instance.chatInputHandler == null) {
@@ -399,11 +415,10 @@ public class ShopModule implements ModInitializer {
             instance.chatInputHandler.cleanupForShop(shopId);
             DevFlowLogger.status("商店删除流程", "待处理状态已清理");
         }
-        
-        player.sendSystemMessage(ShopTranslationHelper.colored("§a商店已成功删除"));
-        
-        LOGGER.info("商店删除完成 - 商店ID: {}", shopId);
 
+        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.deleted.success"));
+
+        LOGGER.info("商店删除成功 - 商店ID: {}", shopId);
         DevFlowLogger.endFlow("商店删除流程", true, 
                 "商店删除成功 - ID: " + shopId.toString().substring(0, 8));
     }

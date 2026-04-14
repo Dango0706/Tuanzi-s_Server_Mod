@@ -58,7 +58,6 @@ public class AuthCommand {
                         .then(Commands.literal("reset")
                                 .then(Commands.argument("player", StringArgumentType.string())
                                         .suggests((context, builder) -> {
-                                            AccountManager accountManager = AuthModule.getInstance().getAccountManager();
                                             return SharedSuggestionProvider.suggest(
                                                     context.getSource().getServer().getPlayerList().getPlayers()
                                                             .stream()
@@ -87,6 +86,7 @@ public class AuthCommand {
     private static int addWhitelist(CommandSourceStack source, String playerName) {
         WhitelistManager whitelistManager = AuthModule.getInstance().getWhitelistManager();
         String operatorName = source.getTextName();
+        String lang = TranslationHelper.getLanguage(source);
         
         if (playerName == null || playerName.trim().isEmpty()) {
             TranslationHelper.sendSuccess(source, "auth.password.player_name_empty");
@@ -103,12 +103,14 @@ public class AuthCommand {
         boolean success = whitelistManager.addToWhitelist(trimmedName);
         if (success) {
             UUID uuid = me.tuanzi.auth.whitelist.OfflineUUIDGenerator.generateOfflineUUID(trimmedName);
-            AuthLogger.getInstance().logAdminOperation(operatorName, "添加白名单", trimmedName, true);
+            String opDisplay = TranslationHelper.translate("auth.admin.operation.add_whitelist", lang);
+            AuthLogger.getInstance().logAdminOperation(operatorName, opDisplay, trimmedName, true);
             TranslationHelper.sendSuccess(source, "auth.whitelist.add_success", trimmedName);
-            source.sendSuccess(() -> Component.literal("§7盗版 UUID: §f" + uuid.toString()), false);
+            TranslationHelper.sendSuccess(source, "auth.admin.offline_uuid_fmt", uuid.toString());
             return 1;
         } else {
-            AuthLogger.getInstance().logAdminOperation(operatorName, "添加白名单", trimmedName, false);
+            String opDisplay = TranslationHelper.translate("auth.admin.operation.add_whitelist", lang);
+            AuthLogger.getInstance().logAdminOperation(operatorName, opDisplay, trimmedName, false);
             TranslationHelper.sendSuccess(source, "auth.whitelist.add_failed");
             return 0;
         }
@@ -117,6 +119,7 @@ public class AuthCommand {
     private static int removeWhitelist(CommandSourceStack source, String playerName) {
         WhitelistManager whitelistManager = AuthModule.getInstance().getWhitelistManager();
         String operatorName = source.getTextName();
+        String lang = TranslationHelper.getLanguage(source);
         
         if (playerName == null || playerName.trim().isEmpty()) {
             TranslationHelper.sendSuccess(source, "auth.password.player_name_empty");
@@ -132,11 +135,13 @@ public class AuthCommand {
         
         boolean success = whitelistManager.removeFromWhitelist(trimmedName);
         if (success) {
-            AuthLogger.getInstance().logAdminOperation(operatorName, "移除白名单", trimmedName, true);
+            String opDisplay = TranslationHelper.translate("auth.admin.operation.remove_whitelist", lang);
+            AuthLogger.getInstance().logAdminOperation(operatorName, opDisplay, trimmedName, true);
             TranslationHelper.sendSuccess(source, "auth.whitelist.remove_success", trimmedName);
             return 1;
         } else {
-            AuthLogger.getInstance().logAdminOperation(operatorName, "移除白名单", trimmedName, false);
+            String opDisplay = TranslationHelper.translate("auth.admin.operation.remove_whitelist", lang);
+            AuthLogger.getInstance().logAdminOperation(operatorName, opDisplay, trimmedName, false);
             TranslationHelper.sendSuccess(source, "auth.whitelist.remove_failed");
             return 0;
         }
@@ -170,12 +175,13 @@ public class AuthCommand {
         authModule.getAuthConfig().loadConfig();
         authModule.getWhitelistManager().loadData();
         
-        source.sendSuccess(() -> Component.literal("§a已重载身份验证配置和白名单"), false);
+        TranslationHelper.sendSuccess(source, "auth.admin.config_reloaded");
         return 1;
     }
     
     private static int resetPassword(CommandSourceStack source, String playerName, String newPassword) {
         String operatorName = source.getTextName();
+        String lang = TranslationHelper.getLanguage(source);
         
         if (playerName == null || playerName.trim().isEmpty()) {
             TranslationHelper.sendSuccess(source, "auth.password.player_name_empty");
@@ -193,7 +199,7 @@ public class AuthCommand {
         AccountManager accountManager = authModule.getAccountManager();
         
         if (accountManager == null) {
-            source.sendSuccess(() -> Component.literal("§c账户管理系统尚未初始化"), false);
+            TranslationHelper.sendSuccess(source, "auth.admin.system_not_ready");
             return 0;
         }
         
@@ -204,18 +210,24 @@ public class AuthCommand {
         
         PasswordService.PasswordValidationResult validationResult = PasswordService.validatePasswordStrength(newPassword);
         if (!validationResult.isValid()) {
+            // 这里验证结果本身已经包含了多语言消息
             source.sendSuccess(() -> Component.literal("§c" + validationResult.getMessage()), false);
             return 0;
         }
         
         boolean success = accountManager.resetPassword(trimmedName, newPassword);
         if (success) {
-            AuthLogger.getInstance().logAdminOperation(operatorName, "重置密码", trimmedName, true);
-            AuthModule.LOGGER.info("管理员 {} 重置了玩家 {} 的密码", operatorName, trimmedName);
+            String opDisplay = TranslationHelper.translate("auth.admin.operation.reset_password", lang);
+            AuthLogger.getInstance().logAdminOperation(operatorName, opDisplay, trimmedName, true);
+            
+            String logMsg = TranslationHelper.translate("auth.admin.password_reset_log", null, operatorName, trimmedName);
+            AuthModule.LOGGER.info(logMsg);
+            
             TranslationHelper.sendSuccess(source, "auth.password.reset_success", trimmedName);
             return 1;
         } else {
-            AuthLogger.getInstance().logAdminOperation(operatorName, "重置密码", trimmedName, false);
+            String opDisplay = TranslationHelper.translate("auth.admin.operation.reset_password", lang);
+            AuthLogger.getInstance().logAdminOperation(operatorName, opDisplay, trimmedName, false);
             TranslationHelper.sendSuccess(source, "auth.password.reset_failed");
             return 0;
         }

@@ -101,23 +101,16 @@ public class FloatingTextCommand {
     
     private static int createFloatingText(CommandContext<CommandSourceStack> context) {
         String id = StringArgumentType.getString(context, "id");
-        
         CommandSourceStack source = context.getSource();
         ServerLevel level = source.getLevel();
-        
         Vec3 pos = Vec3Argument.getVec3(context, "pos");
-        double x = pos.x;
-        double y = pos.y;
-        double z = pos.z;
         
         FloatingTextManager manager = FloatingTextManager.getInstance();
-        
-        if (manager.createFloatingText(id, level, x, y, z)) {
-            source.sendSuccess(() -> Component.literal("§a成功创建悬浮文字 '" + id + "' 在位置 (" + 
-                String.format("%.1f", x) + ", " + String.format("%.1f", y) + ", " + String.format("%.1f", z) + ")"), true);
+        if (manager.createFloatingText(id, level, pos.x, pos.y, pos.z)) {
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendSuccess(source, "floatingtext.created", id, (int)pos.x, (int)pos.y, (int)pos.z);
             return 1;
         } else {
-            source.sendSuccess(() -> Component.literal("§c悬浮文字 '" + id + "' 已存在！"), false);
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendFailure(source, "floatingtext.already_exists", id);
             return 0;
         }
     }
@@ -131,16 +124,15 @@ public class FloatingTextCommand {
         FloatingTextManager manager = FloatingTextManager.getInstance();
         
         if (!LeaderboardFormatter.getSupportedStatTypes().contains(statType)) {
-            source.sendSuccess(() -> Component.literal("§c不支持的统计类型: " + statType), false);
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendFailure(source, "floatingtext.unsupported_stat", statType);
             return 0;
         }
         
         if (manager.setContent(id, statType, displayName)) {
-            source.sendSuccess(() -> Component.literal("§a成功设置悬浮文字 '" + id + "' 的内容为: " + 
-                displayName + " (" + statType + ")"), true);
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendSuccess(source, "floatingtext.content_set", id, displayName + " (" + statType + ")");
             return 1;
         } else {
-            source.sendSuccess(() -> Component.literal("§c悬浮文字 '" + id + "' 不存在！"), false);
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendFailure(source, "floatingtext.not_found", id);
             return 0;
         }
     }
@@ -153,39 +145,30 @@ public class FloatingTextCommand {
         FloatingTextManager manager = FloatingTextManager.getInstance();
         
         if (manager.setUpdateInterval(id, ticks)) {
-            double seconds = ticks / 20.0;
-            source.sendSuccess(() -> Component.literal("§a成功设置悬浮文字 '" + id + "' 的更新间隔为 " + 
-                ticks + " tick (" + String.format("%.1f", seconds) + "秒)"), true);
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendSuccess(source, "floatingtext.interval_set", id, ticks);
             return 1;
         } else {
-            source.sendSuccess(() -> Component.literal("§c悬浮文字 '" + id + "' 不存在！"), false);
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendFailure(source, "floatingtext.not_found", id);
             return 0;
         }
     }
     
     private static int moveFloatingText(CommandContext<CommandSourceStack> context) {
         String id = StringArgumentType.getString(context, "id");
-        
         CommandSourceStack source = context.getSource();
         FloatingTextManager manager = FloatingTextManager.getInstance();
-        FloatingTextData data = manager.getFloatingText(id);
         
-        if (data == null) {
-            source.sendSuccess(() -> Component.literal("§c悬浮文字 '" + id + "' 不存在！"), false);
+        if (manager.getFloatingText(id) == null) {
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendFailure(source, "floatingtext.not_found", id);
             return 0;
         }
         
         Vec3 pos = Vec3Argument.getVec3(context, "pos");
-        double x = pos.x;
-        double y = pos.y;
-        double z = pos.z;
-        
-        if (manager.moveFloatingText(id, source.getLevel(), x, y, z, false)) {
-            source.sendSuccess(() -> Component.literal("§a成功移动悬浮文字 '" + id + "' 到位置 (" + 
-                String.format("%.1f", x) + ", " + String.format("%.1f", y) + ", " + String.format("%.1f", z) + ")"), true);
+        if (manager.moveFloatingText(id, source.getLevel(), pos.x, pos.y, pos.z, false)) {
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendSuccess(source, "floatingtext.moved", id, (int)pos.x, (int)pos.y, (int)pos.z);
             return 1;
         } else {
-            source.sendSuccess(() -> Component.literal("§c移动悬浮文字失败！"), false);
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendFailure(source, "floatingtext.move_failed");
             return 0;
         }
     }
@@ -193,36 +176,33 @@ public class FloatingTextCommand {
     private static int setColor(CommandContext<CommandSourceStack> context) {
         String id = StringArgumentType.getString(context, "id");
         String color = StringArgumentType.getString(context, "color");
-        
         CommandSourceStack source = context.getSource();
         FloatingTextManager manager = FloatingTextManager.getInstance();
         
         if (!VALID_COLORS.contains(color.toLowerCase())) {
-            source.sendSuccess(() -> Component.literal("§c无效的颜色: " + color + "。可用颜色: " + 
-                String.join(", ", VALID_COLORS)), false);
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendFailure(source, "floatingtext.invalid_color", color, String.join(", ", VALID_COLORS));
             return 0;
         }
         
         if (manager.setColor(id, color.toLowerCase())) {
-            source.sendSuccess(() -> Component.literal("§a成功设置悬浮文字 '" + id + "' 的颜色为: " + color), true);
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendSuccess(source, "floatingtext.color_set", id, color);
             return 1;
         } else {
-            source.sendSuccess(() -> Component.literal("§c悬浮文字 '" + id + "' 不存在！"), false);
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendFailure(source, "floatingtext.not_found", id);
             return 0;
         }
     }
     
     private static int deleteFloatingText(CommandContext<CommandSourceStack> context) {
         String id = StringArgumentType.getString(context, "id");
-        
         CommandSourceStack source = context.getSource();
         FloatingTextManager manager = FloatingTextManager.getInstance();
         
         if (manager.deleteFloatingText(id)) {
-            source.sendSuccess(() -> Component.literal("§a成功删除悬浮文字 '" + id + "'"), true);
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendSuccess(source, "floatingtext.deleted", id);
             return 1;
         } else {
-            source.sendSuccess(() -> Component.literal("§c悬浮文字 '" + id + "' 不存在！"), false);
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendFailure(source, "floatingtext.not_found", id);
             return 0;
         }
     }
@@ -233,21 +213,20 @@ public class FloatingTextCommand {
         Map<String, FloatingTextData> texts = manager.getAllFloatingTexts();
         
         if (texts.isEmpty()) {
-            source.sendSuccess(() -> Component.literal("§e当前没有悬浮文字"), false);
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendSuccess(source, "floatingtext.list_empty");
             return 0;
         }
         
-        source.sendSuccess(() -> Component.literal("§e========== 悬浮文字列表 §e=========="), false);
+        me.tuanzi.statistics.util.StatsTranslationHelper.sendSuccess(source, "floatingtext.list_header");
         for (Map.Entry<String, FloatingTextData> entry : texts.entrySet()) {
             String id = entry.getKey();
             FloatingTextData data = entry.getValue();
             String statInfo = data.getStatType() != null ? 
-                LeaderboardFormatter.getStatDisplayName(data.getStatType()) : "未设置";
+                LeaderboardFormatter.getStatDisplayName(data.getStatType()) : "N/A";
             source.sendSuccess(() -> Component.literal("§f- §b" + id + " §7| " + statInfo + 
-                " §7| 位置: (" + String.format("%.1f", data.getX()) + ", " + 
-                String.format("%.1f", data.getY()) + ", " + String.format("%.1f", data.getZ()) + ")"), false);
+                " §7| " + String.format("pos: (%.1f, %.1f, %.1f)", data.getX(), data.getY(), data.getZ())), false);
         }
-        source.sendSuccess(() -> Component.literal("§e总计: " + texts.size() + " 个悬浮文字"), false);
+        me.tuanzi.statistics.util.StatsTranslationHelper.sendSuccess(source, "floatingtext.list_total", texts.size());
         return texts.size();
     }
     
@@ -258,31 +237,29 @@ public class FloatingTextCommand {
         FloatingTextData data = manager.getFloatingText(id);
         
         if (data == null) {
-            source.sendSuccess(() -> Component.literal("§c悬浮文字 '" + id + "' 不存在！"), false);
+            me.tuanzi.statistics.util.StatsTranslationHelper.sendFailure(source, "floatingtext.not_found", id);
             return 0;
         }
         
-        source.sendSuccess(() -> Component.literal("§e========== 悬浮文字信息: " + id + " §e=========="), false);
+        String lang = me.tuanzi.statistics.util.StatsTranslationHelper.getLanguage(source);
+        source.sendSuccess(() -> Component.literal("§e========== [" + me.tuanzi.statistics.util.StatsTranslationHelper.translate("floatingtext.header", lang) + ": " + id + "] =========="), false);
         source.sendSuccess(() -> Component.literal("§bID: §f" + data.getId()), false);
-        source.sendSuccess(() -> Component.literal("§b世界: §f" + data.getWorldName()), false);
-        source.sendSuccess(() -> Component.literal("§b位置: §f(" + 
-            String.format("%.1f", data.getX()) + ", " + 
-            String.format("%.1f", data.getY()) + ", " + 
-            String.format("%.1f", data.getZ()) + ")"), false);
+        source.sendSuccess(() -> Component.literal("§b" + me.tuanzi.statistics.util.StatsTranslationHelper.translate("floatingtext.info_world", lang) + ": §f" + data.getWorldName()), false);
+        source.sendSuccess(() -> Component.literal("§b" + me.tuanzi.statistics.util.StatsTranslationHelper.translate("floatingtext.info_position", lang) + ": §f(" + 
+            String.format("%.1f, %.1f, %.1f", data.getX(), data.getY(), data.getZ()) + ")"), false);
         
-        String statType = data.getStatType() != null ? 
-            LeaderboardFormatter.getStatDisplayName(data.getStatType()) + " (" + data.getStatType() + ")" : "未设置";
-        source.sendSuccess(() -> Component.literal("§b统计类型: §f" + statType), false);
-        source.sendSuccess(() -> Component.literal("§b显示名称: §f" + (data.getDisplayName() != null ? data.getDisplayName() : "未设置")), false);
-        source.sendSuccess(() -> Component.literal("§b颜色: §f" + data.getColor()), false);
-        source.sendSuccess(() -> Component.literal("§b更新间隔: §f" + data.getUpdateInterval() + " tick (" + 
-            String.format("%.1f", data.getUpdateInterval() / 20.0) + "秒)"), false);
+        String statTypeDisplayName = data.getStatType() != null ? 
+            LeaderboardFormatter.getStatDisplayName(data.getStatType()) : "N/A";
+        source.sendSuccess(() -> Component.literal("§b" + me.tuanzi.statistics.util.StatsTranslationHelper.translate("floatingtext.info_stat_type", lang) + ": §f" + statTypeDisplayName), false);
+        source.sendSuccess(() -> Component.literal("§b" + me.tuanzi.statistics.util.StatsTranslationHelper.translate("floatingtext.info_display_name", lang) + ": §f" + (data.getDisplayName() != null ? data.getDisplayName() : "N/A")), false);
+        source.sendSuccess(() -> Component.literal("§b" + me.tuanzi.statistics.util.StatsTranslationHelper.translate("floatingtext.info_color", lang) + ": §f" + data.getColor()), false);
+        source.sendSuccess(() -> Component.literal("§b" + me.tuanzi.statistics.util.StatsTranslationHelper.translate("floatingtext.info_interval", lang) + ": §f" + data.getUpdateInterval() + " tick"), false);
         
         if (data.getCreatedTime() > 0) {
             String createdTime = Instant.ofEpochMilli(data.getCreatedTime())
                 .atZone(ZoneId.systemDefault())
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            source.sendSuccess(() -> Component.literal("§b创建时间: §f" + createdTime), false);
+            source.sendSuccess(() -> Component.literal("§b" + me.tuanzi.statistics.util.StatsTranslationHelper.translate("floatingtext.info_created", lang) + ": §f" + createdTime), false);
         }
         
         return 1;

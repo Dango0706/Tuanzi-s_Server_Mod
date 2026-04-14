@@ -80,8 +80,7 @@ public class BalanceCommand {
 
         for (WalletType type : types) {
             double balance = api.getBalance(player.getUUID(), type.id());
-            String displayName = type.displayName().getString();
-            ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.balance.line", displayName, balance);
+            ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.balance.line", type.displayName(), balance);
         }
 
         return 1;
@@ -97,9 +96,8 @@ public class BalanceCommand {
 
         WalletType type = api.getWalletType(walletId).get();
         double balance = api.getBalance(player.getUUID(), walletId);
-        String displayName = type.displayName().getString();
 
-        ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.balance.line", displayName, balance);
+        ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.balance.line", type.displayName(), balance);
         return 1;
     }
 }

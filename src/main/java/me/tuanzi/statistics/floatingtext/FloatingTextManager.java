@@ -83,7 +83,7 @@ public class FloatingTextManager {
         try {
             Display.TextDisplay textDisplay = new Display.TextDisplay(EntityType.TEXT_DISPLAY, level);
             textDisplay.setPos(x, y, z);
-            textDisplay.setText(Component.literal("悬浮文字"));
+            textDisplay.setText(net.minecraft.network.chat.Component.literal(me.tuanzi.statistics.util.StatsTranslationHelper.translate("floatingtext.default_text", null)));
             textDisplay.setBillboardConstraints(Display.BillboardConstraints.CENTER);
             textDisplay.setViewRange(1.0F);
             textDisplay.setLineWidth(200);

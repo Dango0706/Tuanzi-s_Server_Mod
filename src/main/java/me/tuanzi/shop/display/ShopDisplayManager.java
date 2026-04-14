@@ -28,9 +28,16 @@ public class ShopDisplayManager {
     private static final double DISPLAY_SEARCH_RADIUS = 0.4D;
     private static final double DISPLAY_POSITION_EPSILON_SQR = 1.0E-4D;
     private static final double DISPLAY_VELOCITY_EPSILON_SQR = 1.0E-6D;
+    
+    // 容错等待设置：如果实体在加载中暂时找不到，等待 100 tick (约5秒) 再尝试重建
+    private static final int MISSING_TOLERANCE_TICKS = 100;
+
     private final ShopManager shopManager;
     private final Map<UUID, UUID> shopToDisplayMap = new ConcurrentHashMap<>();
     private final Map<UUID, UUID> displayToShopMap = new ConcurrentHashMap<>();
+    
+    // 记录实体连续找不到的次数 (ShopID -> Ticks)
+    private final Map<UUID, Integer> missingTicksMap = new ConcurrentHashMap<>();
 
     public ShopDisplayManager(ShopManager shopManager) {
         this.shopManager = shopManager;
@@ -38,50 +45,33 @@ public class ShopDisplayManager {
 
     public void createDisplayForShop(ShopInstance shop, ServerLevel level) {
         if (shop == null || level == null) {
-            DevFlowLogger.error("悬浮物品创建", "shop 或 level 为 null");
-            LOGGER.warn("[商店展示] 创建悬浮物品失败：shop 或 level 为空");
             return;
         }
 
-        DevFlowLogger.startFlow("悬浮物品创建");
-        DevFlowLogger.param("悬浮物品创建", "shopId", shop.getShopId());
-        DevFlowLogger.param("悬浮物品创建", "shopPos", shop.getShopPos());
-        DevFlowLogger.param("悬浮物品创建", "tradeItem", shop.getTradeItem().getDisplayName().getString());
+        UUID shopId = shop.getShopId();
+        // 清除容错计数器
+        missingTicksMap.remove(shopId);
 
         BlockPos shopPos = shop.getShopPos();
-        LOGGER.info("[商店展示] 正在为商店创建悬浮物品 - 商店ID: {}, 位置: [{}, {}, {}], 物品: {}",
-                shop.getShopId(), shopPos.getX(), shopPos.getY(), shopPos.getZ(), 
-                shop.getTradeItem().getDisplayName().getString());
-        
-        DevFlowLogger.step("悬浮物品创建", "准备物品实体数据");
         ItemStack displayItem = toDisplayItem(shop.getTradeItem());
 
-        removeDisplayForShop(shop.getShopId(), level);
+        // 先清理该位置可能残留的旧实体 (双重保险)
+        removeDisplayForShop(shopId, level);
         removeLegacyItemDisplayNearShop(shop, level);
 
-        DevFlowLogger.step("悬浮物品创建", "创建ItemEntity实体");
         Vec3 displayPos = getExpectedDisplayPos(shop);
         ItemEntity displayEntity = new ItemEntity(level, displayPos.x, displayPos.y, displayPos.z, displayItem, 0.0, 0.0, 0.0);
         applyDisplayStyle(displayEntity, displayItem);
         anchorDisplayEntity(displayEntity, shop);
 
-        DevFlowLogger.param("悬浮物品创建", "displayPos", displayPos);
-
-        DevFlowLogger.step("悬浮物品创建", "将实体添加到世界");
         if (level.addFreshEntity(displayEntity)) {
-            shopToDisplayMap.put(shop.getShopId(), displayEntity.getUUID());
-            displayToShopMap.put(displayEntity.getUUID(), shop.getShopId());
+            shopToDisplayMap.put(shopId, displayEntity.getUUID());
+            displayToShopMap.put(displayEntity.getUUID(), shopId);
             
-            LOGGER.info("[商店展示] 悬浮物品创建成功 - 展示实体ID: {}, 商店ID: {}",
-                    displayEntity.getUUID(), shop.getShopId());
-            
-            DevFlowLogger.status("悬浮物品创建", "实体添加成功");
-            DevFlowLogger.param("悬浮物品创建", "displayEntityId", displayEntity.getUUID());
-            DevFlowLogger.endFlow("悬浮物品创建", true, "悬浮物品创建成功");
+            LOGGER.debug("[商店展示] 悬浮物品创建成功 - 展示实体ID: {}, 商店ID: {}",
+                    displayEntity.getUUID(), shopId);
         } else {
-            LOGGER.error("[商店展示] 悬浮物品创建失败 - 无法添加实体到世界, 商店ID: {}", shop.getShopId());
-            DevFlowLogger.error("悬浮物品创建", "无法添加实体到世界");
-            DevFlowLogger.endFlow("悬浮物品创建", false, "实体添加失败");
+            LOGGER.error("[商店展示] 悬浮物品创建失败 - 无法添加实体到世界, 商店ID: {}", shopId);
         }
     }
 
@@ -89,24 +79,20 @@ public class ShopDisplayManager {
         if (shopId == null || level == null) {
             return;
         }
-        LOGGER.info("[商店展示] 正在移除商店的悬浮物品 - 商店ID: {}", shopId);
+        
+        missingTicksMap.remove(shopId);
         UUID displayId = shopToDisplayMap.remove(shopId);
         if (displayId != null) {
             displayToShopMap.remove(displayId);
-            
             Entity entity = level.getEntity(displayId);
             if (entity != null) {
                 entity.discard();
-                LOGGER.info("[商店展示] 悬浮物品已通过引用移除 - 展示实体ID: {}, 商店ID: {}", displayId, shopId);
             }
         }
 
-        // 强力兜底逻辑：无论 Map 中是否存在，都扫描该商店位置周围的展示实体并清理
+        // 强力位置扫描清理
         shopManager.getShopById(shopId).ifPresent(shop -> {
-            int removed = removeLegacyItemDisplayNearShop(shop, level);
-            if (removed > 0) {
-                LOGGER.info("[商店展示] 悬浮物品已通过位置扫描强力移除 - 商店ID: {}, 数量: {}", shopId, removed);
-            }
+            removeLegacyItemDisplayNearShop(shop, level);
         });
     }
 
@@ -115,7 +101,6 @@ public class ShopDisplayManager {
             return;
         }
 
-        LOGGER.info("[商店展示] 正在更新商店悬浮物品 - 商店ID: {}, 新物品: {}", shopId, newItem.getDisplayName().getString());
         UUID displayId = shopToDisplayMap.get(shopId);
         if (displayId != null) {
             Entity entity = level.getEntity(displayId);
@@ -124,104 +109,116 @@ public class ShopDisplayManager {
                 itemEntity.setItem(displayItem);
                 applyDisplayStyle(itemEntity, displayItem);
                 shopManager.getShopById(shopId).ifPresent(shop -> anchorDisplayEntity(itemEntity, shop));
-                LOGGER.info("[商店展示] 悬浮物品已更新 - 展示实体ID: {}, 商店ID: {}, 新物品: {}",
-                        displayId, shopId, newItem.getDisplayName().getString());
             } else {
-                LOGGER.warn("[商店展示] 找到展示实体ID但实体类型异常或已不存在 - 展示实体ID: {}", displayId);
-                removeDisplayReference(shopId, displayId);
-                Optional<ShopInstance> shopOpt = shopManager.getShopById(shopId);
-                shopOpt.ifPresent(shop -> createDisplayForShop(shop, level));
+                removeDisplayForShop(shopId, level);
+                shopManager.getShopById(shopId).ifPresent(shop -> createDisplayForShop(shop, level));
             }
         } else {
-            LOGGER.warn("[商店展示] 商店没有关联的悬浮物品，尝试重新创建 - 商店ID: {}", shopId);
-            Optional<ShopInstance> shopOpt = shopManager.getShopById(shopId);
-            if (shopOpt.isPresent()) {
-                createDisplayForShop(shopOpt.get(), level);
-            }
+            shopManager.getShopById(shopId).ifPresent(shop -> createDisplayForShop(shop, level));
         }
     }
 
     public void maintainAllDisplays(ServerLevel level) {
-        if (level == null || shopToDisplayMap.isEmpty()) {
+        if (level == null) {
             return;
         }
 
-        for (Map.Entry<UUID, UUID> entry : shopToDisplayMap.entrySet()) {
-            UUID shopId = entry.getKey();
-            UUID displayId = entry.getValue();
-            Optional<ShopInstance> shopOpt = shopManager.getShopById(shopId);
-            if (shopOpt.isEmpty() || !shopOpt.get().isValid()) {
-                removeDisplayForShop(shopId, level);
+        // 核心优化：不再仅遍历 Map，而是遍历所有商店以确保重启后能自动补全
+        for (ShopInstance shop : shopManager.getAllShops()) {
+            if (!shop.isValid()) {
+                removeDisplayForShop(shop.getShopId(), level);
                 continue;
             }
 
-            ShopInstance shop = shopOpt.get();
+            UUID shopId = shop.getShopId();
             BlockPos shopPos = shop.getShopPos();
 
-            // 关键修复：如果区块未加载，跳过维护，防止在卸载区域疯狂重建实体
+            // 检查区块加载状态
             if (!level.isLoaded(shopPos)) {
+                missingTicksMap.remove(shopId);
                 continue;
             }
 
-            Entity entity = level.getEntity(displayId);
-            if (!(entity instanceof ItemEntity itemEntity) || !entity.isAlive()) {
-                removeDisplayForShop(shopId, level);
-                createDisplayForShop(shop, level);
+            UUID displayId = shopToDisplayMap.get(shopId);
+            Entity entity = displayId != null ? level.getEntity(displayId) : null;
+
+            if (entity == null || !entity.isAlive()) {
+                // 关键容错：如果内存里没记录或实体丢了，累加计数
+                int missingCount = missingTicksMap.getOrDefault(shopId, 0) + 1;
+                missingTicksMap.put(shopId, missingCount);
+                
+                // 积攒一定时间后尝试恢复或重建
+                if (missingCount >= MISSING_TOLERANCE_TICKS) {
+                    LOGGER.debug("[商店展示] 正在为商店 {} 恢复/重建悬浮物...", shopId);
+                    int found = tryToRecoverDisplayReference(shop, level);
+                    if (found == 0) {
+                        createDisplayForShop(shop, level);
+                    }
+                    missingTicksMap.remove(shopId);
+                }
                 continue;
             }
 
-            anchorDisplayEntity(itemEntity, shop);
-            
-            // 确保显示物品正确
-            ItemStack expected = toDisplayItem(shop.getTradeItem());
-            if (!ItemStack.isSameItemSameComponents(itemEntity.getItem(), expected) || itemEntity.getItem().getCount() != 1) {
-                itemEntity.setItem(expected);
-                itemEntity.setCustomName(expected.getDisplayName());
+            // 找到了且存活
+            missingTicksMap.remove(shopId);
+            if (entity instanceof ItemEntity itemEntity) {
+                anchorDisplayEntity(itemEntity, shop);
+                
+                ItemStack expected = toDisplayItem(shop.getTradeItem());
+                if (!ItemStack.isSameItemSameComponents(itemEntity.getItem(), expected)) {
+                    itemEntity.setItem(expected);
+                    itemEntity.setCustomName(expected.getDisplayName());
+                }
             }
         }
+    }
+
+    /**
+     * 尝试通过扫描世界中的实体来恢复内存引用，防止重复创建
+     */
+    private int tryToRecoverDisplayReference(ShopInstance shop, ServerLevel level) {
+        Vec3 expectedPos = getExpectedDisplayPos(shop);
+        AABB searchBox = new AABB(
+                expectedPos.x - 0.2, expectedPos.y - 0.2, expectedPos.z - 0.2,
+                expectedPos.x + 0.2, expectedPos.y + 0.2, expectedPos.z + 0.2
+        );
+
+        for (ItemEntity itemEntity : level.getEntitiesOfClass(ItemEntity.class, searchBox)) {
+            if (itemEntity.entityTags().contains(SHOP_DISPLAY_TAG) && itemEntity.isAlive()) {
+                shopToDisplayMap.put(shop.getShopId(), itemEntity.getUUID());
+                displayToShopMap.put(itemEntity.getUUID(), shop.getShopId());
+                LOGGER.debug("[商店展示] 成功找回丢失的实体引用 - 商店ID: {}, 实体ID: {}", 
+                        shop.getShopId(), itemEntity.getUUID());
+                return 1;
+            }
+        }
+        return 0;
     }
 
     public void removeAllDisplays(ServerLevel level) {
         for (UUID displayId : displayToShopMap.keySet()) {
             Entity entity = level.getEntity(displayId);
-            if (entity != null) {
-                entity.discard();
-            }
+            if (entity != null) entity.discard();
         }
         shopToDisplayMap.clear();
         displayToShopMap.clear();
+        missingTicksMap.clear();
     }
 
     public void initializeAllDisplays(ServerLevel level) {
         var shops = shopManager.getAllShops();
-        LOGGER.debug("正在为 {} 个商店初始化悬浮物品显示", shops.size());
         shopToDisplayMap.clear();
         displayToShopMap.clear();
+        missingTicksMap.clear();
         cleanupLegacyDisplays(level);
         for (ShopInstance shop : shops) {
             createDisplayForShop(shop, level);
         }
     }
 
-    public Optional<UUID> getDisplayIdForShop(UUID shopId) {
-        return Optional.ofNullable(shopToDisplayMap.get(shopId));
-    }
-
-    public Optional<UUID> getShopIdForDisplay(UUID displayId) {
-        return Optional.ofNullable(displayToShopMap.get(displayId));
-    }
-
-    public boolean isShopDisplay(UUID entityUuid) {
-        return displayToShopMap.containsKey(entityUuid);
-    }
-
     private void cleanupLegacyDisplays(ServerLevel level) {
-        int removedCount = 0;
         for (ShopInstance shop : shopManager.getAllShops()) {
-            removedCount += removeLegacyItemDisplayNearShop(shop, level);
-        }
-        if (removedCount > 0) {
-            LOGGER.info("[商店展示] 已清理历史遗留的物品实体展示: {} 个", removedCount);
+            removeLegacyItemDisplayNearShop(shop, level);
         }
     }
 
@@ -233,44 +230,27 @@ public class ShopDisplayManager {
         );
 
         int removed = 0;
-        ItemStack expectedItem = toDisplayItem(shop.getTradeItem());
-        
-        // 1. 清理旧版 ItemDisplay
+        // 清理 ItemDisplay
         for (Display.ItemDisplay displayEntity : level.getEntitiesOfClass(Display.ItemDisplay.class, searchBox)) {
             if (displayEntity.entityTags().contains(SHOP_DISPLAY_TAG)) {
                 displayEntity.discard();
                 removed++;
             }
         }
-
-        // 2. 清理当前使用的 ItemEntity
+        // 清理 ItemEntity
         for (ItemEntity itemEntity : level.getEntitiesOfClass(ItemEntity.class, searchBox)) {
             if (itemEntity.entityTags().contains(SHOP_DISPLAY_TAG)) {
                 itemEntity.discard();
                 removed++;
-                continue;
-            }
-
-            ItemStack stack = itemEntity.getItem();
-            if (!stack.isEmpty()) {
-                boolean sameItem = stack.is(expectedItem.getItem());
-                boolean looksLikeDisplay = itemEntity.isNoGravity() && itemEntity.noPhysics;
-                if (sameItem && looksLikeDisplay) {
-                    itemEntity.discard();
-                    removed++;
-                }
             }
         }
         return removed;
     }
 
     private void removeDisplayReference(UUID shopId, UUID displayId) {
-        if (shopId != null) {
-            shopToDisplayMap.remove(shopId);
-        }
-        if (displayId != null) {
-            displayToShopMap.remove(displayId);
-        }
+        if (shopId != null) shopToDisplayMap.remove(shopId);
+        if (displayId != null) displayToShopMap.remove(displayId);
+        missingTicksMap.remove(shopId);
     }
 
     private ItemStack toDisplayItem(ItemStack source) {
@@ -281,11 +261,7 @@ public class ShopDisplayManager {
 
     private Vec3 getExpectedDisplayPos(ShopInstance shop) {
         BlockPos shopPos = shop.getShopPos();
-        return new Vec3(
-                shopPos.getX() + DISPLAY_XZ_OFFSET,
-                shopPos.getY() + DISPLAY_Y_OFFSET,
-                shopPos.getZ() + DISPLAY_XZ_OFFSET
-        );
+        return new Vec3(shopPos.getX() + DISPLAY_XZ_OFFSET, shopPos.getY() + DISPLAY_Y_OFFSET, shopPos.getZ() + DISPLAY_XZ_OFFSET);
     }
 
     private void applyDisplayStyle(ItemEntity itemEntity, ItemStack displayItem) {
@@ -296,10 +272,6 @@ public class ShopDisplayManager {
         itemEntity.setSilent(true);
         itemEntity.setNeverPickUp();
         itemEntity.setUnlimitedLifetime();
-        
-        // 关键修复：确保实体不被保存到存档，防止加载时重复
-        // 在某些版本中可以使用 setPersistenceRequired(false)，但在 Fabric 中 Mixin 拦截 shouldSave 更好
-        
         itemEntity.addTag(SHOP_DISPLAY_TAG);
         itemEntity.setCustomName(displayItem.getDisplayName());
         itemEntity.setCustomNameVisible(true);

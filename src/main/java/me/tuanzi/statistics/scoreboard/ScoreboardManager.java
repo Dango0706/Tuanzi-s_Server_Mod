@@ -121,7 +121,7 @@ public class ScoreboardManager {
         rotationTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                rotateScoreboard();
+                server.execute(ScoreboardManager.this::rotateScoreboard);
             }
         }, 0, rotationInterval);
         
@@ -145,6 +145,10 @@ public class ScoreboardManager {
     }
 
     private void updateScores(String statType) {
+        if (currentObjective == null || scoreboard.getObjective(currentObjective.getName()) == null) {
+            return;
+        }
+
         Map<String, PlayerStatistics> playerStats = StatisticsModule.getInstance().getDataManager().getAllPlayerStatistics();
 
         for (Map.Entry<String, PlayerStatistics> entry : playerStats.entrySet()) {
@@ -228,46 +232,17 @@ public class ScoreboardManager {
     }
 
     private String getStatDisplayName(String statType) {
-        switch (statType) {
-            case "playTime":
-                return "§6在线时间 (秒)";
-            case "playTimeMinutes":
-                return "§6在线时间 (分钟)";
-            case "playTimeHours":
-                return "§6在线时间 (小时)";
-            case "distanceTraveled":
-                return "§6移动距离 (米)";
-            case "blocksPlaced":
-                return "§6放置方块";
-            case "blocksBroken":
-                return "§6破坏方块";
-            case "kills":
-                return "§6击杀数";
-            case "deaths":
-                return "§6死亡数";
-            case "damageDealt":
-                return "§6造成伤害";
-            case "damageTaken":
-                return "§6受到伤害";
-            case "fishingAttempts":
-                return "§6钓鱼次数";
-            case "itemsCrafted":
-                return "§6合成物品";
-            case "anvilUses":
-                return "§6使用铁砧";
-            case "itemsEnchanted":
-                return "§6附魔物品";
-            case "villagerTrades":
-                return "§6村民交易";
-            case "chatMessagesSent":
-                return "§6聊天消息";
-            case "itemsDropped":
-                return "§6丢弃物品";
-            case "loginDays":
-                return "§6登录天数";
-            default:
-                return "§6" + statType;
+        String key = "stats.type." + statType;
+        // 处理特殊的时间变体
+        if (statType.equals("playTime")) key = "stats.type.playTime_seconds";
+        else if (statType.equals("playTimeMinutes")) key = "stats.type.playTime_minutes";
+        else if (statType.equals("playTimeHours")) key = "stats.type.playTime_hours";
+
+        String translated = me.tuanzi.statistics.util.StatsTranslationHelper.translate(key, null);
+        if (translated.equals(key)) {
+            return "§6" + statType;
         }
+        return "§6" + translated;
     }
 
     public void setRotationInterval(long interval) {
@@ -308,7 +283,7 @@ public class ScoreboardManager {
             @Override
             public void run() {
                 if (currentObjective != null && currentStatType != null) {
-                    updateScores(currentStatType);
+                    server.execute(() -> updateScores(currentStatType));
                 }
             }
         }, updateInterval, updateInterval);

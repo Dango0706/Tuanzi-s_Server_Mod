@@ -195,9 +195,7 @@ public class EconAdminCommand {
         ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_header", playerName);
         for (WalletType type : types) {
             double balance = api.getBalance(player.getUUID(), type.id());
-            String displayName = type.displayName().getString();
-            String typeId = type.id();
-            ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_line", displayName, typeId, balance);
+            ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_line", type.displayName(), type.id(), balance);
         }
         return 1;
     }
@@ -215,11 +213,10 @@ public class EconAdminCommand {
         
         WalletType type = api.getWalletType(walletId).get();
         double balance = api.getBalance(player.getUUID(), walletId);
-        String displayName = type.displayName().getString();
         String playerName = player.getName().getString();
         
         ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_header", playerName);
-        ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_line", displayName, walletId, balance);
+        ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_line", type.displayName(), walletId, balance);
         return 1;
     }
 }

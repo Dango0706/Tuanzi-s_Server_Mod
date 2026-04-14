@@ -120,13 +120,11 @@ public class BlockInteractionHandler {
         int capacity = getChestAvailableSpace(shop);
 
         ItemStack tradeItem = shop.getTradeItem();
-        // 创建带悬浮窗的富文本物品组件
         net.minecraft.world.item.ItemStackTemplate template = net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(tradeItem);
         Component itemName = tradeItem.getDisplayName().copy().withStyle(style -> 
             style.withHoverEvent(new net.minecraft.network.chat.HoverEvent.ShowItem(template)));
 
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
-        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "admin.shop.info.title"));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "admin.shop.info.title"));
         player.sendSystemMessage(Component.empty()
                 .append(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.item") + ": "))
                 .append(itemName));
@@ -148,7 +146,7 @@ public class BlockInteractionHandler {
             }
         }
 
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e========================================"));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "admin.shop.info.title"));
     }
 
     private void sendShopInteractionMessage(ServerPlayer player, ShopInstance shop, boolean isShiftDown) {
@@ -162,10 +160,9 @@ public class BlockInteractionHandler {
                 DynamicPricing.calculateBulkPrice(shop, quantity, isBuy) : 
                 price * quantity;
 
-        Component shopTypeComponent = ShopTranslationHelper.shopTypeDisplayName(player, shop.getShopType() == ShopType.SELL);
+        String headerKey = isBuy ? "shop.type.sell" : "shop.type.buy";
         ItemStack tradeItem = shop.getTradeItem();
         
-        // 构建带有悬浮信息的物品组件 (使用 26.1 API)
         net.minecraft.world.item.ItemStackTemplate template = net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(tradeItem);
         Component itemName = tradeItem.getDisplayName().copy().withStyle(style -> 
             style.withHoverEvent(new net.minecraft.network.chat.HoverEvent.ShowItem(template)));
@@ -173,10 +170,7 @@ public class BlockInteractionHandler {
         int stock = getShopStock(shop);
         int capacity = getChestAvailableSpace(shop);
 
-        player.sendSystemMessage(Component.empty()
-                .append(ShopTranslationHelper.colored("§e=== "))
-                .append(shopTypeComponent)
-                .append(ShopTranslationHelper.colored(" §e===")));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, headerKey));
 
         player.sendSystemMessage(Component.empty()
                 .append(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.item") + ": §f"))
@@ -211,6 +205,8 @@ public class BlockInteractionHandler {
         if (!isShiftDown) {
             player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.shift_hint"));
         }
+        
+        player.sendSystemMessage(ShopTranslationHelper.header(player, headerKey));
     }
 
     private Component createActionButton(ShopInstance shop, ServerPlayer player, int quantity, 

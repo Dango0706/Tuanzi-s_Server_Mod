@@ -39,8 +39,8 @@ public class ShopStateSaver extends SavedData {
         this.setDirty();
     }
 
-    public void addTick() {
-        this.accumulatedTicks++;
+    public void addTicks(int count) {
+        this.accumulatedTicks += count;
         this.setDirty();
     }
 

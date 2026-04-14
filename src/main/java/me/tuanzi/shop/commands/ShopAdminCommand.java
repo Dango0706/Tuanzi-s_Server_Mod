@@ -205,11 +205,16 @@ public class ShopAdminCommand {
         shop.setInfinite(value);
         shopManager.markDirty();
 
+        // 更新告示牌以反映颜色变化
+        if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            SignUpdateHelper.updateSignForShop(shop, serverLevel);
+        }
+
         LOGGER.info("[商店管理] 管理员 {} 设置商店 {} 的无限模式为: {}",
                 player.getName().getString(), shop.getShopId(), value);
 
-        source.sendSuccess(() -> ShopTranslationHelper.translatable("admin.shop.set_infinite", 
-                value ? ShopTranslationHelper.getRawTranslation("common.yes") : ShopTranslationHelper.getRawTranslation("common.no")), false);
+        String statusText = value ? ShopTranslationHelper.getRawTranslation(player, "common.yes") : ShopTranslationHelper.getRawTranslation(player, "common.no");
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(player, "admin.shop.set_infinite", statusText), false);
         return 1;
     }
 
@@ -518,47 +523,54 @@ public class ShopAdminCommand {
     private static void sendDetailedShopInfo(ServerPlayer player, ShopInstance shop, ShopManager shopManager) {
         String currencyName = shopManager.getCurrencyDisplayName(shop.getWalletTypeId());
         BlockPos pos = shop.getShopPos();
+        String lang = ShopTranslationHelper.getLanguage(player);
 
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e================ [商店详细信息] ================"));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "admin.shop.info.title_fmt"));
         player.sendSystemMessage(ShopTranslationHelper.colored("§bID: §f" + shop.getShopId().toString().substring(0, 8)));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b位置: §f" + String.format("x:%d y:%d z:%d", pos.getX(), pos.getY(), pos.getZ())));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b所有者: §f" + shop.getOwnerId().toString().substring(0, 8)));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b类型: §f" + (shop.getShopType() == ShopType.SELL ? "§e出售 (玩家买)" : "§a收购 (玩家卖)")));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b物品: §f" + shop.getTradeItem().getDisplayName().getString()));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b基础单价: §e" + String.format("%.2f %s", shop.getBasePrice(), currencyName)));
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b当前成交价: §6" + String.format("%.2f %s", shop.getCurrentPrice(), currencyName)));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.location") + ": §f" + String.format("x:%d y:%d z:%d", pos.getX(), pos.getY(), pos.getZ())));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.owner") + ": §f" + shop.getOwnerId().toString().substring(0, 8)));
+        
+        String typeStr = shop.getShopType() == ShopType.SELL ? "shop.type.sell" : "shop.type.buy";
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.type") + ": §f" + ShopTranslationHelper.getRawTranslation(player, typeStr)));
+        
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.item") + ": §f" + shop.getTradeItem().getDisplayName().getString()));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.base_price") + ": §e" + String.format("%.2f %s", shop.getBasePrice(), currencyName)));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.current_price") + ": §6" + String.format("%.2f %s", shop.getCurrentPrice(), currencyName)));
 
         // 动态定价相关
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b动态定价: " + (shop.isDynamicPricing() ? "§a开启" : "§7关闭")));
+        String dynamicStatus = shop.isDynamicPricing() ? "common.enabled" : "common.disabled";
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.dynamic_pricing") + ": " + ShopTranslationHelper.getRawTranslation(player, dynamicStatus)));
         if (shop.isDynamicPricing()) {
-            player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 最低价(x): §f" + String.format("%.2f", shop.getMinPrice())));
-            player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 最高价(y): §f" + String.format("%.2f", shop.getMaxPrice())));
-            player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 半衰常数(K): §f" + String.format("%.2f", shop.getHalfLifeConstant())));
-            player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 系统压力(S): §f" + String.format("%.2f", shop.getSystemStock())));
-            player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 每日衰减率: §f" + String.format("%.1f%%", shop.getDecayRate() * 100)));
+            player.sendSystemMessage(ShopTranslationHelper.colored("  §7- " + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.min_price") + ": §f" + String.format("%.2f", shop.getMinPrice())));
+            player.sendSystemMessage(ShopTranslationHelper.colored("  §7- " + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.max_price") + ": §f" + String.format("%.2f", shop.getMaxPrice())));
+            player.sendSystemMessage(ShopTranslationHelper.colored("  §7- " + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.half_life") + ": §f" + String.format("%.2f", shop.getHalfLifeConstant())));
+            player.sendSystemMessage(ShopTranslationHelper.colored("  §7- " + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.system_pressure") + ": §f" + String.format("%.2f", shop.getSystemStock())));
+            player.sendSystemMessage(ShopTranslationHelper.colored("  §7- " + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.decay_rate") + ": §f" + String.format("%.1f%%", shop.getDecayRate() * 100)));
         }
 
         // 统计数据
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b累计交易统计:"));
-        player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 累计售出(玩家买入): §f" + shop.getTotalSold()));
-        player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 累计收购(玩家卖出): §f" + shop.getTotalBought()));
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.stats_header") + ":"));
+        player.sendSystemMessage(ShopTranslationHelper.colored("  §7- " + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.total_sold") + ": §f" + shop.getTotalSold()));
+        player.sendSystemMessage(ShopTranslationHelper.colored("  §7- " + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.total_bought") + ": §f" + shop.getTotalBought()));
 
         // 库存/模式状态
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b商店模式: " + (shop.isInfinite() ? "§d无限库存" : "§f标准")));
+        String modeStr = shop.isInfinite() ? "common.infinite" : "common.standard";
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.mode") + ": " + ShopTranslationHelper.getRawTranslation(player, modeStr)));
+        
         if (!shop.isInfinite()) {
             ShopModule module = ShopModule.getInstance(player.level().getServer());
             if (module != null && module.getInteractionHandler() != null) {
                 int stock = module.getInteractionHandler().getShopStock(shop);
                 int capacity = module.getInteractionHandler().getChestAvailableSpace(shop);
                 if (shop.getShopType() == ShopType.SELL) {
-                    player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 当前库存: §f" + stock));
+                    player.sendSystemMessage(ShopTranslationHelper.colored("  §7- " + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.current_stock") + ": §f" + stock));
                 } else {
-                    player.sendSystemMessage(ShopTranslationHelper.colored("  §7- 剩余容量: §f" + capacity));
+                    player.sendSystemMessage(ShopTranslationHelper.colored("  §7- " + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.current_capacity") + ": §f" + capacity));
                 }
             }
         }
         
-        player.sendSystemMessage(ShopTranslationHelper.colored("§e============================================"));
+        player.sendSystemMessage(ShopTranslationHelper.header(player, "admin.shop.info.title_fmt"));
     }
 
     private static int reloadConfig(CommandContext<CommandSourceStack> context) {
@@ -687,23 +699,24 @@ public class ShopAdminCommand {
     private static int showHelp(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§a=== ShopAdmin Commands ==="), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin delete - Delete shop (look at it)"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setInfinite <true/false> - Set infinite mode"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin toggleDynamic - Toggle dynamic pricing"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setHalfLife <K> - Set half-life constant"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setSystemStock <S> - Set system stock"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin adjustSystemStock <%> - Set daily system stock decay rate"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setPrice <price> - Set shop price"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setCurrency <id> - Set currency type"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setMinPrice <price> - Set minimum price"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setMaxPrice <price> - Set maximum price"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setTimeout <seconds> - Set input timeout"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin info - Show shop info"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin reload - Reload config"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin list - List all shops"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin tp <shopId> - Teleport to shop"), false);
-        source.sendSuccess(() -> ShopTranslationHelper.colored("§e/shopadmin setOwner <player> - Set shop owner"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.header(source, "admin.shop.help.header"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.delete"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.set_infinite"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.toggle_dynamic"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.set_halflife"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.set_system_stock"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.adjust_system_stock"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.set_price"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.set_currency"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.set_min_price"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.set_max_price"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.set_timeout"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.info"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.reload"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.list"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.tp"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "admin.shop.help.set_owner"), false);
+        source.sendSuccess(() -> ShopTranslationHelper.header(source, "admin.shop.help.header"), false);
         
         return 1;
     }

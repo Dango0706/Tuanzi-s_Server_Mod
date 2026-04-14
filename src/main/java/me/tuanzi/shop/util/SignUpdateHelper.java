@@ -49,8 +49,12 @@ public class SignUpdateHelper {
         }
 
         String line0 = isSellShop
-                ? ShopTranslationHelper.getRawTranslation("shop.sign.pattern.sell_cn")
-                : ShopTranslationHelper.getRawTranslation("shop.sign.pattern.buy_cn");
+                ? ShopTranslationHelper.getRawTranslation("shop.sign.pattern.sell")
+                : ShopTranslationHelper.getRawTranslation("shop.sign.pattern.buy");
+
+        if (shop.isInfinite()) {
+            line0 = "§c" + line0;
+        }
         
         // 获取不带括号的显示名称
         Component tradeItemDisplayName = shop.getTradeItem().getDisplayName();

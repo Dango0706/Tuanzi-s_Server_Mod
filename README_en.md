@@ -1,137 +1,66 @@
 # Tuanzi's Server Mod
 
-This is an all-in-one server management mod built for Fabric 26.1. It deeply integrates a hybrid authentication system, a multi-currency dynamic economy, a visual smart shop system, and comprehensive player behavior statistics, aiming to provide a professional and convenient management solution for medium to large servers.
+A comprehensive server-side enhancement mod developed for Fabric 1.21.1, integrating advanced authentication, multi-currency economy, smart shops, and an all-dimensional player statistics system. **No client-side mod required.**
+
+## Core Features
+
+### 1. Smart Shop System
+*   **Guided Creation**: Right-click an empty sign to start an interactive guide with chat button selection and numerical input.
+*   **Typed Dynamic Pricing**:
+    *   **BUY Mode (Purchasing)**: $P = x + (y - x) \cdot \frac{K}{K + S}$ (Price converges to floor $x$ as stock increases)
+    *   **SELL Mode (Selling)**: $P = x + (y - x) \cdot \frac{S}{K + S}$ (Price rises as sales volume increases)
+*   **Visual Display**: `ItemEntity`-based floating item displays with anti-pickup, physical stillness, and non-persistence features (auto-restored on reboot).
+*   **Multi-Dimension Support**: Create and maintain shops in the Overworld, Nether, and End automatically.
+
+### 2. Advanced Economy
+*   **Multi-Wallet Architecture**: Supports custom currencies (e.g., Gold, Credits).
+*   **Dynamic Translation**: Currency names and transaction feedback fully adapt to the player's client language.
+*   **Offline Transactions**: Supports transfers to registered offline players.
+
+### 3. Mixed Authentication
+*   **Mixed Verification**: Automatically identifies Mojang premium accounts for password-less login; offline players must register.
+*   **Whitelist Management**: Enhanced whitelist system integrated with UUID mapping.
+*   **Security Protection**: Restricts all physical and interactive operations before login to prevent information leaks or unauthorized damage.
+
+### 4. Total Statistics System
+*   **Cross-Dimension Tracking**: Precisely records 20+ metrics including distance traveled, kills, mining, online time, etc.
+*   **Real-time Leaderboards**: Supports automatic sidebar scoreboard rotation and dynamic floating text displays.
+*   **Extended Survival Data**: Includes fun data like longest session, total jumps, and farthest death drop distance.
+
+## Command Index
+
+### Common Player Commands
+| Command | Description | Note |
+| :--- | :--- | :--- |
+| `/login <password>` | Account login | Auto-login for Premium |
+| `/register <pass> <confirm>` | Account registration | Required only once |
+| `/pay <player> <walletId> <qty>` | Transfer currency | Tab-completion supported |
+| `/balance [walletId]` | Check balances | Shows all wallets by default |
+| `/stats [player] [type]` | View player stats | Supports 20+ metrics |
+| `/shop help` | Shop functionality guide | Includes Buy/Sell instructions |
+
+### Admin Commands (`Level 4`)
+| Command | Description | Note |
+| :--- | :--- | :--- |
+| `/auth whitelist <add/remove/list>` | Whitelist management | Supports UUID generation |
+| `/econ-admin balance <set/add/rem>` | Manage player balances | Multi-currency support |
+| `/shopadmin info` | Shop debug data | Shows S, K, Decay rate, etc. |
+| `/shopadmin setupDynamic` | Guided dynamic pricing setup | 3-step core variable setup |
+| `/scoreboard <start/stop/interval>` | Scoreboard rotation control | Adjust rotation speed |
+| `/floatingtext <create/delete/set>` | Floating text leaderboards | Color and position adjustment |
+
+## Technical Specifications
+*   **Platform**: Minecraft 1.21.1 (Fabric)
+*   **Java Version**: Java 25 (Zulu-25 recommended)
+*   **Performance Optimization**: 
+    *   Shop displays maintained using a 5-tick throttle.
+    *   Statistics data saved using an asynchronous mechanism.
+    *   Display entities use a non-persistent scheme, zero save bloat.
+
+## Internationalization (i18n)
+This mod fully supports English and Chinese. The system automatically switches based on the player's client language:
+*   **Chinese**: `zh_cn` (Includes automatic normalization for `zh_tw`, `zh_hk`)
+*   **English**: `en_us` (Default fallback)
 
 ---
-
-## 🛡️ Authentication Module (Auth) - In-depth Details
-
-This module provides a rigorous identity verification mechanism, perfectly compatible with both Premium and Offline players.
-
-### 1. Automatic Account Recognition Logic
-*   **Premium Players (Online)**:
-    *   **Recognition**: Based on UUID version 4 and verified via Mojang official servers.
-    *   **Features**: **Silent Login**. The system automatically recognizes and grants all permissions; players need no extra operations.
-*   **Offline Players (Offline)**:
-    *   **Recognition**: Based on UUID version 3.
-    *   **Security Chain**: Enters a "Restricted State" upon joining (cannot move, speak, interact, or take damage) and must complete login within a limited time.
-    *   **Fixed Offline UUID**: Built-in offline UUID generation algorithm ensures that even if a player changes their name (in offline mode), their whitelist status and assets remain recoverable via the original UUID.
-
-### 2. Advanced Security Features
-*   **Session & IP Persistence**: After a successful login, the system records the player's IP address. Within the validity period specified in the config (e.g., 24 hours), as long as the player's IP remains unchanged, re-joining will trigger **Auto-Login**.
-*   **Brute-force Protection**: Built-in login attempt limits; multiple incorrect password entries will trigger a temporary ban.
-
----
-
-## 🏪 Smart Chest Shop (Shop) - Interaction Guide
-
-The Chest Shop is the core feature of this mod, transforming traditional command-based shops into intuitive visual interactions.
-
-### 1. Guided Creation Process
-1.  **Physical Preparation**: Place a chest (or large chest) and attach a sign to its front.
-2.  **Trigger Recognition**: Click the sign while holding an item.
-3.  **Smart Interaction**:
-    *   **Step A (Type)**: A chat prompt will appear with `[Sell]` and `[Buy]` buttons; click to set the shop's nature.
-    *   **Step B (Price)**: Enter the **Unit Price** in the chat (e.g., `50.5`).
-    *   **Step C (Note)**: Enter a slogan or description for the shop (enter `{None}` to leave blank).
-4.  **Auto Rendering**: Once created, a **floating item model** will be generated above the shop, and the sign will be automatically waxed.
-
-### 2. Dynamic Pricing Algorithm Model
-The market-pressure-based dynamic pricing model is as follows:
-*   **Buy Shop (BUY)**: $$P = x + (y - x) \times \frac{K}{K + S}$$
-*   **Sell Shop (SELL)**: $$P = x + (y - x) \times \frac{S}{K + S}$$
-*   **Variable Explanation**:
-    *   $x$: Min Price | $y$: Max Price | $K$: Half-life Constant (adjusts price sensitivity) | $S$: Real-time system stock/heat value.
-*   **Price Recovery**: Every 24,000 ticks, the system automatically deducts $S$ based on the shop's individual `decayRate` (default 1%), allowing prices to naturally recover over time.
-
-### 3. Core Physical Protection
-*   **Explosion Protection**: All shop blocks (chests/signs) are **completely immune** to explosions from TNT, Creepers, etc.
-*   **Display Lock**: Floating items are driven by `ItemEntity` but with `noPhysics` and `noGravity` properties, making them **immune to water currents, hopper suction, and player pickup**.
-*   **Waxing Protection**: All signs generated by the shop system are automatically **chemically waxed**, preventing non-admin players from modifying them.
-
----
-
-## 💰 Economy System API
-
-The mod provides a robust economic interaction interface for other developers, supporting multi-currency management.
-
-### 1. Getting the API Instance
-The API interface can be obtained via `EconomyAPIImpl.getInstance()` or the module manager.
-
-### 2. Core Method Descriptions
-| Method Name | Description |
-| :--- | :--- |
-| `getBalance(UUID, String)` | Gets the player's balance in a specific wallet (Currency ID) |
-| `deposit(UUID, String, double)` | Deposits a specified amount into the player's wallet |
-| `withdraw(UUID, String, double)` | Withdraws a specified amount from the player's wallet |
-| `hasEnough(UUID, String, double)` | Checks if the player has enough balance for an operation |
-| `transfer(UUID, UUID, String, double)` | Executes a transfer between players (atomic operation for safety) |
-| `registerWalletType(String, Component)` | Dynamically registers a new currency type (e.g., Gold, Coins, Points) |
-
----
-
-## 📈 Statistics & Leaderboards
-*   **Full Data Collection**: Real-time recording of data including but not limited to: travel distance, blocks mined, kill distribution, enchantment counts, and fishing success rates.
-*   **Leaderboard System**:
-    *   **Sidebar**: Supports rotating display of multiple data categories.
-    *   **Floating Text**: Permanent 3D floating leaderboards can be created in areas like spawn.
-
----
-
-## 📜 Full Command List & Descriptions
-
-### 1. Authentication Module (Auth)
-| Category | Command & Parameters | Permission | Description |
-| :--- | :--- | :--- | :--- |
-| **Player** | `/register <pass> <confirm>` | Offline Only | Register a new account and set a password |
-| **Player** | `/login <password>` | Offline Only | Log in to an existing account to unlock restrictions |
-| **Player** | `/changepassword <old> <new>` | Offline Only | Change the current account's password |
-| **Admin** | `/auth add <player>` | Admin | Add a player (Offline UUID) to the whitelist |
-| **Admin** | `/auth remove <player>` | Admin | Remove a player from the whitelist |
-| **Admin** | `/auth list` | Admin | List all whitelisted players |
-| **Config** | `/authconfig reload` | Admin | Reload the Auth module configuration file |
-
-### 2. Economy Module
-| Category | Command & Parameters | Permission | Description |
-| :--- | :--- | :--- | :--- |
-| **Query** | `/balance [player]` | Player | Query your own or another player's balances |
-| **Transfer** | `/pay <player> <amount> [id]` | Player | Transfer money to a player, optional currency ID |
-| **Admin** | `/econ add <player> <amount> [id]`| Admin | Add currency to a player's account |
-| **Admin** | `/econ remove <player> <amount> [id]`| Admin | Deduct currency from a player's account |
-| **Admin** | `/econ set <player> <amount> [id]` | Admin | Directly set a player's balance |
-
-### 3. Smart Shop Module (Shop)
-| Category | Command & Parameters | Permission | Description |
-| :--- | :--- | :--- | :--- |
-| **Trade** | `/shop buy <quantity>` | Player | Buy items from the current interacting shop |
-| **Trade** | `/shop sell <quantity>` | Player | Sell items to the current interacting shop |
-| **Admin** | `/shopadmin info` | Admin | View detailed shop data (S, K, decay rate, etc.) |
-| **Admin** | `/shopadmin toggleDynamic` | Admin | Toggle dynamic pricing (starts setup if vars missing) |
-| **Admin** | `/shopadmin setPrice <price>` | Admin | Manually set the shop's base price |
-| **Admin** | `/shopadmin setMinPrice <price>` | Admin | Set the minimum floor price for dynamic pricing |
-| **Admin** | `/shopadmin setMaxPrice <price>` | Admin | Set the maximum ceiling price for dynamic pricing |
-| **Admin** | `/shopadmin setHalfLife <K>` | Admin | Set the half-life constant K for price scaling |
-| **Admin** | `/shopadmin setSystemStock <S>` | Admin | Manually adjust the current system heat value S |
-| **Admin** | `/shopadmin adjustSystemStock <%>`| Admin | Set the daily (24000 tick) stock decay percentage |
-| **Admin** | `/shopadmin setInfinite <true/false>`| Admin | Toggle infinite stock mode (no owner cost/items) |
-| **Admin** | `/shopadmin list` | Admin | List all created shops' IDs and locations |
-| **Admin** | `/shopadmin tp <shopId>` | Admin | Teleport to a specified shop location |
-| **Admin** | `/shopadmin delete` | Admin | Delete the shop you are looking at (requires confirm) |
-| **Config** | `/shopadmin reload` | Admin | Reload the Shop module configuration file |
-
-### 4. Statistics Module
-| Category | Command & Parameters | Permission | Description |
-| :--- | :--- | :--- | :--- |
-| **Query** | `/stats [player]` | Player | View a player's core statistics summary |
-| **Detail** | `/stats kills/deaths/blocks` | Player | View detailed kill, death, or block interaction data |
-| **Detail** | `/stats activity/extended` | Player | View activity details or extended survival data |
-| **Rank** | `/stats top <category>` | Player | View the server leaderboard for a specific category |
-| **Floating**| `/floatingtext create <ID> <pos>`| Admin | Create a floating text entity at a location |
-| **Floating**| `/floatingtext setcontent <ID> <cat> <name>`| Admin | Bind floating text to a leaderboard category |
-| **Floating**| `/floatingtext color/move/delete`| Admin | Manage floating text appearance, position, or delete |
-| **Sidebar** | `/statsboard create <category>` | Admin | Create a sidebar scoreboard for real-time stats |
-| **Sidebar** | `/statsboard startrotation` | Admin | Enable automatic rotation of sidebar scoreboards |
-| **Sidebar** | `/statsboard interval/update` | Admin | Set rotation interval or data update frequency |
-
----
-* All code/images are AI-generated.
+*Created by Tuanzi - Built for modern Minecraft server communities.*

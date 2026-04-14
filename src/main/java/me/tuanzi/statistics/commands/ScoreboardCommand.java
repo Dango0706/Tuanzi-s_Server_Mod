@@ -75,64 +75,46 @@ public class ScoreboardCommand {
     private static void createScoreboard(CommandSourceStack source, String statType) {
         ScoreboardManager scoreboardManager = ScoreboardManager.getInstance(source.getServer());
         scoreboardManager.createScoreboard(statType);
-        source.sendSuccess(() -> Component.literal("§a已创建统计类型为: §f" + getStatTypeDisplayName(statType) + " §a的计分板"), false);
+        me.tuanzi.statistics.util.StatsTranslationHelper.sendSuccess(source, "stats.board.created", getStatTypeDisplayName(source, statType));
     }
 
     private static void startRotation(CommandSourceStack source) {
         ScoreboardManager scoreboardManager = ScoreboardManager.getInstance(source.getServer());
         scoreboardManager.startRotation();
-        source.sendSuccess(() -> Component.literal("§a计分板轮换已开始"), false);
+        me.tuanzi.statistics.util.StatsTranslationHelper.sendSuccess(source, "stats.board.rotation_started");
     }
 
     private static void stopRotation(CommandSourceStack source) {
         ScoreboardManager scoreboardManager = ScoreboardManager.getInstance(source.getServer());
         scoreboardManager.stopRotation();
-        source.sendSuccess(() -> Component.literal("§a计分板轮换已停止"), false);
+        me.tuanzi.statistics.util.StatsTranslationHelper.sendSuccess(source, "stats.board.rotation_stopped");
     }
 
     private static void setRotationInterval(CommandSourceStack source, int seconds) {
         ScoreboardManager scoreboardManager = ScoreboardManager.getInstance(source.getServer());
         scoreboardManager.setRotationInterval(seconds * 1000L);
-        source.sendSuccess(() -> Component.literal("§a计分板轮换间隔已设置为 §f" + seconds + " §a秒"), false);
+        me.tuanzi.statistics.util.StatsTranslationHelper.sendSuccess(source, "stats.board.rotation_interval_set", seconds);
     }
 
     private static void setUpdateInterval(CommandSourceStack source, int ticks) {
         ScoreboardManager scoreboardManager = ScoreboardManager.getInstance(source.getServer());
         scoreboardManager.setUpdateInterval(ticks);
         double seconds = ticks / 20.0;
-        source.sendSuccess(() -> Component.literal("§a计分板数据更新间隔已设置为 §f" + ticks + " §a刻 (§f" + String.format("%.1f", seconds) + "§a秒)"), false);
+        me.tuanzi.statistics.util.StatsTranslationHelper.sendSuccess(source, "stats.board.update_interval_set", ticks, seconds);
     }
 
     private static void removeScoreboard(CommandSourceStack source) {
         ScoreboardManager scoreboardManager = ScoreboardManager.getInstance(source.getServer());
         scoreboardManager.removeScoreboard();
-        source.sendSuccess(() -> Component.literal("§a计分板已移除"), false);
+        me.tuanzi.statistics.util.StatsTranslationHelper.sendSuccess(source, "stats.board.removed");
     }
 
-    private static String getStatTypeDisplayName(String statType) {
-        switch (statType) {
-            case "playTime":
-                return "在线时间 (秒)";
-            case "playTimeMinutes":
-                return "在线时间 (分钟)";
-            case "playTimeHours":
-                return "在线时间 (小时)";
-            case "distanceTraveled":
-                return "移动距离";
-            case "blocksPlaced":
-                return "放置方块";
-            case "blocksBroken":
-                return "破坏方块";
-            case "kills":
-                return "击杀数";
-            case "deaths":
-                return "死亡数";
-            case "damageDealt":
-                return "造成伤害";
-            case "damageTaken":
-                return "受到伤害";
-            default:
-                return statType;
-        }
+    private static String getStatTypeDisplayName(CommandSourceStack source, String statType) {
+        String key = "stats.type." + statType;
+        if (statType.equals("playTime")) key = "stats.type.playTime_seconds";
+        else if (statType.equals("playTimeMinutes")) key = "stats.type.playTime_minutes";
+        else if (statType.equals("playTimeHours")) key = "stats.type.playTime_hours";
+        
+        return me.tuanzi.statistics.util.StatsTranslationHelper.translate(key, me.tuanzi.statistics.util.StatsTranslationHelper.getLanguage(source));
     }
 }

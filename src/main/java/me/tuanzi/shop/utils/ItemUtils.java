@@ -238,7 +238,7 @@ public class ItemUtils {
 
     public static String getItemDisplayName(ItemStack stack) {
         if (stack.isEmpty()) {
-            return "空";
+            return ShopTranslationHelper.getRawTranslation("block.minecraft.unknown");
         }
         return stack.getDisplayName().getString();
     }

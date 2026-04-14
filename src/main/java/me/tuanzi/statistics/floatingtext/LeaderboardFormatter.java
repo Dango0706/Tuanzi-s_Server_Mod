@@ -3,34 +3,16 @@ package me.tuanzi.statistics.floatingtext;
 import me.tuanzi.statistics.StatisticsModule;
 import me.tuanzi.statistics.data.PlayerStatistics;
 import me.tuanzi.statistics.listeners.PlayerJoinListener;
+import me.tuanzi.statistics.util.StatsTranslationHelper;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class LeaderboardFormatter {
 
-    private static final Map<String, String> STAT_DISPLAY_NAMES = new HashMap<>();
     private static final Map<String, String> STAT_COLOR_CODES = new HashMap<>();
 
     static {
-        STAT_DISPLAY_NAMES.put("playTime", "在线时间");
-        STAT_DISPLAY_NAMES.put("distanceTraveled", "移动距离");
-        STAT_DISPLAY_NAMES.put("blocksPlaced", "放置方块");
-        STAT_DISPLAY_NAMES.put("blocksBroken", "破坏方块");
-        STAT_DISPLAY_NAMES.put("kills", "击杀数");
-        STAT_DISPLAY_NAMES.put("deaths", "死亡数");
-        STAT_DISPLAY_NAMES.put("damageDealt", "造成伤害");
-        STAT_DISPLAY_NAMES.put("damageTaken", "受到伤害");
-        STAT_DISPLAY_NAMES.put("fishingAttempts", "钓鱼次数");
-        STAT_DISPLAY_NAMES.put("fishingSuccess", "钓鱼成功");
-        STAT_DISPLAY_NAMES.put("itemsCrafted", "合成物品");
-        STAT_DISPLAY_NAMES.put("anvilUses", "铁砧使用");
-        STAT_DISPLAY_NAMES.put("itemsEnchanted", "附魔物品");
-        STAT_DISPLAY_NAMES.put("villagerTrades", "村民交易");
-        STAT_DISPLAY_NAMES.put("chatMessagesSent", "聊天消息");
-        STAT_DISPLAY_NAMES.put("itemsDropped", "丢弃物品");
-        STAT_DISPLAY_NAMES.put("loginDays", "登录天数");
-
         STAT_COLOR_CODES.put("black", "§0");
         STAT_COLOR_CODES.put("dark_blue", "§1");
         STAT_COLOR_CODES.put("dark_green", "§2");
@@ -51,10 +33,13 @@ public class LeaderboardFormatter {
 
     public static String formatLeaderboard(String statType, String displayName, String color) {
         String colorCode = STAT_COLOR_CODES.getOrDefault(color, "§6");
-        String title = displayName != null && !displayName.isEmpty() ? displayName : STAT_DISPLAY_NAMES.getOrDefault(statType, statType);
+        
+        String statName = StatsTranslationHelper.translate("stats.type." + statType, null);
+        String title = displayName != null && !displayName.isEmpty() ? displayName : statName;
+        String boardTitle = StatsTranslationHelper.translate("stats.leaderboard.title_suffix", null);
 
         StringBuilder sb = new StringBuilder();
-        sb.append(colorCode).append(title).append("排行榜\n");
+        sb.append(colorCode).append(title).append(boardTitle).append("\n");
 
         List<Map.Entry<String, Long>> topPlayers = getTopPlayers(statType, 10);
 
@@ -72,7 +57,7 @@ public class LeaderboardFormatter {
         }
 
         if (topPlayers.isEmpty()) {
-            sb.append("§7暂无数据\n");
+            sb.append(StatsTranslationHelper.translate("stats.leaderboard.empty", null)).append("\n");
         }
 
         return sb.toString().trim();
@@ -89,7 +74,7 @@ public class LeaderboardFormatter {
     }
 
     private static long getStatValue(PlayerStatistics stats, String playerName, String statType) {
-        long baseValue = switch (statType) {
+        return switch (statType) {
             case "playTime" -> {
                 long savedPlayTimeSeconds = stats.getPlayTimeSeconds();
                 long currentSessionSeconds = 0;
@@ -118,8 +103,6 @@ public class LeaderboardFormatter {
             case "loginDays" -> stats.getLoginDays();
             default -> 0L;
         };
-
-        return baseValue;
     }
 
     private static String formatValue(String statType, long value) {
@@ -127,19 +110,24 @@ public class LeaderboardFormatter {
             case "playTime" -> {
                 long hours = value / 3600;
                 long minutes = (value % 3600) / 60;
-                yield hours + "时" + minutes + "分";
+                String hUnit = StatsTranslationHelper.translate("stats.unit.hours", null);
+                String mUnit = StatsTranslationHelper.translate("stats.unit.minutes", null);
+                yield hours + hUnit + minutes + mUnit;
             }
-            case "distanceTraveled" -> String.format("%.0f米", (double) value);
+            case "distanceTraveled" -> {
+                String mUnit = StatsTranslationHelper.translate("stats.unit.meters", null);
+                yield String.format("%.0f%s", (double) value, mUnit);
+            }
             default -> String.valueOf(value);
         };
     }
 
     public static String getStatDisplayName(String statType) {
-        return STAT_DISPLAY_NAMES.getOrDefault(statType, statType);
+        return StatsTranslationHelper.translate("stats.type." + statType, null);
     }
 
     public static Set<String> getSupportedStatTypes() {
-        return STAT_DISPLAY_NAMES.keySet();
+        return Set.of("playTime", "distanceTraveled", "blocksPlaced", "blocksBroken", "kills", "deaths", "damageDealt", "damageTaken", "fishingAttempts", "itemsCrafted", "anvilUses", "itemsEnchanted", "villagerTrades", "chatMessagesSent", "itemsDropped", "loginDays");
     }
 
     public static Set<String> getSupportedColors() {

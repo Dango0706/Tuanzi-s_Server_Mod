@@ -593,6 +593,7 @@ public class ChatInputHandler {
         final BlockPos containerPos;
         final ItemStack item;
         ShopCreationState state;
+        ShopType shopType;
         double price;
         String currencyId;
         String note;
@@ -707,9 +708,6 @@ public class ChatInputHandler {
         boolean isSell = lowerInput.equals("sell") || lowerInput.equals("出售");
         boolean isBuy = lowerInput.equals("buy") || lowerInput.equals("收购");
 
-        if (input.equals("sell")) isSell = true;
-        if (input.equals("buy")) isBuy = true;
-
         if (!isSell && !isBuy) {
             player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.invalid_type"));
             return true;
@@ -717,7 +715,7 @@ public class ChatInputHandler {
 
         pending.state = ShopCreationState.INPUTTING_PRICE;
         pending.expireTime = System.currentTimeMillis() + (15 * 1000L);
-        pending.note = isSell ? "出售" : "收购";
+        pending.shopType = isSell ? ShopType.SELL : ShopType.BUY;
 
         player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
         player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.price_prompt"));
@@ -807,8 +805,11 @@ public class ChatInputHandler {
     }
 
     private void completeShopCreation(ServerPlayer player, PendingShopCreation pending) {
-        ShopType shopType = pending.note.equals("出售") ? ShopType.SELL : ShopType.BUY;
-        ShopInstance shop = shopManager.createShop(player.getUUID(), pending.containerPos, pending.signPos, shopType, pending.item.copy(), pending.price, pending.currencyId, (pending.note.equals("出售") || pending.note.equals("收购")) ? "" : pending.note);
+        ShopType shopType = pending.shopType;
+        // 如果备注是 "出售" 或 "收购"，说明是 handleCreationType 设置的默认值，实际存储时设为空
+        String finalNote = (pending.note.equals("出售") || pending.note.equals("收购")) ? "" : pending.note;
+        
+        ShopInstance shop = shopManager.createShop(player.getUUID(), pending.containerPos, pending.signPos, shopType, pending.item.copy(), pending.price, pending.currencyId, finalNote);
 
         pendingShopCreations.remove(player.getUUID());
         if (shop != null) {

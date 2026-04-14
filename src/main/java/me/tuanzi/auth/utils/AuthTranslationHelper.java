@@ -29,10 +29,10 @@ public class AuthTranslationHelper {
             loadTranslations("zh_cn", zhCnTranslations);
             loadTranslations("en_us", enUsTranslations);
             initialized = true;
-            LOGGER.info("Translation system initialized. Loaded {} zh_cn and {} en_us translations", 
+            LOGGER.info("[身份验证] 翻译系统初始化完成。已加载 {} 条中文翻译和 {} 条英文翻译", 
                 zhCnTranslations.size(), enUsTranslations.size());
         } catch (Exception e) {
-            LOGGER.error("Failed to load translations: {}", e.getMessage());
+            LOGGER.error("[身份验证] 加载翻译文件失败: {}", e.getMessage());
         }
     }
 
@@ -44,14 +44,11 @@ public class AuthTranslationHelper {
                     Map<String, String> translations = new Gson().fromJson(reader, new TypeToken<Map<String, String>>(){}.getType());
                     if (translations != null) {
                         targetMap.putAll(translations);
-                        LOGGER.info("Loaded {} translations from {}", translations.size(), path);
                     }
                 }
-            } else {
-                LOGGER.warn("Translation file not found: {}", path);
             }
         } catch (IOException e) {
-            LOGGER.error("Failed to load {} translations: {}", langCode, e.getMessage());
+            LOGGER.error("[身份验证] 加载 {} 翻译时发生异常: {}", langCode, e.getMessage());
         }
     }
 
@@ -61,33 +58,37 @@ public class AuthTranslationHelper {
 
     public static String getLanguage(Object source) {
         if (source instanceof net.minecraft.commands.CommandSourceStack css) {
-            net.minecraft.server.level.ServerPlayer player = css.getPlayer();
+            ServerPlayer player = css.getPlayer();
             if (player != null) return getLanguage(player);
         }
         if (source instanceof ServerPlayer player) {
             String lang = player.clientInformation().language();
-            return lang != null ? lang : defaultLanguage;
+            return normalizeLanguage(lang);
         }
         return defaultLanguage;
     }
 
+    private static String normalizeLanguage(String lang) {
+        if (lang == null) return defaultLanguage;
+        String l = lang.toLowerCase();
+        return l.startsWith("zh") ? "zh_cn" : "en_us";
+    }
+
     public static String translate(String key, String languageCode) {
-        String normalized = languageCode != null ? languageCode.toLowerCase() : defaultLanguage;
-        Map<String, String> translations = normalized.startsWith("zh") ? zhCnTranslations : enUsTranslations;
+        String normalized = normalizeLanguage(languageCode);
+        Map<String, String> translations = "zh_cn".equals(normalized) ? zhCnTranslations : enUsTranslations;
         String translation = translations.get(key);
-        if (translation == null && normalized.startsWith("zh")) {
-            translation = enUsTranslations.get(key);
-        } else if (translation == null) {
-            translation = zhCnTranslations.get(key);
+        
+        if (translation == null) {
+            translation = ("zh_cn".equals(normalized) ? enUsTranslations : zhCnTranslations).get(key);
         }
+        
         return translation != null ? translation : key;
     }
 
     public static String translate(String key, String languageCode, Object... args) {
         String template = translate(key, languageCode);
-        if (template.equals(key)) {
-            return key;
-        }
+        if (template.equals(key)) return key;
         try {
             return String.format(template, args);
         } catch (Exception e) {

@@ -6,7 +6,7 @@ public class TranslationHelper {
     
     public static String translateItemKey(String translationKey) {
         if (translationKey == null || translationKey.isEmpty()) {
-            return "未知";
+            return me.tuanzi.statistics.util.StatsTranslationHelper.translate("stats.type.unknown", null);
         }
         
         try {
@@ -24,7 +24,7 @@ public class TranslationHelper {
     
     public static String translateBlockKey(String translationKey) {
         if (translationKey == null || translationKey.isEmpty()) {
-            return "未知";
+            return me.tuanzi.statistics.util.StatsTranslationHelper.translate("stats.type.unknown", null);
         }
         
         try {
@@ -42,7 +42,7 @@ public class TranslationHelper {
     
     public static String translateEntityKey(String translationKey) {
         if (translationKey == null || translationKey.isEmpty()) {
-            return "未知";
+            return me.tuanzi.statistics.util.StatsTranslationHelper.translate("stats.type.unknown", null);
         }
         
         try {
@@ -60,7 +60,7 @@ public class TranslationHelper {
     
     private static String formatRawKey(String key) {
         if (key == null || key.isEmpty()) {
-            return "未知";
+            return me.tuanzi.statistics.util.StatsTranslationHelper.translate("stats.type.unknown", null);
         }
         
         if (key.startsWith("item.minecraft.")) {
