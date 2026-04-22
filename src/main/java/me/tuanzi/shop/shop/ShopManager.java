@@ -252,9 +252,13 @@ public class ShopManager {
         boolean changed = false;
         for (ShopInstance shop : getAllShops()) {
             if (shop.isDynamicPricing() && shop.getSystemStock() > 0) {
-                // 使用商店独立的衰减率
-                double rate = 1.0 - shop.getDecayRate();
-                shop.setSystemStock(shop.getSystemStock() * rate);
+                // 使用商店独立的衰减率。原本是每日衰减一次。
+                // 现在频率提高到每 1200 tick 一次（每天 20 次），为了保持日总衰减率不变，使用开方计算单次衰减后的剩余率。
+                // 公式：分次剩余率 = (1 - 日衰减率)^(1/20)
+                double dailyRetentionRate = 1.0 - shop.getDecayRate();
+                double minuteRetentionRate = Math.pow(dailyRetentionRate, 1.0 / 20.0);
+                
+                shop.setSystemStock(shop.getSystemStock() * minuteRetentionRate);
                 shop.setCurrentPrice(me.tuanzi.shop.pricing.DynamicPricing.calculatePrice(shop));
                 
                 // 立即更新该商店的告示牌
@@ -266,7 +270,7 @@ public class ShopManager {
         }
         if (changed) {
             markDirty();
-            LOGGER.info("[商店系统] 已完成基于各商店衰减率的每日系统库存衰减并刷新了告示牌");
+            LOGGER.info("[商店系统] 已完成基于各商店衰减率的库存自动衰减(1分钟周期)并刷新了告示牌");
         }
     }
 

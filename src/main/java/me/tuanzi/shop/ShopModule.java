@@ -125,11 +125,11 @@ public class ShopModule implements ModInitializer {
                     instance.chatInputHandler.cleanupExpired();
                 }
 
-                // 每日系统库存衰减逻辑
+                // 系统库存衰减逻辑 (每 1 分钟/1200 tick 刷新一次，保持日衰减率不变)
                 if (serverTicks % 20 == 0) {
                     ShopStateSaver saver = ShopStateSaver.getServerState(server);
-                    saver.addTicks(20); // 修改为按步长增加
-                    if (saver.getAccumulatedTicks() >= 24000) {
+                    saver.addTicks(20);
+                    if (saver.getAccumulatedTicks() >= 1200) {
                         if (instance.shopManager != null) {
                             ServerLevel overworld = server.getLevel(Level.OVERWORLD);
                             if (overworld != null) {
