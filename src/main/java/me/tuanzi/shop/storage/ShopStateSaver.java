@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import me.tuanzi.shop.shop.ShopInstance;
 import me.tuanzi.shop.shop.ShopType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -19,11 +18,44 @@ import java.util.UUID;
 
 public class ShopStateSaver extends SavedData {
     private static final String MOD_ID = "shop-module";
+    private static final Codec<List<ShopDataDto>> SHOP_LIST_CODEC = Codec.list(ShopDataDto.CODEC);
+    private static final Codec<ShopStateSaver> CODEC = RootDto.CODEC.xmap(
+            rootDto -> {
+                ShopStateSaver saver = new ShopStateSaver();
+                for (ShopDataDto dto : rootDto.shops()) {
+                    ShopInstance shop = dto.toShop();
+                    if (shop != null) {
+                        saver.data.addShop(shop);
+                    }
+                }
+                saver.accumulatedTicks = rootDto.accumulatedTicks();
+                return saver;
+            },
+            saver -> {
+                List<ShopDataDto> shops = new ArrayList<>();
+                for (ShopInstance shop : saver.data.getAllShops()) {
+                    shops.add(ShopDataDto.fromShop(shop));
+                }
+                return new RootDto(shops, saver.accumulatedTicks);
+            }
+    );
+    private static final SavedDataType<ShopStateSaver> TYPE = new SavedDataType<>(
+            Identifier.fromNamespaceAndPath(MOD_ID, "shop_data"),
+            ShopStateSaver::new,
+            CODEC,
+            DataFixTypes.SAVED_DATA_MAP_DATA
+    );
     private final ShopData data;
     private int accumulatedTicks = 0;
 
     public ShopStateSaver() {
         this.data = new ShopData();
+    }
+
+    public static ShopStateSaver getServerState(MinecraftServer server) {
+        ShopStateSaver state = server.getDataStorage().computeIfAbsent(TYPE);
+        state.setDirty();
+        return state;
     }
 
     public ShopData getData() {
@@ -215,8 +247,6 @@ public class ShopStateSaver extends SavedData {
         }
     }
 
-    private static final Codec<List<ShopDataDto>> SHOP_LIST_CODEC = Codec.list(ShopDataDto.CODEC);
-
     private record RootDto(List<ShopDataDto> shops, int accumulatedTicks) {
         private static final Codec<RootDto> CODEC = RecordCodecBuilder.create(instance ->
                 instance.group(
@@ -224,39 +254,5 @@ public class ShopStateSaver extends SavedData {
                         Codec.INT.fieldOf("accumulatedTicks").orElse(0).forGetter(RootDto::accumulatedTicks)
                 ).apply(instance, RootDto::new)
         );
-    }
-
-    private static final Codec<ShopStateSaver> CODEC = RootDto.CODEC.xmap(
-            rootDto -> {
-                ShopStateSaver saver = new ShopStateSaver();
-                for (ShopDataDto dto : rootDto.shops()) {
-                    ShopInstance shop = dto.toShop();
-                    if (shop != null) {
-                        saver.data.addShop(shop);
-                    }
-                }
-                saver.accumulatedTicks = rootDto.accumulatedTicks();
-                return saver;
-            },
-            saver -> {
-                List<ShopDataDto> shops = new ArrayList<>();
-                for (ShopInstance shop : saver.data.getAllShops()) {
-                    shops.add(ShopDataDto.fromShop(shop));
-                }
-                return new RootDto(shops, saver.accumulatedTicks);
-            }
-    );
-
-    private static final SavedDataType<ShopStateSaver> TYPE = new SavedDataType<>(
-            Identifier.fromNamespaceAndPath(MOD_ID, "shop_data"),
-            ShopStateSaver::new,
-            CODEC,
-            DataFixTypes.SAVED_DATA_MAP_DATA
-    );
-
-    public static ShopStateSaver getServerState(MinecraftServer server) {
-        ShopStateSaver state = server.getDataStorage().computeIfAbsent(TYPE);
-        state.setDirty();
-        return state;
     }
 }

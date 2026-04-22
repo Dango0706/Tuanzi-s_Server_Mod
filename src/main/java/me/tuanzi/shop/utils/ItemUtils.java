@@ -2,23 +2,19 @@ package me.tuanzi.shop.utils;
 
 import me.tuanzi.shop.ShopModule;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.locale.Language;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class ItemUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(ShopModule.MOD_ID);
-    
+
     private ItemUtils() {
     }
 
@@ -33,9 +29,9 @@ public class ItemUtils {
 
         String searchName = displayName.trim();
         String normalizedSearch = normalizeTokenForCompare(searchName);
-        
+
         LOGGER.info("[商店调试] 开始查找物品: '{}', 客户端语言: {}", searchName, preferredLanguage);
-        
+
         for (var item : BuiltInRegistries.ITEM) {
             if (item == Items.AIR) {
                 continue;
@@ -84,7 +80,7 @@ public class ItemUtils {
                 }
             }
         }
-        
+
         LOGGER.warn("[商店调试] 未找到物品: '{}'", searchName);
         return Optional.empty();
     }

@@ -16,17 +16,17 @@ public class AuthConfig {
     private static final String CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve("auth").toString();
     private static final String CONFIG_FILE = CONFIG_DIR + File.separator + "auth_config.json";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    
+
     private String kickMessage = "§c您不在服务器白名单中，请联系管理员申请访问权限。";
     private boolean enableAuthLog = true;
     private int logRetentionDays = 30;
     private int cacheExpiryMinutes = 30;
     private boolean enablePremiumCache = true;
-    
+
     public AuthConfig() {
         new File(CONFIG_DIR).mkdirs();
     }
-    
+
     public void loadConfig() {
         File configFile = new File(CONFIG_FILE);
         if (configFile.exists()) {
@@ -49,7 +49,7 @@ public class AuthConfig {
             LOGGER.info("已创建默认身份验证配置文件");
         }
     }
-    
+
     public void saveConfig() {
         try {
             new File(CONFIG_DIR).mkdirs();
@@ -60,43 +60,43 @@ public class AuthConfig {
             LOGGER.error("保存身份验证配置文件失败: {}", e.getMessage());
         }
     }
-    
+
     public String getKickMessage() {
         return kickMessage;
     }
-    
+
     public void setKickMessage(String kickMessage) {
         this.kickMessage = kickMessage;
     }
-    
+
     public boolean isEnableAuthLog() {
         return enableAuthLog;
     }
-    
+
     public void setEnableAuthLog(boolean enableAuthLog) {
         this.enableAuthLog = enableAuthLog;
     }
-    
+
     public int getLogRetentionDays() {
         return logRetentionDays;
     }
-    
+
     public void setLogRetentionDays(int logRetentionDays) {
         this.logRetentionDays = logRetentionDays;
     }
-    
+
     public int getCacheExpiryMinutes() {
         return cacheExpiryMinutes;
     }
-    
+
     public void setCacheExpiryMinutes(int cacheExpiryMinutes) {
         this.cacheExpiryMinutes = cacheExpiryMinutes;
     }
-    
+
     public boolean isEnablePremiumCache() {
         return enablePremiumCache;
     }
-    
+
     public void setEnablePremiumCache(boolean enablePremiumCache) {
         this.enablePremiumCache = enablePremiumCache;
     }

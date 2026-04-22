@@ -1,7 +1,6 @@
 package me.tuanzi.auth.mixin;
 
 import me.tuanzi.auth.login.LoginStateManager;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -20,7 +19,7 @@ public abstract class ServerPlayerMixin {
     )
     private void onHurtServer(ServerLevel level, DamageSource source, float damage, CallbackInfoReturnable<Boolean> cir) {
         ServerPlayer self = (ServerPlayer) (Object) this;
-        
+
         if (!LoginStateManager.getInstance().isLoggedIn(self.getUUID())) {
             cir.setReturnValue(false);
         }

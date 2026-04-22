@@ -55,7 +55,7 @@ public class SignUpdateHelper {
         if (shop.isInfinite()) {
             line0 = "§c" + line0;
         }
-        
+
         // 获取不带括号的显示名称
         Component tradeItemDisplayName = shop.getTradeItem().getDisplayName();
         String line2 = String.format(Locale.ROOT, "%.2f %s", price, currencyName);

@@ -13,13 +13,11 @@ import java.nio.file.Path;
 public class ShopConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger("shop-module");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-
+    private final Path configPath;
     private int inputTimeoutSeconds = 8;
     private boolean enableSimplifiedTransaction = true;
     private boolean enableItemChangeByOwner = true;
     private int maxTransactionQuantity = 2304;
-
-    private final Path configPath;
 
     public ShopConfig() {
         this.configPath = Path.of("config/shop-module.json");

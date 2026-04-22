@@ -3,8 +3,8 @@ package me.tuanzi.shop.mixin;
 import me.tuanzi.shop.ShopModule;
 import me.tuanzi.shop.events.SignChangeHandler;
 import me.tuanzi.shop.shop.ShopManager;
-import net.minecraft.server.network.FilteredText;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.FilteredText;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
@@ -25,10 +25,10 @@ public abstract class SignBlockEntityMixin {
     private void onUpdateSignText(Player player, boolean frontText, List<FilteredText> lines, CallbackInfo ci) {
         SignBlockEntity self = (SignBlockEntity) (Object) this;
         Level level = self.getLevel();
-        
+
         LOGGER.info("[商店调试] Mixin钩子(updateSignText)触发 - 玩家: {}, 正面: {}, 世界: {}",
                 player.getName().getString(), frontText, level != null ? !level.isClientSide() : "null");
-        
+
         if (level == null || level.isClientSide()) {
             LOGGER.debug("[商店调试] 跳过客户端或空世界");
             return;
@@ -52,7 +52,7 @@ public abstract class SignBlockEntityMixin {
         }
 
         LOGGER.info("[商店调试] 商店管理器获取成功，准备调用告示牌变更处理器");
-        
+
         SignChangeHandler handler = new SignChangeHandler(shopManager);
         handler.handleSignChange(serverPlayer, self, lines, frontText);
     }

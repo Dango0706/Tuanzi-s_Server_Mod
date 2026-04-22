@@ -2,21 +2,18 @@ package me.tuanzi.shop.display;
 
 import me.tuanzi.shop.shop.ShopInstance;
 import me.tuanzi.shop.shop.ShopManager;
-import me.tuanzi.shop.util.DevFlowLogger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Display;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,14 +25,14 @@ public class ShopDisplayManager {
     private static final double DISPLAY_SEARCH_RADIUS = 0.4D;
     private static final double DISPLAY_POSITION_EPSILON_SQR = 1.0E-4D;
     private static final double DISPLAY_VELOCITY_EPSILON_SQR = 1.0E-6D;
-    
+
     // 容错等待设置：如果实体在加载中暂时找不到，等待 100 tick (约5秒) 再尝试重建
     private static final int MISSING_TOLERANCE_TICKS = 100;
 
     private final ShopManager shopManager;
     private final Map<UUID, UUID> shopToDisplayMap = new ConcurrentHashMap<>();
     private final Map<UUID, UUID> displayToShopMap = new ConcurrentHashMap<>();
-    
+
     // 记录实体连续找不到的次数 (ShopID -> Ticks)
     private final Map<UUID, Integer> missingTicksMap = new ConcurrentHashMap<>();
 
@@ -67,7 +64,7 @@ public class ShopDisplayManager {
         if (level.addFreshEntity(displayEntity)) {
             shopToDisplayMap.put(shopId, displayEntity.getUUID());
             displayToShopMap.put(displayEntity.getUUID(), shopId);
-            
+
             LOGGER.debug("[商店展示] 悬浮物品创建成功 - 展示实体ID: {}, 商店ID: {}",
                     displayEntity.getUUID(), shopId);
         } else {
@@ -79,7 +76,7 @@ public class ShopDisplayManager {
         if (shopId == null || level == null) {
             return;
         }
-        
+
         missingTicksMap.remove(shopId);
         UUID displayId = shopToDisplayMap.remove(shopId);
         if (displayId != null) {
@@ -146,7 +143,7 @@ public class ShopDisplayManager {
                 // 关键容错：如果内存里没记录或实体丢了，累加计数
                 int missingCount = missingTicksMap.getOrDefault(shopId, 0) + 1;
                 missingTicksMap.put(shopId, missingCount);
-                
+
                 // 积攒一定时间后尝试恢复或重建
                 if (missingCount >= MISSING_TOLERANCE_TICKS) {
                     LOGGER.debug("[商店展示] 正在为商店 {} 恢复/重建悬浮物...", shopId);
@@ -163,7 +160,7 @@ public class ShopDisplayManager {
             missingTicksMap.remove(shopId);
             if (entity instanceof ItemEntity itemEntity) {
                 anchorDisplayEntity(itemEntity, shop);
-                
+
                 ItemStack expected = toDisplayItem(shop.getTradeItem());
                 if (!ItemStack.isSameItemSameComponents(itemEntity.getItem(), expected)) {
                     itemEntity.setItem(expected);
@@ -187,7 +184,7 @@ public class ShopDisplayManager {
             if (itemEntity.entityTags().contains(SHOP_DISPLAY_TAG) && itemEntity.isAlive()) {
                 shopToDisplayMap.put(shop.getShopId(), itemEntity.getUUID());
                 displayToShopMap.put(itemEntity.getUUID(), shop.getShopId());
-                LOGGER.debug("[商店展示] 成功找回丢失的实体引用 - 商店ID: {}, 实体ID: {}", 
+                LOGGER.debug("[商店展示] 成功找回丢失的实体引用 - 商店ID: {}, 实体ID: {}",
                         shop.getShopId(), itemEntity.getUUID());
                 return 1;
             }

@@ -17,12 +17,12 @@ public abstract class ItemEntityMixin {
                 self.discard();
                 return;
             }
-            
+
             // 强制保持静止
             self.setDeltaMovement(0, 0, 0);
             self.noPhysics = true;
             self.setNoGravity(true);
-            
+
             // 取消后续的所有 tick 逻辑（包括父类的），防止被水流冲走或应用重力/浮力
             ci.cancel();
         }

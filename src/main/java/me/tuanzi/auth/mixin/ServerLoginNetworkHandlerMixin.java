@@ -108,7 +108,7 @@ public abstract class ServerLoginNetworkHandlerMixin {
             AuthModule.LOGGER.debug("[身份验证] 盗版UUID: {}", offlineUuid);
             AuthModule.LOGGER.debug("[身份验证] >>> 允许离线登录 <<<");
             AuthModule.LOGGER.debug("========================================");
-            
+
             GameProfile offlineProfile = net.minecraft.core.UUIDUtil.createOfflineProfile(playerName);
             startClientVerification(offlineProfile);
             return;
@@ -120,29 +120,29 @@ public abstract class ServerLoginNetworkHandlerMixin {
             public void run() {
                 try {
                     AuthModule.LOGGER.debug("[身份验证] 正在查询 Mojang API: {}", playerName);
-                    
+
                     MojangApiService.UserProfile profile = MojangApiService.fetchUuidByUsername(playerName);
-                    
+
                     if (profile != null && profile.isValid()) {
                         String uuidStr = profile.getId();
                         String formattedUuid = MojangApiService.formatUuid(uuidStr);
                         UUID premiumUuid = UUID.fromString(formattedUuid);
-                        
+
                         AuthModule.LOGGER.debug("[身份验证] >>> Mojang 查询成功! <<<");
                         AuthModule.LOGGER.debug("[身份验证] 玩家名: {}", profile.getName());
                         AuthModule.LOGGER.debug("[身份验证] 正版UUID: {}", premiumUuid);
                         AuthModule.LOGGER.debug("[身份验证] UUID版本: {}", premiumUuid.version());
                         AuthModule.LOGGER.debug("[身份验证] >>> 发送加密请求进行验证 <<<");
                         AuthModule.LOGGER.debug("========================================");
-                        
+
                         LOGGER.info("玩家 {} 的 UUID 是 {}", playerName, premiumUuid);
-                        
+
                         sendEncryptionRequestAndVerify(playerName);
                     } else {
                         AuthModule.LOGGER.debug("[身份验证] Mojang 查询无结果 - 玩家名不在正版数据库");
                         AuthModule.LOGGER.debug("[身份验证] >>> 拒绝登录：不在白名单且非正版玩家 <<<");
                         AuthModule.LOGGER.debug("========================================");
-                        
+
                         String kickMessage = config != null ? config.getKickMessage() : "§c您不在服务器白名单中，请联系管理员申请访问权限。";
                         disconnect(Component.literal(kickMessage));
                     }
@@ -150,7 +150,7 @@ public abstract class ServerLoginNetworkHandlerMixin {
                     AuthModule.LOGGER.error("[身份验证] 验证异常: {} - {}", e.getClass().getName(), e.getMessage());
                     AuthModule.LOGGER.debug("[身份验证] >>> 拒绝登录：验证异常 <<<");
                     AuthModule.LOGGER.debug("========================================");
-                    
+
                     String kickMessage = config != null ? config.getKickMessage() : "§c您不在服务器白名单中，请联系管理员申请访问权限。";
                     disconnect(Component.literal(kickMessage));
                 }
@@ -173,7 +173,7 @@ public abstract class ServerLoginNetworkHandlerMixin {
         AuthModule.LOGGER.debug("[身份验证] 玩家名: {}", this.requestedUsername);
 
         PrivateKey serverPrivateKey = this.server.getKeyPair().getPrivate();
-        
+
         if (!packet.isChallengeValid(this.challenge, serverPrivateKey)) {
             AuthModule.LOGGER.error("[身份验证] 协议错误: 挑战验证失败");
             throw new IllegalStateException("Protocol error");
@@ -197,10 +197,10 @@ public abstract class ServerLoginNetworkHandlerMixin {
 
                 try {
                     AuthModule.LOGGER.debug("[身份验证] 正在向 Mojang Session 服务器验证: {}", name);
-                    
+
                     InetAddress address = getAddress();
                     ProfileResult result = server.services().sessionService().hasJoinedServer(name, digest, address);
-                    
+
                     if (result != null) {
                         GameProfile profile = result.profile();
                         AuthModule.LOGGER.debug("[身份验证] >>> Mojang Session 验证成功! <<<");
@@ -208,17 +208,17 @@ public abstract class ServerLoginNetworkHandlerMixin {
                         AuthModule.LOGGER.debug("[身份验证] 正版UUID: {}", profile.id());
                         AuthModule.LOGGER.debug("[身份验证] >>> 确认为正版玩家，允许登录 <<<");
                         AuthModule.LOGGER.debug("========================================");
-                        
+
                         LOGGER.info("玩家 {} 的 UUID 是 {}", profile.name(), profile.id());
                         serverActivityMonitor.reportLoginActivity();
                         startClientVerification(profile);
-                        
+
                     } else {
                         AuthModule.LOGGER.debug("[身份验证] Mojang Session 验证失败");
                         AuthModule.LOGGER.debug("[身份验证] 可能原因: 盗版玩家冒充正版用户名");
                         AuthModule.LOGGER.debug("[身份验证] >>> 拒绝登录 <<<");
                         AuthModule.LOGGER.debug("========================================");
-                        
+
                         AuthModule module = AuthModule.getInstance();
                         AuthConfig config = module != null ? module.getAuthConfig() : null;
                         String kickMessage = config != null ? config.getKickMessage() : "§c您不在服务器白名单中，请联系管理员申请访问权限。";
@@ -228,13 +228,13 @@ public abstract class ServerLoginNetworkHandlerMixin {
                     AuthModule.LOGGER.error("[身份验证] Mojang 服务器不可用: {}", e.getMessage());
                     AuthModule.LOGGER.debug("[身份验证] >>> 拒绝登录 <<<");
                     AuthModule.LOGGER.debug("========================================");
-                    
+
                     disconnect(Component.literal("§cMojang 服务器暂时不可用，请稍后再试"));
                 } catch (Exception e) {
                     AuthModule.LOGGER.error("[身份验证] 验证异常: {} - {}", e.getClass().getName(), e.getMessage());
                     AuthModule.LOGGER.debug("[身份验证] >>> 拒绝登录 <<<");
                     AuthModule.LOGGER.debug("========================================");
-                    
+
                     disconnect(Component.literal("§c验证过程中发生错误，请联系管理员"));
                 }
             }
@@ -253,10 +253,10 @@ public abstract class ServerLoginNetworkHandlerMixin {
 
     private void sendEncryptionRequestAndVerify(String playerName) {
         AuthModule.LOGGER.debug("[身份验证] 发送加密请求: {}", playerName);
-        
+
         state = ServerLoginPacketListenerImpl.State.KEY;
         this.connection.send(new ClientboundHelloPacket("", this.server.getKeyPair().getPublic().getEncoded(), this.challenge, true));
-        
+
         AuthModule.LOGGER.debug("[身份验证] 加密请求已发送，等待客户端响应...");
     }
 }

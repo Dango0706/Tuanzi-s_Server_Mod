@@ -12,22 +12,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Player.class)
 public abstract class PlayerExperienceConsumeMixin {
-    
+
     @Inject(method = "onEnchantmentPerformed", at = @At("HEAD"))
     private void onEnchantmentPerformed(ItemStack itemStack, int enchantmentCost, CallbackInfo ci) {
-        Player player = (Player)(Object)this;
+        Player player = (Player) (Object) this;
         if (player instanceof ServerPlayer serverPlayer && enchantmentCost > 0) {
             String playerName = serverPlayer.getName().getString();
-            
+
             int xpConsumed = calculateXpForLevel(enchantmentCost);
-            
+
             PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
             stats.addExperienceConsumed(xpConsumed);
-            StatisticsModule.LOGGER.debug("Player {} consumed {} XP for enchantment, total consumed: {}", 
-                playerName, xpConsumed, stats.getTotalExperienceConsumed());
+            StatisticsModule.LOGGER.debug("Player {} consumed {} XP for enchantment, total consumed: {}",
+                    playerName, xpConsumed, stats.getTotalExperienceConsumed());
         }
     }
-    
+
     private int calculateXpForLevel(int levels) {
         int totalXp = 0;
         for (int i = 0; i < levels; i++) {
@@ -35,7 +35,7 @@ public abstract class PlayerExperienceConsumeMixin {
         }
         return totalXp;
     }
-    
+
     private int getXpNeededForLevel(int level) {
         if (level >= 30) {
             return 112 + (level - 30) * 9;

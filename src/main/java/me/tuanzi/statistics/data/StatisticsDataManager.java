@@ -20,11 +20,10 @@ public class StatisticsDataManager {
     private static final String PLAYER_DATA_FILE = DATA_DIR + File.separator + "player_statistics.json";
     private static final String SERVER_DATA_FILE = DATA_DIR + File.separator + "server_statistics.json";
     private static final long AUTO_SAVE_INTERVAL = 5 * 60 * 1000;
-
+    private final Gson gson;
     private Map<String, PlayerStatistics> playerStatisticsMap;
     private ServerStatistics serverStatistics;
     private Timer autoSaveTimer;
-    private final Gson gson;
 
     public StatisticsDataManager() {
         this.playerStatisticsMap = new HashMap<>();

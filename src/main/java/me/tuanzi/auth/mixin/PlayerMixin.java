@@ -19,7 +19,7 @@ public abstract class PlayerMixin {
     )
     private void onAttack(Entity target, CallbackInfo ci) {
         Player self = (Player) (Object) this;
-        
+
         if (!LoginStateManager.getInstance().isLoggedIn(self.getUUID())) {
             TranslationHelper.sendMessage((net.minecraft.server.level.ServerPlayer) self, "auth.restriction.no_attack");
             ci.cancel();

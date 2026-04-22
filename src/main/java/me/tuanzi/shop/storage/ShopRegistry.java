@@ -3,10 +3,8 @@ package me.tuanzi.shop.storage;
 import me.tuanzi.shop.shop.ShopInstance;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ShopRegistry {
     private static ShopRegistry instance;

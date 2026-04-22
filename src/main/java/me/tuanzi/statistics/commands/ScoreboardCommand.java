@@ -1,14 +1,13 @@
 package me.tuanzi.statistics.commands;
 
-import me.tuanzi.statistics.scoreboard.ScoreboardManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import me.tuanzi.statistics.scoreboard.ScoreboardManager;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.permissions.Permission;
 import net.minecraft.server.permissions.PermissionLevel;
 
@@ -114,7 +113,7 @@ public class ScoreboardCommand {
         if (statType.equals("playTime")) key = "stats.type.playTime_seconds";
         else if (statType.equals("playTimeMinutes")) key = "stats.type.playTime_minutes";
         else if (statType.equals("playTimeHours")) key = "stats.type.playTime_hours";
-        
+
         return me.tuanzi.statistics.util.StatsTranslationHelper.translate(key, me.tuanzi.statistics.util.StatsTranslationHelper.getLanguage(source));
     }
 }

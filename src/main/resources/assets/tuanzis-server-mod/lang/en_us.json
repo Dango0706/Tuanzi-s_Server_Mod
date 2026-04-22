@@ -3,7 +3,6 @@
   "auth.module.not_in_whitelist": "§cYou are not in the server whitelist, please contact administrator to apply for access.",
   "auth.module.mojang_unavailable": "§cMojang servers are temporarily unavailable, please try again later",
   "auth.module.verify_error": "§cAn error occurred during verification, please contact administrator",
-  
   "auth.login.not_registered": "§cYou are not registered, please use /register <password> <confirmPassword> first",
   "auth.login.already_logged_in": "§aYou are already logged in",
   "auth.login.account_locked": "§cYour account is locked",
@@ -12,32 +11,27 @@
   "auth.login.locked_too_many_attempts": "§cToo many failed attempts, account has been locked",
   "auth.login.success": "§aLogin successful!",
   "auth.login.system_not_initialized": "§cLogin system not initialized, please contact administrator",
-  
   "auth.register.already_registered": "§cYou are already registered, please use /login to log in",
   "auth.register.success": "§aRegistration successful! You are now logged in",
   "auth.register.failed": "§cRegistration failed, please try again later",
   "auth.register.password_mismatch": "§cPasswords do not match, please try again",
   "auth.register.system_not_initialized": "§cLogin system not initialized, please contact administrator",
   "auth.register.premium_no_need": "§cPremium players do not need to register, you are logged in automatically",
-  
   "auth.password.change_success": "§aPassword changed successfully!",
   "auth.password.change_failed": "§cFailed to change password",
   "auth.password.wrong_old": "§cIncorrect old password!",
   "auth.password.same_as_old": "§cNew password cannot be the same as the old one!",
   "auth.password.not_registered": "§cYou are not registered, cannot change password",
-  
   "auth.restriction.please_login": "§ePlease use §a/login <password> §eTo log in",
   "auth.restriction.please_register": "§eYou are not registered, please use §a/register <password> <confirmPassword> §eTo register",
   "auth.restriction.login_timeout": "§cYou have %d seconds to complete login",
   "auth.restriction.auto_login": "§aWelcome back! You have been logged in automatically.",
-  
   "auth.restriction.no_move": "§cPlease log in before moving!",
   "auth.restriction.no_action": "§cPlease log in before performing actions!",
   "auth.restriction.no_item": "§cPlease log in before using items!",
   "auth.restriction.no_chat": "§cPlease log in before sending messages!",
   "auth.restriction.no_command": "§cPlease log in before using commands!",
   "auth.restriction.no_attack": "§cPlease log in before attacking!",
-  
   "auth.whitelist.already_in": "§cPlayer %s is already in the whitelist",
   "auth.whitelist.add_success": "§aSuccessfully added %s to the whitelist",
   "auth.whitelist.add_failed": "§cFailed to add player to whitelist",
@@ -47,13 +41,11 @@
   "auth.whitelist.empty": "§eWhitelist is empty",
   "auth.whitelist.list_header": "§e========== §6Whitelist §e==========",
   "auth.whitelist.list_count": "§bTotal %d players",
-  
   "auth.password.reset_success": "§aSuccessfully reset password for player %s",
   "auth.password.reset_failed": "§cFailed to reset password",
   "auth.password.player_not_registered": "§cPlayer %s is not registered",
   "auth.password.player_name_empty": "§cPlayer name cannot be empty",
   "auth.password.new_password_empty": "§cNew password cannot be empty",
-  
   "auth.config.reloaded": "§aConfiguration reloaded",
   "auth.config.show_header": "§6===== Login Config =====",
   "auth.config.login_timeout": "§eLogin Timeout: §f%d seconds",
@@ -69,7 +61,6 @@
   "auth.config.set_lockout_duration": "§aLockout duration set to §f%d §aseconds",
   "auth.config.set_min_password_length": "§aMin password length set to §f%d",
   "auth.config.set_max_password_length": "§aMax password length set to §f%d",
-  
   "auth.command.player_only": "§cThis command can only be used by players",
   "auth.command.module_not_initialized": "§cAuth module not initialized",
   "auth.command.config_not_initialized": "§cLoginConfig not initialized",
@@ -80,17 +71,14 @@
   "auth.admin.operation.add_whitelist": "Add Whitelist",
   "auth.admin.operation.remove_whitelist": "Remove Whitelist",
   "auth.admin.operation.reset_password": "Reset Password",
-  
   "auth.password_validation.too_short": "Password must be at least %d characters long",
   "auth.password_validation.too_long": "Password cannot exceed %d characters",
   "auth.password_validation.empty": "Password cannot be empty",
-  
   "economy.pay.self": "§cYou cannot pay yourself",
   "economy.pay.success": "§aSuccessfully sent §e%.2f %s §ato %s",
   "economy.pay.received": "§aReceived transfer from %s: §e%.2f %s",
   "economy.pay.wallet_not_found": "§cWallet type '%s' not found",
   "economy.pay.insufficient_balance": "§cInsufficient balance! Current: §e%.2f§c, Required: §e%.2f",
-  
   "economy.admin.wallet_exists": "§cWallet type '%s' already exists",
   "economy.admin.wallet_created": "§aSuccessfully created wallet type '%s' (Display Name: %s)",
   "economy.admin.wallet_not_found": "§cWallet type '%s' not found",
@@ -103,14 +91,12 @@
   "economy.admin.no_wallets": "§7No registered wallet types",
   "economy.admin.balance_line": "§b%s (%s): §f%.2f",
   "economy.admin.player_only": "§cThis command can only be used by players",
-  
   "economy.balance.header": "§e========== §6Balances §e==========",
   "economy.balance.player_header": "§e========== §6Balances for %s §e==========",
   "economy.balance.no_wallets": "§cNo available wallet types",
   "economy.balance.line": "§b%s: §a%.2f",
   "economy.balance.wallet_not_found": "§cWallet type '%s' not found",
   "economy.balance.player_only": "§cThis command can only be used by players",
-  
   "stats.command.player_only": "§cThis command can only be used by players",
   "stats.header.player": "§e========== §6Stats for %s §e==========",
   "stats.header.server": "§e========== §6Server Stats §e==========",
@@ -128,7 +114,6 @@
   "stats.header.player_info": "§e========== §6Player Info for %s §e==========",
   "stats.header.activity": "§e========== §6Activity Stats for %s §e==========",
   "stats.header.extended": "§e========== §6Extended Stats for %s §e==========",
-  
   "stats.online_time": "§bOnline Time: §f%d hours %d minutes %d seconds",
   "stats.distance_traveled": "§bDistance Traveled: §f%.2f m",
   "stats.blocks_placed": "§bBlocks Placed: §f%d",
@@ -138,22 +123,18 @@
   "stats.damage_dealt": "§bDamage Dealt: §f%d",
   "stats.damage_taken": "§bDamage Taken: §f%d",
   "stats.durability_used": "§bDurability Used: §f%d",
-  
   "stats.server.uptime": "§bTotal Uptime: §f%d days %d hours %d minutes %d seconds",
   "stats.server.session": "§bSession Uptime: §f%d hours %d minutes %d seconds",
-  
   "stats.kills.total": "§bTotal Kills: §f%d",
   "stats.kills.by_entity": "§b%s Kills: §f%d",
   "stats.kills.entity_count": "§f%s: §a%d",
   "stats.kills.no_records": "§7No kill records",
   "stats.kills.by_type_header": "§e--- By Entity Type ---",
-  
   "stats.deaths.total": "§bTotal Deaths: §f%d",
   "stats.deaths.by_entity": "§bKilled by %s: §f%d",
   "stats.deaths.entity_count": "§f%s: §c%d",
   "stats.deaths.no_records": "§7No death records",
   "stats.deaths.by_type_header": "§e--- By Entity Type ---",
-  
   "stats.blocks.total_placed": "§bTotal Blocks Placed: §f%d",
   "stats.blocks.total_broken": "§bTotal Blocks Broken: §f%d",
   "stats.blocks.placed_hint": "§7Use /stats blocks placed for details",
@@ -165,7 +146,6 @@
   "stats.blocks.no_placed_records": "§7No placement records",
   "stats.blocks.no_broken_records": "§7No breakage records",
   "stats.blocks.by_type_header": "§e--- By Block Type ---",
-  
   "stats.damage.total_dealt": "§bTotal Damage Dealt: §f%d",
   "stats.damage.total_taken": "§bTotal Damage Taken: §f%d",
   "stats.damage.dealt_hint": "§7Use /stats damage dealt for details",
@@ -178,7 +158,6 @@
   "stats.damage.no_dealt_records": "§7No damage dealt records",
   "stats.damage.no_taken_records": "§7No damage taken records",
   "stats.damage.by_type_header": "§e--- By Entity Type ---",
-  
   "stats.fishing.total": "§bTotal Fishing Attempts: §f%d",
   "stats.fishing.success": "§bSuccessful: §a%d",
   "stats.fishing.failures": "§bFailed: §c%d",
@@ -186,28 +165,23 @@
   "stats.fishing.item_detail": "§b%s Caught: §f%d",
   "stats.fishing.no_records": "§7No fishing records",
   "stats.fishing.by_type_header": "§e--- By Item Type ---",
-  
   "stats.crafting.total": "§bTotal Items Crafted: §f%d",
   "stats.crafting.item_count": "§f%s: §a%d",
   "stats.crafting.item_detail": "§b%s Crafted: §f%d",
   "stats.crafting.no_records": "§7No crafting records",
   "stats.crafting.by_type_header": "§e--- By Item Type ---",
-  
   "stats.drops.total": "§bTotal Items Dropped: §f%d",
   "stats.drops.item_count": "§f%s: §c%d",
   "stats.drops.item_detail": "§b%s Dropped: §f%d",
   "stats.drops.no_records": "§7No drop records",
   "stats.drops.by_type_header": "§e--- By Item Type ---",
-  
   "stats.player_info.first_join": "§bFirst Join: §f%s",
   "stats.player_info.first_join_unknown": "§bFirst Join: §fUnknown",
   "stats.player_info.login_days": "§bDays Logged In: §f%d days",
-  
   "stats.activity.anvil_uses": "§bAnvil Uses: §f%d",
   "stats.activity.items_enchanted": "§bItems Enchanted: §f%d",
   "stats.activity.villager_trades": "§bVillager Trades: §f%d",
   "stats.activity.chat_messages": "§bChat Messages: §f%d",
-  
   "stats.extended.exp_header": "§b--- Experience Stats ---",
   "stats.extended.exp_gained": "§fTotal EXP Gained: §a%d",
   "stats.extended.exp_consumed": "§fTotal EXP Consumed: §c%d",
@@ -231,7 +205,6 @@
   "stats.extended.longest_life": "§a%d:%d:%d",
   "stats.extended.death_header": "§b--- Death Stats ---",
   "stats.extended.farthest_death_distance": "§fFarthest Death Drop: §c%.1f m",
-
   "block.minecraft.grass_block": "Grass Block",
   "block.minecraft.dirt": "Dirt",
   "block.minecraft.stone": "Stone",
@@ -245,7 +218,6 @@
   "item.minecraft.apple": "Apple",
   "item.minecraft.bread": "Bread",
   "item.minecraft.unknown": "Unknown Item",
-  
   "entity.minecraft.zombie": "Zombie",
   "entity.minecraft.skeleton": "Skeleton",
   "entity.minecraft.creeper": "Creeper",
@@ -272,7 +244,6 @@
   "entity.minecraft.iron_golem": "Iron Golem",
   "entity.minecraft.snow_golem": "Snow Golem",
   "entity.minecraft.unknown": "Unknown",
-  
   "floatingtext.created": "§aCreated floating text '%s' at (%d, %d, %d)",
   "floatingtext.already_exists": "§cFloating text '%s' already exists!",
   "floatingtext.not_found": "§cFloating text '%s' not found!",
@@ -297,7 +268,6 @@
   "floatingtext.info_created": "§bCreated At: §f%s",
   "floatingtext.unsupported_stat": "§cUnsupported stat type: %s",
   "floatingtext.default_text": "Floating Text",
-  
   "shop.type.sell": "§bSell Shop",
   "shop.type.buy": "§bBuy Shop",
   "shop.creation.success": "§aShop created successfully!",
@@ -318,7 +288,6 @@
   "shop.sign.invalid_item": "§cInvalid item!",
   "shop.sign.invalid_price": "§cInvalid price!",
   "shop.sign.not_on_chest": "§cSign must be placed on a chest!",
-  
   "transaction.header": "Transaction Flow",
   "transaction.input.prompt": "§ePlease enter quantity within §a%d seconds §e(enter number or 'cancel'):",
   "transaction.input.timeout": "§cInput timed out, transaction cancelled!",
@@ -337,7 +306,6 @@
   "transaction.click_to_buy": "§a[Click to Buy]",
   "transaction.click_to_sell": "§a[Click to Sell]",
   "transaction.shift_hint": "§7Shift+Click for bulk trade (64 items)",
-  
   "item.change.header": "Item Change",
   "item.change.prompt": "§eAre you sure you want to change the shop item to §b%s§e?",
   "item.change.confirm": "§a[Confirm]",
@@ -351,7 +319,6 @@
   "item.change.cancelled": "§eItem change cancelled!",
   "item.change.click_confirm": "§aClick to confirm change",
   "item.change.click_cancel": "§cClick to cancel change",
-  
   "admin.shop.info.title": "§6=== Shop Info ===",
   "admin.shop.info.id": "§bShop ID: §f%s",
   "admin.shop.info.owner": "§bOwner: §f%s",

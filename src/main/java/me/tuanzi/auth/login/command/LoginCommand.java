@@ -3,13 +3,13 @@ package me.tuanzi.auth.login.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import me.tuanzi.auth.logging.AuthLogger;
 import me.tuanzi.auth.login.LoginConfig;
 import me.tuanzi.auth.login.LoginStateManager;
 import me.tuanzi.auth.login.attempt.LoginAttemptManager;
 import me.tuanzi.auth.login.data.AccountManager;
 import me.tuanzi.auth.login.session.SessionManager;
 import me.tuanzi.auth.login.timeout.LoginTimeoutManager;
-import me.tuanzi.auth.logging.AuthLogger;
 import me.tuanzi.auth.utils.TranslationHelper;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -35,8 +35,8 @@ public class LoginCommand {
     }
 
     public static void initialize(LoginConfig config, AccountManager accounts,
-                                   SessionManager sessions, LoginAttemptManager attempts,
-                                   LoginTimeoutManager timeout) {
+                                  SessionManager sessions, LoginAttemptManager attempts,
+                                  LoginTimeoutManager timeout) {
         loginConfig = config;
         accountManager = accounts;
         sessionManager = sessions;

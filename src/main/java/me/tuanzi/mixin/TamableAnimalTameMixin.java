@@ -12,18 +12,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(TamableAnimal.class)
 public abstract class TamableAnimalTameMixin {
-    
+
     @Inject(method = "tame", at = @At("HEAD"))
     private void onTame(Player player, CallbackInfo ci) {
         if (player instanceof ServerPlayer serverPlayer) {
-            TamableAnimal animal = (TamableAnimal)(Object)this;
+            TamableAnimal animal = (TamableAnimal) (Object) this;
             String playerName = serverPlayer.getName().getString();
             String animalType = animal.getType().getDescriptionId();
-            
+
             PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
             stats.addAnimalTamed(animalType);
-            StatisticsModule.LOGGER.debug("Player {} tamed {}, total: {}", 
-                playerName, animalType, stats.getAnimalsTamed());
+            StatisticsModule.LOGGER.debug("Player {} tamed {}, total: {}",
+                    playerName, animalType, stats.getAnimalsTamed());
         }
     }
 }

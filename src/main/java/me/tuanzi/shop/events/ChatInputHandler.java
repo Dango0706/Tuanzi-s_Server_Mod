@@ -1,14 +1,12 @@
 package me.tuanzi.shop.events;
 
 import me.tuanzi.shop.ShopModule;
-import me.tuanzi.shop.display.ShopDisplayManager;
 import me.tuanzi.shop.logging.TransactionLogger;
 import me.tuanzi.shop.shop.ShopInstance;
 import me.tuanzi.shop.shop.ShopManager;
 import me.tuanzi.shop.shop.ShopType;
 import me.tuanzi.shop.util.DevFlowLogger;
 import me.tuanzi.shop.util.SignUpdateHelper;
-import me.tuanzi.shop.utils.ItemUtils;
 import me.tuanzi.shop.utils.ShopTranslationHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.ClickEvent;
@@ -19,7 +17,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.SignBlockEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -194,7 +191,7 @@ public class ChatInputHandler {
         shop.setMaxPrice(pending.maxPrice);
         shop.setHalfLifeConstant(halfLife);
         shop.setDynamicPricing(true);
-        
+
         // 实时更新当前价格
         double newPrice = me.tuanzi.shop.pricing.DynamicPricing.calculatePrice(shop);
         shop.setCurrentPrice(newPrice);
@@ -312,21 +309,21 @@ public class ChatInputHandler {
 
         player.sendSystemMessage(ShopTranslationHelper.header(player, "common.dynamic_pricing"));
         player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "transaction.dynamic_confirm_header") + ":"));
-        
+
         // 物品悬浮展示 (使用 26.1 API)
         ItemStack stack = shop.getTradeItem();
         net.minecraft.world.item.ItemStackTemplate template = net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(stack);
-        Component itemComp = stack.getDisplayName().copy().withStyle(s -> 
-            s.withHoverEvent(new net.minecraft.network.chat.HoverEvent.ShowItem(template)));
-        
+        Component itemComp = stack.getDisplayName().copy().withStyle(s ->
+                s.withHoverEvent(new net.minecraft.network.chat.HoverEvent.ShowItem(template)));
+
         player.sendSystemMessage(Component.empty()
                 .append(ShopTranslationHelper.colored("§f" + ShopTranslationHelper.getRawTranslation(player, "common.item") + ": "))
                 .append(itemComp));
-        
+
         player.sendSystemMessage(ShopTranslationHelper.colored("§f" + ShopTranslationHelper.getRawTranslation(player, "transaction.quantity") + ": §e" + quantity));
         player.sendSystemMessage(ShopTranslationHelper.colored("§f" + ShopTranslationHelper.getRawTranslation(player, "transaction.total_price") + ": §e" + String.format("%.2f", totalPrice) + " " + currencyName));
         player.sendSystemMessage(ShopTranslationHelper.colored("§7(" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.dynamic_desc") + ")"));
-        
+
         Component confirmBtn = Component.literal("[" + ShopTranslationHelper.getRawTranslation(player, "item.change.confirm_btn") + "]")
                 .setStyle(Style.EMPTY
                         .withClickEvent(new ClickEvent.RunCommand("/shopconfirm yes"))
@@ -470,20 +467,20 @@ public class ChatInputHandler {
             case WAITING_CONFIRM:
                 boolean confirmed = action.equals("yes") || action.equals("是");
                 boolean cancelled = action.equals("no") || action.equals("否");
-                
+
                 if (!confirmed && !cancelled) return false;
-                
+
                 if (cancelled) {
                     pendingShopCreations.remove(playerId);
                     player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.cancelled"));
                     return true;
                 }
-                
+
                 return handleCreationConfirm(player, pending, "yes");
-                
+
             case SELECTING_TYPE:
                 return handleCreationType(player, pending, action);
-                
+
             default:
                 return false;
         }
@@ -497,7 +494,8 @@ public class ChatInputHandler {
         pendingTransactions.entrySet().removeIf(entry -> {
             if (currentTime > entry.getValue().expireTime) {
                 ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
-                if (player != null) player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.timeout"));
+                if (player != null)
+                    player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.timeout"));
                 return true;
             }
             return false;
@@ -506,7 +504,8 @@ public class ChatInputHandler {
         pendingItemChanges.entrySet().removeIf(entry -> {
             if (currentTime > entry.getValue().expireTime) {
                 ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
-                if (player != null) player.sendSystemMessage(ShopTranslationHelper.translatable(player, "item.change.timeout"));
+                if (player != null)
+                    player.sendSystemMessage(ShopTranslationHelper.translatable(player, "item.change.timeout"));
                 return true;
             }
             return false;
@@ -515,7 +514,8 @@ public class ChatInputHandler {
         pendingShopCreations.entrySet().removeIf(entry -> {
             if (currentTime > entry.getValue().expireTime) {
                 ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
-                if (player != null) player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.timeout"));
+                if (player != null)
+                    player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.timeout"));
                 return true;
             }
             return false;
@@ -524,7 +524,8 @@ public class ChatInputHandler {
         pendingDynamicSetups.entrySet().removeIf(entry -> {
             if (currentTime > entry.getValue().expireTime) {
                 ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
-                if (player != null) player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.timeout"));
+                if (player != null)
+                    player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.input.timeout"));
                 return true;
             }
             return false;
@@ -535,77 +536,6 @@ public class ChatInputHandler {
         pendingTransactions.entrySet().removeIf(entry -> entry.getValue().shopId.equals(shopId));
         pendingItemChanges.entrySet().removeIf(entry -> entry.getValue().shopId.equals(shopId));
         pendingDynamicSetups.entrySet().removeIf(entry -> entry.getValue().shopId.equals(shopId));
-    }
-
-    private static class PendingTransaction {
-        final UUID shopId;
-        final long expireTime;
-        int quantity = -1;
-
-        PendingTransaction(UUID shopId, long expireTime) {
-            this.shopId = shopId;
-            this.expireTime = expireTime;
-        }
-    }
-
-    private static class PendingItemChange {
-        final UUID shopId;
-        final ItemStack newItem;
-        final long expireTime;
-
-        PendingItemChange(UUID shopId, ItemStack newItem, long expireTime) {
-            this.shopId = shopId;
-            this.newItem = newItem;
-            this.expireTime = expireTime;
-        }
-    }
-
-    private enum ShopDynamicSetupState {
-        INPUTTING_MIN_PRICE,
-        INPUTTING_MAX_PRICE,
-        INPUTTING_HALF_LIFE
-    }
-
-    private static class PendingDynamicSetup {
-        final UUID shopId;
-        ShopDynamicSetupState state;
-        double minPrice;
-        double maxPrice;
-        long expireTime;
-
-        PendingDynamicSetup(UUID shopId, long expireTime) {
-            this.shopId = shopId;
-            this.state = ShopDynamicSetupState.INPUTTING_MIN_PRICE;
-            this.expireTime = expireTime;
-        }
-    }
-
-    private enum ShopCreationState {
-        WAITING_CONFIRM,
-        SELECTING_TYPE,
-        INPUTTING_PRICE,
-        INPUTTING_CURRENCY,
-        INPUTTING_NOTE
-    }
-
-    private static class PendingShopCreation {
-        final BlockPos signPos;
-        final BlockPos containerPos;
-        final ItemStack item;
-        ShopCreationState state;
-        ShopType shopType;
-        double price;
-        String currencyId;
-        String note;
-        long expireTime;
-
-        PendingShopCreation(BlockPos signPos, BlockPos containerPos, ItemStack item, long expireTime) {
-            this.signPos = signPos;
-            this.containerPos = containerPos;
-            this.item = item;
-            this.state = ShopCreationState.WAITING_CONFIRM;
-            this.expireTime = expireTime;
-        }
     }
 
     public boolean hasPendingTransaction(UUID playerId) {
@@ -631,17 +561,17 @@ public class ChatInputHandler {
 
         player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
         player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.prompt", item.getDisplayName().getString()));
-        
+
         Component confirmBtn = Component.literal("[" + ShopTranslationHelper.getRawTranslation(player, "item.change.confirm_btn") + "]")
                 .setStyle(Style.EMPTY
-                .withClickEvent(new ClickEvent.RunCommand("/shopconfirm yes"))
-                .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "transaction.click_to_confirm"))));
-        
+                        .withClickEvent(new ClickEvent.RunCommand("/shopconfirm yes"))
+                        .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "transaction.click_to_confirm"))));
+
         Component cancelBtn = Component.literal("[" + ShopTranslationHelper.getRawTranslation(player, "item.change.cancel_btn") + "]")
                 .setStyle(Style.EMPTY
-                .withClickEvent(new ClickEvent.RunCommand("/shopconfirm no"))
-                .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "transaction.click_to_cancel"))));
-        
+                        .withClickEvent(new ClickEvent.RunCommand("/shopconfirm no"))
+                        .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "transaction.click_to_cancel"))));
+
         player.sendSystemMessage(Component.empty().append(confirmBtn).append(Component.literal(" ")).append(cancelBtn));
         player.sendSystemMessage(ShopTranslationHelper.colored("§7" + ShopTranslationHelper.getRawTranslation(player, "transaction.confirm_hint")));
         player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
@@ -660,12 +590,18 @@ public class ChatInputHandler {
         }
 
         switch (pending.state) {
-            case WAITING_CONFIRM: return handleCreationConfirm(player, pending, input);
-            case SELECTING_TYPE: return handleCreationType(player, pending, input);
-            case INPUTTING_PRICE: return handleCreationPrice(player, pending, input);
-            case INPUTTING_CURRENCY: return handleCreationCurrency(player, pending, input);
-            case INPUTTING_NOTE: return handleCreationNote(player, pending, input);
-            default: return false;
+            case WAITING_CONFIRM:
+                return handleCreationConfirm(player, pending, input);
+            case SELECTING_TYPE:
+                return handleCreationType(player, pending, input);
+            case INPUTTING_PRICE:
+                return handleCreationPrice(player, pending, input);
+            case INPUTTING_CURRENCY:
+                return handleCreationCurrency(player, pending, input);
+            case INPUTTING_NOTE:
+                return handleCreationNote(player, pending, input);
+            default:
+                return false;
         }
     }
 
@@ -686,17 +622,17 @@ public class ChatInputHandler {
 
         player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
         player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.type_prompt"));
-        
+
         Component sellBtn = Component.literal("§a[" + ShopTranslationHelper.getRawTranslation(player, "shop.type.sell_btn") + "]")
                 .setStyle(Style.EMPTY
-                .withClickEvent(new ClickEvent.RunCommand("/shopconfirm sell"))
-                .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "shop.creation.sell_btn_hover"))));
-        
+                        .withClickEvent(new ClickEvent.RunCommand("/shopconfirm sell"))
+                        .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "shop.creation.sell_btn_hover"))));
+
         Component buyBtn = Component.literal("§a[" + ShopTranslationHelper.getRawTranslation(player, "shop.type.buy_btn") + "]")
                 .setStyle(Style.EMPTY
-                .withClickEvent(new ClickEvent.RunCommand("/shopconfirm buy"))
-                .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "shop.creation.buy_btn_hover"))));
-        
+                        .withClickEvent(new ClickEvent.RunCommand("/shopconfirm buy"))
+                        .withHoverEvent(new HoverEvent.ShowText(ShopTranslationHelper.translatable(player, "shop.creation.buy_btn_hover"))));
+
         player.sendSystemMessage(Component.empty().append(sellBtn).append(Component.literal(" ")).append(buyBtn));
         player.sendSystemMessage(ShopTranslationHelper.colored("§7" + ShopTranslationHelper.getRawTranslation(player, "shop.creation.type_hint")));
         player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
@@ -737,13 +673,13 @@ public class ChatInputHandler {
 
             player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
             player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.currency_prompt"));
-            
+
             java.util.Collection<me.tuanzi.economy.currency.WalletType> walletTypes = shopManager.getEconomyAPI().getAllWalletTypes();
             if (walletTypes.isEmpty()) {
                 player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.creation.no_currencies"));
                 return true;
             }
-            
+
             StringBuilder currencyList = new StringBuilder("§a" + ShopTranslationHelper.getRawTranslation(player, "shop.creation.currency_list_header"));
             int index = 0;
             for (me.tuanzi.economy.currency.WalletType wt : walletTypes) {
@@ -751,7 +687,7 @@ public class ChatInputHandler {
                 currencyList.append(wt.displayName().getString()).append("(§e").append(wt.id()).append("§a)");
                 index++;
             }
-            
+
             player.sendSystemMessage(ShopTranslationHelper.colored(currencyList.toString()));
             player.sendSystemMessage(ShopTranslationHelper.colored("§7" + ShopTranslationHelper.getRawTranslation(player, "shop.creation.currency_resolve_hint")));
             player.sendSystemMessage(ShopTranslationHelper.header(player, "shop.creation.header"));
@@ -764,13 +700,13 @@ public class ChatInputHandler {
     private boolean handleCreationCurrency(ServerPlayer player, PendingShopCreation pending, String input) {
         String userInput = input.trim();
         if (userInput.isEmpty()) return true;
-        
+
         Optional<me.tuanzi.economy.currency.WalletType> walletType = resolveWalletType(userInput);
         if (walletType.isEmpty()) {
             player.sendSystemMessage(ShopTranslationHelper.colored("§c" + ShopTranslationHelper.getRawTranslation(player, "economy.pay.wallet_not_found", input)));
             return true;
         }
-        
+
         me.tuanzi.economy.currency.WalletType selectedType = walletType.get();
         pending.currencyId = selectedType.id();
         pending.state = ShopCreationState.INPUTTING_NOTE;
@@ -787,7 +723,8 @@ public class ChatInputHandler {
         String normalizedInput = input.toLowerCase().trim();
         java.util.Collection<me.tuanzi.economy.currency.WalletType> allWalletTypes = shopManager.getEconomyAPI().getAllWalletTypes();
         for (me.tuanzi.economy.currency.WalletType wt : allWalletTypes) {
-            if (wt.id().equalsIgnoreCase(normalizedInput) || wt.displayName().getString().equalsIgnoreCase(input.trim())) return Optional.of(wt);
+            if (wt.id().equalsIgnoreCase(normalizedInput) || wt.displayName().getString().equalsIgnoreCase(input.trim()))
+                return Optional.of(wt);
         }
         return Optional.empty();
     }
@@ -808,7 +745,7 @@ public class ChatInputHandler {
         ShopType shopType = pending.shopType;
         // 如果备注是 "出售" 或 "收购"，说明是 handleCreationType 设置的默认值，实际存储时设为空
         String finalNote = (pending.note.equals("出售") || pending.note.equals("收购")) ? "" : pending.note;
-        
+
         ShopInstance shop = shopManager.createShop(player.getUUID(), pending.containerPos, pending.signPos, shopType, pending.item.copy(), pending.price, pending.currencyId, finalNote);
 
         pendingShopCreations.remove(player.getUUID());
@@ -833,6 +770,78 @@ public class ChatInputHandler {
         MinecraftServer server = player.level().getServer();
         if (server == null) return;
         BlockInteractionHandler handler = ShopModule.getInstance(server).getInteractionHandler();
-        if (handler != null) handler.executeTransaction(player, shop.getShopId(), (shop.getShopType() == ShopType.SELL ? "buy" : "sell"), quantity);
+        if (handler != null)
+            handler.executeTransaction(player, shop.getShopId(), (shop.getShopType() == ShopType.SELL ? "buy" : "sell"), quantity);
+    }
+
+    private enum ShopDynamicSetupState {
+        INPUTTING_MIN_PRICE,
+        INPUTTING_MAX_PRICE,
+        INPUTTING_HALF_LIFE
+    }
+
+    private enum ShopCreationState {
+        WAITING_CONFIRM,
+        SELECTING_TYPE,
+        INPUTTING_PRICE,
+        INPUTTING_CURRENCY,
+        INPUTTING_NOTE
+    }
+
+    private static class PendingTransaction {
+        final UUID shopId;
+        final long expireTime;
+        int quantity = -1;
+
+        PendingTransaction(UUID shopId, long expireTime) {
+            this.shopId = shopId;
+            this.expireTime = expireTime;
+        }
+    }
+
+    private static class PendingItemChange {
+        final UUID shopId;
+        final ItemStack newItem;
+        final long expireTime;
+
+        PendingItemChange(UUID shopId, ItemStack newItem, long expireTime) {
+            this.shopId = shopId;
+            this.newItem = newItem;
+            this.expireTime = expireTime;
+        }
+    }
+
+    private static class PendingDynamicSetup {
+        final UUID shopId;
+        ShopDynamicSetupState state;
+        double minPrice;
+        double maxPrice;
+        long expireTime;
+
+        PendingDynamicSetup(UUID shopId, long expireTime) {
+            this.shopId = shopId;
+            this.state = ShopDynamicSetupState.INPUTTING_MIN_PRICE;
+            this.expireTime = expireTime;
+        }
+    }
+
+    private static class PendingShopCreation {
+        final BlockPos signPos;
+        final BlockPos containerPos;
+        final ItemStack item;
+        ShopCreationState state;
+        ShopType shopType;
+        double price;
+        String currencyId;
+        String note;
+        long expireTime;
+
+        PendingShopCreation(BlockPos signPos, BlockPos containerPos, ItemStack item, long expireTime) {
+            this.signPos = signPos;
+            this.containerPos = containerPos;
+            this.item = item;
+            this.state = ShopCreationState.WAITING_CONFIRM;
+            this.expireTime = expireTime;
+        }
     }
 }

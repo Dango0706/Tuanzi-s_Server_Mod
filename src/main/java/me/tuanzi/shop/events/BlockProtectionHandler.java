@@ -29,12 +29,12 @@ public class BlockProtectionHandler {
 
         ShopInstance shop = shopOpt.get();
         if (shop.isOwner(player.getUUID()) || player.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.GAMEMASTERS))) {
-            LOGGER.info("[商店保护] 玩家 {} 破坏了商店方块 - 商店ID: {}, 位置: {}", 
+            LOGGER.info("[商店保护] 玩家 {} 破坏了商店方块 - 商店ID: {}, 位置: {}",
                     player.getName().getString(), shop.getShopId(), pos);
             return true;
         }
 
-        LOGGER.warn("[商店保护] 玩家 {} 尝试破坏商店方块被阻止 - 商店ID: {}, 位置: {}", 
+        LOGGER.warn("[商店保护] 玩家 {} 尝试破坏商店方块被阻止 - 商店ID: {}, 位置: {}",
                 player.getName().getString(), shop.getShopId(), pos);
         player.sendSystemMessage(ShopTranslationHelper.translatable("shop.no_permission"));
         return false;
@@ -51,7 +51,7 @@ public class BlockProtectionHandler {
             return true;
         }
 
-        LOGGER.warn("[商店保护] 玩家 {} 尝试打开商店容器被阻止 - 商店ID: {}, 位置: {}", 
+        LOGGER.warn("[商店保护] 玩家 {} 尝试打开商店容器被阻止 - 商店ID: {}, 位置: {}",
                 player.getName().getString(), shop.getShopId(), pos);
         player.sendSystemMessage(ShopTranslationHelper.translatable("shop.protected"));
         return false;

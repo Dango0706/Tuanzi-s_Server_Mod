@@ -24,13 +24,13 @@ public class AuthTranslationHelper {
 
     public static void initialize() {
         if (initialized) return;
-        
+
         try {
             loadTranslations("zh_cn", zhCnTranslations);
             loadTranslations("en_us", enUsTranslations);
             initialized = true;
-            LOGGER.info("[身份验证] 翻译系统初始化完成。已加载 {} 条中文翻译和 {} 条英文翻译", 
-                zhCnTranslations.size(), enUsTranslations.size());
+            LOGGER.info("[身份验证] 翻译系统初始化完成。已加载 {} 条中文翻译和 {} 条英文翻译",
+                    zhCnTranslations.size(), enUsTranslations.size());
         } catch (Exception e) {
             LOGGER.error("[身份验证] 加载翻译文件失败: {}", e.getMessage());
         }
@@ -41,7 +41,8 @@ public class AuthTranslationHelper {
         try (InputStream is = AuthTranslationHelper.class.getResourceAsStream(path)) {
             if (is != null) {
                 try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-                    Map<String, String> translations = new Gson().fromJson(reader, new TypeToken<Map<String, String>>(){}.getType());
+                    Map<String, String> translations = new Gson().fromJson(reader, new TypeToken<Map<String, String>>() {
+                    }.getType());
                     if (translations != null) {
                         targetMap.putAll(translations);
                     }
@@ -78,11 +79,11 @@ public class AuthTranslationHelper {
         String normalized = normalizeLanguage(languageCode);
         Map<String, String> translations = "zh_cn".equals(normalized) ? zhCnTranslations : enUsTranslations;
         String translation = translations.get(key);
-        
+
         if (translation == null) {
             translation = ("zh_cn".equals(normalized) ? enUsTranslations : zhCnTranslations).get(key);
         }
-        
+
         return translation != null ? translation : key;
     }
 

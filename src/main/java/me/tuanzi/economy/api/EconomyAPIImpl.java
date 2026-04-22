@@ -25,6 +25,17 @@ public class EconomyAPIImpl implements EconomyAPI {
         loadWalletTypesFromStorage();
     }
 
+    public static synchronized EconomyAPIImpl getInstance(MinecraftServer server) {
+        if (instance == null) {
+            instance = new EconomyAPIImpl(server);
+        }
+        return instance;
+    }
+
+    public static synchronized void resetInstance() {
+        instance = null;
+    }
+
     private void loadWalletTypesFromStorage() {
         lock.lock();
         try {
@@ -36,17 +47,6 @@ public class EconomyAPIImpl implements EconomyAPI {
         } finally {
             lock.unlock();
         }
-    }
-
-    public static synchronized EconomyAPIImpl getInstance(MinecraftServer server) {
-        if (instance == null) {
-            instance = new EconomyAPIImpl(server);
-        }
-        return instance;
-    }
-
-    public static synchronized void resetInstance() {
-        instance = null;
     }
 
     @Override

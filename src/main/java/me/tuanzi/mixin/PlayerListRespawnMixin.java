@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class PlayerListRespawnMixin {
 
     @Inject(method = "respawn", at = @At("RETURN"))
-    private void onRespawn(ServerPlayer serverPlayer, boolean keepAllPlayerData, 
+    private void onRespawn(ServerPlayer serverPlayer, boolean keepAllPlayerData,
                            net.minecraft.world.entity.Entity.RemovalReason removalReason,
                            CallbackInfoReturnable<ServerPlayer> cir) {
         ServerPlayer respawnedPlayer = cir.getReturnValue();

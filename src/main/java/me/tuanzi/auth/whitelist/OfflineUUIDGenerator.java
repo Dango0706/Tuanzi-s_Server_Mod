@@ -10,7 +10,7 @@ public final class OfflineUUIDGenerator {
 
     public static UUID generateOfflineUUID(String playerName) {
         return UUID.nameUUIDFromBytes(
-            ("OfflinePlayer:" + playerName).getBytes(StandardCharsets.UTF_8)
+                ("OfflinePlayer:" + playerName).getBytes(StandardCharsets.UTF_8)
         );
     }
 }

@@ -15,9 +15,8 @@ import java.util.UUID;
 public class WhitelistManager {
     private static final String DATA_DIR = FabricLoader.getInstance().getConfigDir().resolve("auth").toString();
     private static final String WHITELIST_FILE = DATA_DIR + File.separator + "whitelist.json";
-
-    private Map<UUID, String> whitelistMap;
     private final Gson gson;
+    private Map<UUID, String> whitelistMap;
 
     public WhitelistManager() {
         this.whitelistMap = new HashMap<>();

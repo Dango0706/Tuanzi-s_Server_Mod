@@ -18,7 +18,7 @@ public class DamageListener implements ServerLivingEntityEvents.AfterDamage {
 
             PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(attackerName);
             stats.addDamageDealt(entityType, damage);
-            
+
             if (damage > 0) {
                 stats.updateHighestDamageDealt(damage);
             }
@@ -34,7 +34,7 @@ public class DamageListener implements ServerLivingEntityEvents.AfterDamage {
 
             PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
             stats.addDamageTaken(attackerType, damage);
-            
+
             if (damage > 0) {
                 stats.updateHighestDamageTaken(damage);
             }

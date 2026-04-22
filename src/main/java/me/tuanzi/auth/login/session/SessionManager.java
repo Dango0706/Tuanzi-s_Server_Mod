@@ -47,21 +47,21 @@ public class SessionManager {
     public boolean validateSession(String playerName, String ipAddress) {
         String key = playerName.toLowerCase();
         LoginSession session = sessions.get(key);
-        
+
         if (session == null) {
             return false;
         }
-        
+
         if (!session.isValid()) {
             sessions.remove(key);
             return false;
         }
-        
+
         if (!session.isSameIp(ipAddress)) {
             LOGGER.warn("玩家 {} 的 IP 地址不匹配，会话无效", playerName);
             return false;
         }
-        
+
         return true;
     }
 
@@ -82,17 +82,17 @@ public class SessionManager {
     public boolean checkIpPersistence(String playerName, String ipAddress) {
         String key = playerName.toLowerCase();
         LoginSession session = sessions.get(key);
-        
+
         if (session == null) {
             return false;
         }
-        
+
         if (session.isSameIp(ipAddress) && !session.isExpired()) {
             session.refresh(config.getIpSessionPersistenceSeconds() * 1000L);
             LOGGER.info("玩家 {} 通过 IP 持久化自动登录，IP: {}", playerName, ipAddress);
             return true;
         }
-        
+
         return false;
     }
 
@@ -111,7 +111,7 @@ public class SessionManager {
 
     private void startCleanupTask() {
         long cleanupIntervalMs = Math.max(config.getIpSessionPersistenceSeconds() / 2, 60) * 1000L;
-        
+
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 cleanupExpiredSessions();
@@ -119,7 +119,7 @@ public class SessionManager {
                 LOGGER.error("清理过期会话时发生错误: {}", e.getMessage());
             }
         }, cleanupIntervalMs, cleanupIntervalMs, TimeUnit.MILLISECONDS);
-        
+
         LOGGER.info("会话清理任务已启动，清理间隔: {} 毫秒", cleanupIntervalMs);
     }
 

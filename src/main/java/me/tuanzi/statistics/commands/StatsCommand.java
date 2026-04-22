@@ -1,15 +1,14 @@
 package me.tuanzi.statistics.commands;
 
-import me.tuanzi.auth.whitelist.OfflineUUIDGenerator;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.suggestion.Suggestions;
 import me.tuanzi.statistics.StatisticsModule;
 import me.tuanzi.statistics.data.PlayerStatistics;
 import me.tuanzi.statistics.data.ServerStatistics;
 import me.tuanzi.statistics.listeners.PlayerJoinListener;
 import me.tuanzi.statistics.util.StatsTranslationHelper;
 import me.tuanzi.statistics.util.TranslationHelper;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.suggestion.Suggestions;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -96,7 +95,8 @@ public class StatsCommand {
                         .executes(context -> {
                             String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
                             String entityType = StringArgumentType.getString(context, "entityType");
-                            if (entityType.startsWith("\"") && entityType.endsWith("\"")) entityType = entityType.substring(1, entityType.length() - 1);
+                            if (entityType.startsWith("\"") && entityType.endsWith("\""))
+                                entityType = entityType.substring(1, entityType.length() - 1);
                             if (playerName != null) showKillsStats(context.getSource(), playerName, entityType);
                             return 1;
                         })
@@ -118,7 +118,8 @@ public class StatsCommand {
                         .executes(context -> {
                             String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
                             String entityType = StringArgumentType.getString(context, "entityType");
-                            if (entityType.startsWith("\"") && entityType.endsWith("\"")) entityType = entityType.substring(1, entityType.length() - 1);
+                            if (entityType.startsWith("\"") && entityType.endsWith("\""))
+                                entityType = entityType.substring(1, entityType.length() - 1);
                             if (playerName != null) showDeathsStats(context.getSource(), playerName, entityType);
                             return 1;
                         })
@@ -146,8 +147,10 @@ public class StatsCommand {
                                 .executes(context -> {
                                     String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
                                     String blockType = StringArgumentType.getString(context, "blockType");
-                                    if (blockType.startsWith("\"") && blockType.endsWith("\"")) blockType = blockType.substring(1, blockType.length() - 1);
-                                    if (playerName != null) showBlocksPlacedStats(context.getSource(), playerName, blockType);
+                                    if (blockType.startsWith("\"") && blockType.endsWith("\""))
+                                        blockType = blockType.substring(1, blockType.length() - 1);
+                                    if (playerName != null)
+                                        showBlocksPlacedStats(context.getSource(), playerName, blockType);
                                     return 1;
                                 })
                         )
@@ -169,8 +172,10 @@ public class StatsCommand {
                                 .executes(context -> {
                                     String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
                                     String blockType = StringArgumentType.getString(context, "blockType");
-                                    if (blockType.startsWith("\"") && blockType.endsWith("\"")) blockType = blockType.substring(1, blockType.length() - 1);
-                                    if (playerName != null) showBlocksBrokenStats(context.getSource(), playerName, blockType);
+                                    if (blockType.startsWith("\"") && blockType.endsWith("\""))
+                                        blockType = blockType.substring(1, blockType.length() - 1);
+                                    if (playerName != null)
+                                        showBlocksBrokenStats(context.getSource(), playerName, blockType);
                                     return 1;
                                 })
                         )
@@ -198,8 +203,10 @@ public class StatsCommand {
                                 .executes(context -> {
                                     String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
                                     String entityType = StringArgumentType.getString(context, "entityType");
-                                    if (entityType.startsWith("\"") && entityType.endsWith("\"")) entityType = entityType.substring(1, entityType.length() - 1);
-                                    if (playerName != null) showDamageDealtStats(context.getSource(), playerName, entityType);
+                                    if (entityType.startsWith("\"") && entityType.endsWith("\""))
+                                        entityType = entityType.substring(1, entityType.length() - 1);
+                                    if (playerName != null)
+                                        showDamageDealtStats(context.getSource(), playerName, entityType);
                                     return 1;
                                 })
                         )
@@ -221,8 +228,10 @@ public class StatsCommand {
                                 .executes(context -> {
                                     String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
                                     String entityType = StringArgumentType.getString(context, "entityType");
-                                    if (entityType.startsWith("\"") && entityType.endsWith("\"")) entityType = entityType.substring(1, entityType.length() - 1);
-                                    if (playerName != null) showDamageTakenStats(context.getSource(), playerName, entityType);
+                                    if (entityType.startsWith("\"") && entityType.endsWith("\""))
+                                        entityType = entityType.substring(1, entityType.length() - 1);
+                                    if (playerName != null)
+                                        showDamageTakenStats(context.getSource(), playerName, entityType);
                                     return 1;
                                 })
                         )
@@ -244,7 +253,8 @@ public class StatsCommand {
                         .executes(context -> {
                             String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
                             String itemType = StringArgumentType.getString(context, "itemType");
-                            if (itemType.startsWith("\"") && itemType.endsWith("\"")) itemType = itemType.substring(1, itemType.length() - 1);
+                            if (itemType.startsWith("\"") && itemType.endsWith("\""))
+                                itemType = itemType.substring(1, itemType.length() - 1);
                             if (playerName != null) showFishingStats(context.getSource(), playerName, itemType);
                             return 1;
                         })
@@ -266,7 +276,8 @@ public class StatsCommand {
                         .executes(context -> {
                             String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
                             String itemType = StringArgumentType.getString(context, "itemType");
-                            if (itemType.startsWith("\"") && itemType.endsWith("\"")) itemType = itemType.substring(1, itemType.length() - 1);
+                            if (itemType.startsWith("\"") && itemType.endsWith("\""))
+                                itemType = itemType.substring(1, itemType.length() - 1);
                             if (playerName != null) showCraftingStats(context.getSource(), playerName, itemType);
                             return 1;
                         })
@@ -288,7 +299,8 @@ public class StatsCommand {
                         .executes(context -> {
                             String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
                             String itemType = StringArgumentType.getString(context, "itemType");
-                            if (itemType.startsWith("\"") && itemType.endsWith("\"")) itemType = itemType.substring(1, itemType.length() - 1);
+                            if (itemType.startsWith("\"") && itemType.endsWith("\""))
+                                itemType = itemType.substring(1, itemType.length() - 1);
                             if (playerName != null) showDropsStats(context.getSource(), playerName, itemType);
                             return 1;
                         })
@@ -361,14 +373,14 @@ public class StatsCommand {
         ServerStatistics stats = StatisticsModule.getInstance().getDataManager().getServerStatistics();
 
         StatsTranslationHelper.sendSuccess(source, "stats.header.server");
-        StatsTranslationHelper.sendSuccess(source, "stats.server.uptime", 
-                stats.getTotalUptimeDays(), 
-                stats.getTotalUptimeHours() % 24, 
-                stats.getTotalUptimeMinutes() % 60, 
+        StatsTranslationHelper.sendSuccess(source, "stats.server.uptime",
+                stats.getTotalUptimeDays(),
+                stats.getTotalUptimeHours() % 24,
+                stats.getTotalUptimeMinutes() % 60,
                 stats.getTotalUptimeSeconds() % 60);
-        StatsTranslationHelper.sendSuccess(source, "stats.server.session", 
-                stats.getCurrentSessionUptimeSeconds() / 3600, 
-                (stats.getCurrentSessionUptimeSeconds() % 3600) / 60, 
+        StatsTranslationHelper.sendSuccess(source, "stats.server.session",
+                stats.getCurrentSessionUptimeSeconds() / 3600,
+                (stats.getCurrentSessionUptimeSeconds() % 3600) / 60,
                 stats.getCurrentSessionUptimeSeconds() % 60);
     }
 
@@ -1023,44 +1035,44 @@ public class StatsCommand {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
 
         StatsTranslationHelper.sendSuccess(source, "stats.header.extended", playerName);
-        
+
         StatsTranslationHelper.sendSuccess(source, "stats.extended.exp_header");
         StatsTranslationHelper.sendSuccess(source, "stats.extended.exp_gained", stats.getTotalExperienceGained());
         StatsTranslationHelper.sendSuccess(source, "stats.extended.exp_consumed", stats.getTotalExperienceConsumed());
-        
+
         StatsTranslationHelper.sendSuccess(source, "stats.extended.combat_header");
         StatsTranslationHelper.sendSuccess(source, "stats.extended.bow_hits", stats.getBowHits());
         StatsTranslationHelper.sendSuccess(source, "stats.extended.crossbow_hits", stats.getCrossbowHits());
         StatsTranslationHelper.sendSuccess(source, "stats.extended.shield_blocks", stats.getShieldBlocks());
         StatsTranslationHelper.sendSuccess(source, "stats.extended.highest_damage_dealt", stats.getHighestDamageDealt());
         StatsTranslationHelper.sendSuccess(source, "stats.extended.highest_damage_taken", stats.getHighestDamageTaken());
-        
+
         StatsTranslationHelper.sendSuccess(source, "stats.extended.pet_header");
         StatsTranslationHelper.sendSuccess(source, "stats.extended.animals_tamed", stats.getAnimalsTamed());
         StatsTranslationHelper.sendSuccess(source, "stats.extended.pet_deaths", stats.getPetDeaths());
-        
+
         StatsTranslationHelper.sendSuccess(source, "stats.extended.exploration_header");
         StatsTranslationHelper.sendSuccess(source, "stats.extended.explored_chunks", stats.getExploredChunks());
         StatsTranslationHelper.sendSuccess(source, "stats.extended.total_jumps", stats.getTotalJumps());
-        
+
         StatsTranslationHelper.sendSuccess(source, "stats.extended.time_header");
         long longestSession = stats.getLongestSessionSeconds();
-        StatsTranslationHelper.sendSuccess(source, "stats.extended.longest_session", 
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.longest_session",
                 longestSession / 3600, (longestSession % 3600) / 60, longestSession % 60);
-        
+
         long sneakTime = stats.getTotalSneakSeconds();
-        StatsTranslationHelper.sendSuccess(source, "stats.extended.sneak_time", 
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.sneak_time",
                 sneakTime / 3600, (sneakTime % 3600) / 60, sneakTime % 60);
-        
+
         StatsTranslationHelper.sendSuccess(source, "stats.extended.life_header");
         long shortestLife = stats.getShortestLifeSeconds();
-        StatsTranslationHelper.sendSuccess(source, "stats.extended.shortest_life", 
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.shortest_life",
                 shortestLife / 60, shortestLife % 60);
-        
+
         long longestLife = stats.getLongestLifeSeconds();
-        StatsTranslationHelper.sendSuccess(source, "stats.extended.longest_life", 
+        StatsTranslationHelper.sendSuccess(source, "stats.extended.longest_life",
                 longestLife / 3600, (longestLife % 3600) / 60, longestLife % 60);
-        
+
         StatsTranslationHelper.sendSuccess(source, "stats.extended.death_header");
         StatsTranslationHelper.sendSuccess(source, "stats.extended.farthest_death_distance", stats.getFarthestDeathDistance());
     }
@@ -1077,7 +1089,7 @@ public class StatsCommand {
         me.tuanzi.economy.api.EconomyAPI economyAPI = me.tuanzi.economy.api.EconomyAPIImpl.getInstance(server);
         if (economyAPI != null) {
             java.util.Collection<me.tuanzi.economy.currency.WalletType> walletTypes = economyAPI.getAllWalletTypes();
-            
+
             java.util.UUID uuid = null;
             net.minecraft.server.level.ServerPlayer targetPlayer = server.getPlayerList().getPlayerByName(playerName);
             if (targetPlayer != null) {
@@ -1090,7 +1102,7 @@ public class StatsCommand {
             if (uuid != null) {
                 for (me.tuanzi.economy.currency.WalletType wt : walletTypes) {
                     double balance = economyAPI.getBalance(uuid, wt.id());
-                    StatsTranslationHelper.sendSuccess(source, "stats.economy.item_count", wt.displayName().getString(), (int)balance);
+                    StatsTranslationHelper.sendSuccess(source, "stats.economy.item_count", wt.displayName().getString(), (int) balance);
                 }
             }
         }

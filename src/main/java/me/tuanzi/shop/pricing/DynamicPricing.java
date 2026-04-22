@@ -72,13 +72,13 @@ public class DynamicPricing {
 
         double total = 0;
         double currentS = shop.getSystemStock();
-        
+
         for (int i = 0; i < quantity; i++) {
             total += calculatePriceWithStock(shop, currentS);
             // 每一个物品成交，都会增加下一件物品的价格压力
             currentS += 1;
         }
-        
+
         return total;
     }
 }

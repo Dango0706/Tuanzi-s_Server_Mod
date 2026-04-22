@@ -9,7 +9,7 @@ public enum PlayerType {
      * 正版玩家 - 拥有 Mojang 账户
      */
     PREMIUM,
-    
+
     /**
      * 盗版玩家 - 离线模式玩家
      */

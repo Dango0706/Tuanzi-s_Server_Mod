@@ -4,10 +4,10 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import me.tuanzi.auth.AuthModule;
+import me.tuanzi.auth.logging.AuthLogger;
 import me.tuanzi.auth.login.LoginStateManager;
 import me.tuanzi.auth.login.data.AccountManager;
 import me.tuanzi.auth.login.security.PasswordService;
-import me.tuanzi.auth.logging.AuthLogger;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -30,7 +30,7 @@ public class ChangePasswordCommand {
 
     private static int executeChangePassword(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        
+
         ServerPlayer player = source.getPlayer();
         if (player == null) {
             source.sendSuccess(() -> Component.literal("§c此命令只能由玩家使用"), false);

@@ -11,11 +11,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DevFlowLogger {
     private static final Logger LOGGER = LoggerFactory.getLogger("ShopModule/DevFlow");
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
-    
+
     private static final Map<String, Long> FLOW_START_TIMES = new ConcurrentHashMap<>();
     private static final Map<String, Integer> FLOW_STEP_COUNTERS = new ConcurrentHashMap<>();
-    
+
     private static boolean enabled = false;
+
+    public static boolean isEnabled() {
+        return enabled;
+    }
 
     public static void setEnabled(boolean value) {
         enabled = value;
@@ -25,10 +29,6 @@ public class DevFlowLogger {
             LOGGER.info("║   所有核心业务流程将输出详细的中文调试信息                  ║");
             LOGGER.info("╰" + "─".repeat(78));
         }
-    }
-
-    public static boolean isEnabled() {
-        return enabled;
     }
 
     public static void startFlow(String flowName) {
@@ -85,7 +85,7 @@ public class DevFlowLogger {
         if (!enabled) return;
         Long startTimeObj = FLOW_START_TIMES.remove(flowName);
         if (startTimeObj == null) return;
-        
+
         long startTime = startTimeObj;
         FLOW_STEP_COUNTERS.remove(flowName);
         long elapsedMs = System.currentTimeMillis() - startTime;

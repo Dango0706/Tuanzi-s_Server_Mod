@@ -1,21 +1,19 @@
 package me.tuanzi.economy.commands;
 
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import me.tuanzi.economy.api.EconomyAPI;
 import me.tuanzi.economy.api.EconomyAPIImpl;
 import me.tuanzi.economy.currency.WalletType;
 import me.tuanzi.economy.utils.ServerTranslationHelper;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Collection;
@@ -24,45 +22,45 @@ import java.util.concurrent.CompletableFuture;
 public class BalanceCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess) {
         dispatcher.register(Commands.literal("balance")
-            .executes(ctx -> {
-                ServerPlayer player = ctx.getSource().getPlayer();
-                if (player == null) {
-                    ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.balance.player_only");
-                    return 0;
-                }
-                return showAllBalances(ctx, player);
-            })
-            .then(Commands.argument("wallet", StringArgumentType.word())
-                .suggests((ctx, builder) -> suggestWalletTypes(ctx, builder))
                 .executes(ctx -> {
                     ServerPlayer player = ctx.getSource().getPlayer();
                     if (player == null) {
                         ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.balance.player_only");
                         return 0;
                     }
-                    String walletId = StringArgumentType.getString(ctx, "wallet");
-                    return showSpecificBalance(ctx, player, walletId);
-                }))
-            .then(Commands.argument("player", EntityArgument.player())
-                .executes(ctx -> {
-                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
-                    return showAllBalances(ctx, target);
+                    return showAllBalances(ctx, player);
                 })
                 .then(Commands.argument("wallet", StringArgumentType.word())
-                    .suggests((ctx, builder) -> suggestWalletTypes(ctx, builder))
-                    .executes(ctx -> {
-                        ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
-                        String walletId = StringArgumentType.getString(ctx, "wallet");
-                        return showSpecificBalance(ctx, target, walletId);
-                    }))));
+                        .suggests((ctx, builder) -> suggestWalletTypes(ctx, builder))
+                        .executes(ctx -> {
+                            ServerPlayer player = ctx.getSource().getPlayer();
+                            if (player == null) {
+                                ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.balance.player_only");
+                                return 0;
+                            }
+                            String walletId = StringArgumentType.getString(ctx, "wallet");
+                            return showSpecificBalance(ctx, player, walletId);
+                        }))
+                .then(Commands.argument("player", EntityArgument.player())
+                        .executes(ctx -> {
+                            ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+                            return showAllBalances(ctx, target);
+                        })
+                        .then(Commands.argument("wallet", StringArgumentType.word())
+                                .suggests((ctx, builder) -> suggestWalletTypes(ctx, builder))
+                                .executes(ctx -> {
+                                    ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+                                    String walletId = StringArgumentType.getString(ctx, "wallet");
+                                    return showSpecificBalance(ctx, target, walletId);
+                                }))));
     }
 
     private static CompletableFuture<Suggestions> suggestWalletTypes(CommandContext<CommandSourceStack> ctx, SuggestionsBuilder builder) {
         EconomyAPI api = EconomyAPIImpl.getInstance(ctx.getSource().getServer());
         Collection<WalletType> types = api.getAllWalletTypes();
         return SharedSuggestionProvider.suggest(
-            types.stream().map(WalletType::id),
-            builder
+                types.stream().map(WalletType::id),
+                builder
         );
     }
 

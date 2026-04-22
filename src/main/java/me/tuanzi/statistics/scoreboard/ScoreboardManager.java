@@ -41,27 +41,38 @@ public class ScoreboardManager {
         return instance;
     }
 
+    public static void reset() {
+        if (instance != null) {
+            instance.stopUpdateTimer();
+            instance.stopRotation();
+            instance.currentObjective = null;
+            instance.currentStatType = null;
+            instance.rotationEnabled = false;
+            instance = null;
+        }
+    }
+
     public void loadConfig() {
         ScoreboardConfig config = ScoreboardConfig.load();
-        
+
         this.rotationInterval = config.getRotationIntervalMs();
         this.updateInterval = config.getUpdateIntervalMs();
         this.currentRotationIndex = config.getCurrentRotationIndex();
-        
+
         if (config.getRotationStats() != null && config.getRotationStats().length > 0) {
             this.rotationStats = config.getRotationStats();
         }
-        
+
         if (config.getCurrentStatType() != null && !config.getCurrentStatType().isEmpty()) {
             createScoreboard(config.getCurrentStatType());
         }
-        
+
         if (config.isRotationEnabled()) {
             startRotation();
         }
-        
-        StatisticsModule.LOGGER.info("Scoreboard config loaded: statType={}, rotation={}", 
-            config.getCurrentStatType(), config.isRotationEnabled());
+
+        StatisticsModule.LOGGER.info("Scoreboard config loaded: statType={}, rotation={}",
+                config.getCurrentStatType(), config.isRotationEnabled());
     }
 
     public void saveConfig() {
@@ -72,7 +83,7 @@ public class ScoreboardManager {
         config.setUpdateIntervalMs(updateInterval);
         config.setRotationStats(rotationStats);
         config.setCurrentRotationIndex(currentRotationIndex);
-        
+
         ScoreboardConfig.save(config);
         StatisticsModule.LOGGER.debug("Scoreboard config saved");
     }
@@ -103,7 +114,7 @@ public class ScoreboardManager {
             scoreboard.setDisplayObjective(DisplaySlot.SIDEBAR, currentObjective);
 
             startUpdateTimer();
-            
+
             saveConfig();
         } catch (IllegalArgumentException e) {
             StatisticsModule.LOGGER.error("Failed to create scoreboard: " + e.getMessage());
@@ -114,7 +125,7 @@ public class ScoreboardManager {
         if (rotationTimer != null) {
             rotationTimer.cancel();
         }
-        
+
         rotationEnabled = true;
 
         rotationTimer = new Timer();
@@ -124,7 +135,7 @@ public class ScoreboardManager {
                 server.execute(ScoreboardManager.this::rotateScoreboard);
             }
         }, 0, rotationInterval);
-        
+
         saveConfig();
     }
 
@@ -306,16 +317,5 @@ public class ScoreboardManager {
         currentStatType = null;
         rotationEnabled = false;
         saveConfig();
-    }
-
-    public static void reset() {
-        if (instance != null) {
-            instance.stopUpdateTimer();
-            instance.stopRotation();
-            instance.currentObjective = null;
-            instance.currentStatType = null;
-            instance.rotationEnabled = false;
-            instance = null;
-        }
     }
 }

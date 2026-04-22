@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -257,10 +256,10 @@ public class ShopManager {
                 // 公式：分次剩余率 = (1 - 日衰减率)^(1/20)
                 double dailyRetentionRate = 1.0 - shop.getDecayRate();
                 double minuteRetentionRate = Math.pow(dailyRetentionRate, 1.0 / 20.0);
-                
+
                 shop.setSystemStock(shop.getSystemStock() * minuteRetentionRate);
                 shop.setCurrentPrice(me.tuanzi.shop.pricing.DynamicPricing.calculatePrice(shop));
-                
+
                 // 立即更新该商店的告示牌
                 if (level != null) {
                     me.tuanzi.shop.util.SignUpdateHelper.updateSignForShop(shop, level);

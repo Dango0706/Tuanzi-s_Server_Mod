@@ -3,10 +3,10 @@
   "package": "me.tuanzi.auth.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "ServerLoginNetworkHandlerMixin",
-    "ServerPlayerMixin",
     "PlayerMixin",
-    "ServerGamePacketListenerImplMixin"
+    "ServerGamePacketListenerImplMixin",
+    "ServerLoginNetworkHandlerMixin",
+    "ServerPlayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

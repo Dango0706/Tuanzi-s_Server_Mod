@@ -11,10 +11,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityJumpMixin {
-    
+
     @Inject(method = "jumpFromGround", at = @At("HEAD"))
     private void onJump(CallbackInfo ci) {
-        LivingEntity entity = (LivingEntity)(Object)this;
+        LivingEntity entity = (LivingEntity) (Object) this;
         if (entity instanceof ServerPlayer player) {
             String playerName = player.getName().getString();
             PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);

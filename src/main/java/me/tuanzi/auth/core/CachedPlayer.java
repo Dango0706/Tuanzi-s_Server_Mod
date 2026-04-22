@@ -10,7 +10,7 @@ public class CachedPlayer {
     private final PlayerType playerType;
     private final long cacheTime;
     private final long expireTime;
-    
+
     /**
      * 创建缓存玩家信息
      *
@@ -27,7 +27,7 @@ public class CachedPlayer {
         this.cacheTime = cacheTime;
         this.expireTime = cacheTime + ttl;
     }
-    
+
     /**
      * 获取玩家用户名
      *
@@ -36,7 +36,7 @@ public class CachedPlayer {
     public String getUsername() {
         return username;
     }
-    
+
     /**
      * 获取玩家 UUID
      *
@@ -45,7 +45,7 @@ public class CachedPlayer {
     public String getUuid() {
         return uuid;
     }
-    
+
     /**
      * 获取玩家类型
      *
@@ -54,7 +54,7 @@ public class CachedPlayer {
     public PlayerType getPlayerType() {
         return playerType;
     }
-    
+
     /**
      * 获取缓存时间
      *
@@ -63,7 +63,7 @@ public class CachedPlayer {
     public long getCacheTime() {
         return cacheTime;
     }
-    
+
     /**
      * 获取过期时间
      *
@@ -72,7 +72,7 @@ public class CachedPlayer {
     public long getExpireTime() {
         return expireTime;
     }
-    
+
     /**
      * 检查缓存是否已过期
      *
@@ -81,7 +81,7 @@ public class CachedPlayer {
     public boolean isExpired() {
         return System.currentTimeMillis() > expireTime;
     }
-    
+
     /**
      * 检查玩家是否为正版玩家
      *
@@ -90,7 +90,7 @@ public class CachedPlayer {
     public boolean isPremium() {
         return playerType == PlayerType.PREMIUM;
     }
-    
+
     @Override
     public String toString() {
         return "CachedPlayer{" +

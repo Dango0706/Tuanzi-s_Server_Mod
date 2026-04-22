@@ -18,59 +18,14 @@ import java.util.concurrent.CompletableFuture;
 public class MojangApiService {
     private static final String API_MOJANG_USERS_PROFILES = "https://api.mojang.com/users/profiles/minecraft/";
     private static final String SESSION_SERVER_HAS_JOINED = "https://sessionserver.mojang.com/session/minecraft/hasJoined";
-    
+
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
             .build();
-    
+
     private static final Gson GSON = new Gson();
     private static final int TIMEOUT_SECONDS = 10;
-    
-    /**
-     * Mojang 用户资料响应
-     */
-    public static class UserProfile {
-        private String id;
-        private String name;
-        
-        public String getId() {
-            return id;
-        }
-        
-        public String getName() {
-            return name;
-        }
-        
-        public boolean isValid() {
-            return id != null && !id.isEmpty() && name != null && !name.isEmpty();
-        }
-    }
-    
-    /**
-     * Session 验证响应
-     */
-    public static class SessionProfile {
-        private String id;
-        private String name;
-        private JsonObject properties;
-        
-        public String getId() {
-            return id;
-        }
-        
-        public String getName() {
-            return name;
-        }
-        
-        public JsonObject getProperties() {
-            return properties;
-        }
-        
-        public boolean isValid() {
-            return id != null && !id.isEmpty() && name != null && !name.isEmpty();
-        }
-    }
-    
+
     /**
      * 根据用户名查询 Mojang UUID
      * 同步方法
@@ -85,9 +40,9 @@ public class MojangApiService {
                     .timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
                     .GET()
                     .build();
-            
+
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-            
+
             if (response.statusCode() == 200) {
                 UserProfile profile = GSON.fromJson(response.body(), UserProfile.class);
                 if (profile != null && profile.isValid()) {
@@ -105,7 +60,7 @@ public class MojangApiService {
         }
         return null;
     }
-    
+
     /**
      * 根据用户名查询 Mojang UUID
      * 异步方法
@@ -119,7 +74,7 @@ public class MojangApiService {
                 .timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
                 .GET()
                 .build();
-        
+
         return HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {
                     if (response.statusCode() == 200) {
@@ -140,7 +95,7 @@ public class MojangApiService {
                     return null;
                 });
     }
-    
+
     /**
      * 验证玩家是否已加入 Mojang Session 服务器
      * 同步方法
@@ -152,15 +107,15 @@ public class MojangApiService {
     public static SessionProfile verifySession(String username, String serverId) {
         try {
             String url = SESSION_SERVER_HAS_JOINED + "?username=" + username + "&serverId=" + serverId;
-            
+
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
                     .GET()
                     .build();
-            
+
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-            
+
             if (response.statusCode() == 200) {
                 SessionProfile profile = GSON.fromJson(response.body(), SessionProfile.class);
                 if (profile != null && profile.isValid()) {
@@ -175,7 +130,7 @@ public class MojangApiService {
         }
         return null;
     }
-    
+
     /**
      * 验证玩家是否已加入 Mojang Session 服务器
      * 异步方法
@@ -186,13 +141,13 @@ public class MojangApiService {
      */
     public static CompletableFuture<SessionProfile> verifySessionAsync(String username, String serverId) {
         String url = SESSION_SERVER_HAS_JOINED + "?username=" + username + "&serverId=" + serverId;
-        
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
                 .GET()
                 .build();
-        
+
         return HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {
                     if (response.statusCode() == 200) {
@@ -211,7 +166,7 @@ public class MojangApiService {
                     return null;
                 });
     }
-    
+
     /**
      * 检查用户名是否为正版玩家
      * 同步方法
@@ -222,7 +177,7 @@ public class MojangApiService {
     public static boolean isPremiumPlayer(String username) {
         return fetchUuidByUsername(username) != null;
     }
-    
+
     /**
      * 检查用户名是否为正版玩家
      * 异步方法
@@ -234,7 +189,7 @@ public class MojangApiService {
         return fetchUuidByUsernameAsync(username)
                 .thenApply(profile -> profile != null);
     }
-    
+
     /**
      * 将无破折号的 UUID 转换为带破折号的标准格式
      *
@@ -245,19 +200,64 @@ public class MojangApiService {
         if (uuid == null || uuid.isEmpty()) {
             return uuid;
         }
-        
+
         if (uuid.contains("-")) {
             return uuid;
         }
-        
+
         if (uuid.length() != 32) {
             return uuid;
         }
-        
+
         return uuid.substring(0, 8) + "-" +
-               uuid.substring(8, 12) + "-" +
-               uuid.substring(12, 16) + "-" +
-               uuid.substring(16, 20) + "-" +
-               uuid.substring(20);
+                uuid.substring(8, 12) + "-" +
+                uuid.substring(12, 16) + "-" +
+                uuid.substring(16, 20) + "-" +
+                uuid.substring(20);
+    }
+
+    /**
+     * Mojang 用户资料响应
+     */
+    public static class UserProfile {
+        private String id;
+        private String name;
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean isValid() {
+            return id != null && !id.isEmpty() && name != null && !name.isEmpty();
+        }
+    }
+
+    /**
+     * Session 验证响应
+     */
+    public static class SessionProfile {
+        private String id;
+        private String name;
+        private JsonObject properties;
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public JsonObject getProperties() {
+            return properties;
+        }
+
+        public boolean isValid() {
+            return id != null && !id.isEmpty() && name != null && !name.isEmpty();
+        }
     }
 }

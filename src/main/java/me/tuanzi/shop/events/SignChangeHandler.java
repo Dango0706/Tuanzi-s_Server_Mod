@@ -10,13 +10,10 @@ import me.tuanzi.shop.utils.ItemUtils;
 import me.tuanzi.shop.utils.ShopTranslationHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.server.network.FilteredText;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.FilteredText;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
@@ -38,7 +35,7 @@ public class SignChangeHandler {
     }
 
     public void handleSignChange(ServerPlayer player, SignBlockEntity signEntity, List<FilteredText> filteredLines, boolean frontText) {
-        LOGGER.info("[商店调试] 告示牌编辑事件触发 - 玩家: {}, 位置: {}, 正面: {}", 
+        LOGGER.info("[商店调试] 告示牌编辑事件触发 - 玩家: {}, 位置: {}, 正面: {}",
                 player.getName().getString(), signEntity.getBlockPos(), frontText);
 
         String[] lines = new String[4];
@@ -49,7 +46,7 @@ public class SignChangeHandler {
             lines[i] = "";
         }
 
-        LOGGER.info("[商店调试] 告示牌内容: [0]='{}', [1]='{}', [2]='{}', [3]='{}'", 
+        LOGGER.info("[商店调试] 告示牌内容: [0]='{}', [1]='{}', [2]='{}', [3]='{}'",
                 lines[0], lines[1], lines[2], lines[3]);
 
         handleSignChange(player, signEntity, lines);
@@ -57,9 +54,9 @@ public class SignChangeHandler {
 
     public boolean handleSignChange(ServerPlayer player, SignBlockEntity signEntity, String[] lines) {
         String firstLine = lines[0].trim();
-        
+
         LOGGER.debug("[商店调试] 检查第一行是否匹配商店模式: '{}'", firstLine);
-        
+
         if (!ShopTranslationHelper.isSellPattern(firstLine) && !ShopTranslationHelper.isBuyPattern(firstLine)) {
             LOGGER.debug("[商店调试] 第一行不匹配商店模式，跳过处理");
             return false;
@@ -81,7 +78,7 @@ public class SignChangeHandler {
 
         String itemLine = lines[1].trim();
         LOGGER.debug("[商店调试] 解析物品行: '{}'", itemLine);
-        
+
         ItemStack tradeItem = parseItemStack(itemLine, player);
         if (tradeItem.isEmpty()) {
             LOGGER.warn("[商店调试] 无法解析物品: '{}'", itemLine);
@@ -94,7 +91,7 @@ public class SignChangeHandler {
 
         String priceLine = lines[2].trim();
         LOGGER.debug("[商店调试] 解析价格行: '{}'", priceLine);
-        
+
         String[] priceParts = priceLine.split("\\s+", 2);
         if (priceParts.length < 2) {
             LOGGER.warn("[商店调试] 价格行格式错误，缺少货币名称: '{}'", priceLine);
@@ -116,7 +113,7 @@ public class SignChangeHandler {
 
         String currencyDisplayName = priceParts[1];
         LOGGER.debug("[商店调试] 货币显示名称: '{}'", currencyDisplayName);
-        
+
         Optional<WalletType> walletTypeOpt = shopManager.findWalletTypeByDisplayName(currencyDisplayName);
         if (walletTypeOpt.isEmpty()) {
             LOGGER.warn("[商店调试] 未找到匹配的货币: '{}'", currencyDisplayName);
@@ -148,7 +145,7 @@ public class SignChangeHandler {
         );
 
         if (shop == null) {
-            LOGGER.error("[商店] 玩家 {} 创建商店失败 - 位置: {}, 类型: {}", 
+            LOGGER.error("[商店] 玩家 {} 创建商店失败 - 位置: {}, 类型: {}",
                     player.getName().getString(), signPos, shopType);
             player.sendSystemMessage(ShopTranslationHelper.translatable("shop.created.failed"));
             return false;
@@ -190,7 +187,7 @@ public class SignChangeHandler {
     private void waxSign(SignBlockEntity signEntity) {
         signEntity.setWaxed(true);
         signEntity.setChanged();
-        
+
         Level level = signEntity.getLevel();
         if (level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             BlockPos signPos = signEntity.getBlockPos();
@@ -208,7 +205,7 @@ public class SignChangeHandler {
 
         BlockState signState = level.getBlockState(signPos);
         Direction facing;
-        
+
         if (signState.getBlock() instanceof net.minecraft.world.level.block.StandingSignBlock) {
             int rotation = signState.getValue(net.minecraft.world.level.block.StandingSignBlock.ROTATION);
             facing = Direction.from2DDataValue(rotation / 4);
@@ -223,7 +220,7 @@ public class SignChangeHandler {
 
         BlockPos behindPos = signPos.relative(facing.getOpposite());
         BlockState behindState = level.getBlockState(behindPos);
-        
+
         LOGGER.debug("[商店调试] 检查告示牌后方方块 - 位置: {}, 方块: {}", behindPos, behindState.getBlock());
 
         boolean isChest = isChest(behindState);
@@ -238,7 +235,7 @@ public class SignChangeHandler {
 
         BlockState signState = level.getBlockState(signPos);
         Direction facing;
-        
+
         if (signState.getBlock() instanceof net.minecraft.world.level.block.StandingSignBlock) {
             int rotation = signState.getValue(net.minecraft.world.level.block.StandingSignBlock.ROTATION);
             facing = Direction.from2DDataValue(rotation / 4);

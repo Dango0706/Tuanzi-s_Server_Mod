@@ -13,26 +13,26 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayer.class)
 public abstract class PlayerDeathDistanceMixin {
-    
+
     @Inject(method = "die", at = @At("HEAD"))
     private void onDie(DamageSource source, CallbackInfo ci) {
         StatisticsModule.LOGGER.debug("[PlayerDeathDistanceMixin] onDie called!");
-        
-        ServerPlayer serverPlayer = (ServerPlayer)(Object)this;
+
+        ServerPlayer serverPlayer = (ServerPlayer) (Object) this;
         String playerName = serverPlayer.getName().getString();
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
-        
+
         BlockPos deathPos = serverPlayer.blockPosition();
-        
+
         long lastRespawnTime = stats.getLastRespawnTime();
         StatisticsModule.LOGGER.debug("Player {} died, lastRespawnTime: {}", playerName, lastRespawnTime);
-        
+
         stats.recordDeath();
-        
+
         long shortestLife = stats.getShortestLifeSeconds();
         long longestLife = stats.getLongestLifeSeconds();
         StatisticsModule.LOGGER.debug("Player {} after recordDeath: shortestLife={}, longestLife={}", playerName, shortestLife, longestLife);
-        
+
         ServerPlayer.RespawnConfig respawnConfig = serverPlayer.getRespawnConfig();
         if (respawnConfig != null) {
             LevelData.RespawnData respawnData = respawnConfig.respawnData();

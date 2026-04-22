@@ -16,17 +16,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Projectile.class)
 public abstract class ProjectileHitMixin {
-    
+
     @Inject(method = "onHitEntity", at = @At("RETURN"))
     private void onProjectileHit(EntityHitResult entityHitResult, CallbackInfo ci) {
-        Projectile projectile = (Projectile)(Object)this;
+        Projectile projectile = (Projectile) (Object) this;
         Entity owner = projectile.getOwner();
-        
+
         if (owner instanceof ServerPlayer player && entityHitResult.getEntity() instanceof LivingEntity) {
             ItemStack weapon = player.getMainHandItem();
             String playerName = player.getName().getString();
             PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
-            
+
             if (weapon.getItem() == Items.BOW) {
                 stats.addBowHit();
                 StatisticsModule.LOGGER.debug("Player {} hit with bow, total: {}", playerName, stats.getBowHits());

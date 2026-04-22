@@ -61,7 +61,7 @@ public class ShopCommand {
             source.sendFailure(ShopTranslationHelper.translatable(source, "auth.command.player_only"));
             return 0;
         }
-        
+
         ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
         if (shopManager == null) {
             source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_found"));
@@ -96,7 +96,7 @@ public class ShopCommand {
             source.sendFailure(ShopTranslationHelper.translatable(source, "auth.command.player_only"));
             return 0;
         }
-        
+
         ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
         if (shopManager == null) {
             source.sendFailure(ShopTranslationHelper.translatable(source, "shop.not_found"));
@@ -118,18 +118,18 @@ public class ShopCommand {
         ShopManager shopManager = ShopManager.getInstance(player.level().getServer());
         String currencyName = shopManager.getCurrencyDisplayName(shop.getWalletTypeId());
         ItemStack stack = shop.getTradeItem();
-        
+
         player.sendSystemMessage(ShopTranslationHelper.header(player, "admin.shop.info.title_fmt"));
-        
+
         // 1. 基础信息
         player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.item") + ": §f" + stack.getDisplayName().getString()));
         String itemId = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
         player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.item_id") + ": §7" + itemId));
-        
+
         String typeKey = shop.getShopType() == ShopType.SELL ? "shop.type.sell" : "shop.type.buy";
         player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.type") + ": §f" + ShopTranslationHelper.getRawTranslation(player, typeKey)));
-        
-        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.current_price") + ": §6" + 
+
+        player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.current_price") + ": §6" +
                 String.format("%.2f %s", shop.getCurrentPrice(), currencyName)));
 
         // 2. 附魔信息
@@ -164,14 +164,14 @@ public class ShopCommand {
         if (shop.getDescription() != null && !shop.getDescription().isEmpty()) {
             player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.note") + ": §f" + shop.getDescription()));
         }
-        
+
         player.sendSystemMessage(ShopTranslationHelper.header(player, "admin.shop.info.title_fmt"));
     }
 
     private static int handleConfirm(CommandContext<CommandSourceStack> context, String confirm) {
         ServerPlayer player = context.getSource().getPlayer();
         if (player == null) return 0;
-        
+
         ChatInputHandler chatHandler = ShopModule.getInstance(player.level().getServer()).getChatInputHandler();
         if (chatHandler == null) return 0;
 
@@ -181,7 +181,7 @@ public class ShopCommand {
     private static int handleCancel(CommandContext<CommandSourceStack> context) {
         ServerPlayer player = context.getSource().getPlayer();
         if (player == null) return 0;
-        
+
         ChatInputHandler chatHandler = ShopModule.getInstance(player.level().getServer()).getChatInputHandler();
         if (chatHandler != null) {
             return chatHandler.handleConfirmCommand(player, "no") ? 1 : 0;
@@ -191,7 +191,7 @@ public class ShopCommand {
 
     private static int showHelp(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        
+
         source.sendSuccess(() -> ShopTranslationHelper.header(source, "shop.help.header"), false);
         source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "shop.help.buy"), false);
         source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "shop.help.sell"), false);
@@ -199,7 +199,7 @@ public class ShopCommand {
         source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "shop.help.cancel"), false);
         source.sendSuccess(() -> ShopTranslationHelper.translatable(source, "shop.help.help"), false);
         source.sendSuccess(() -> ShopTranslationHelper.header(source, "shop.help.header"), false);
-        
+
         return 1;
     }
 }

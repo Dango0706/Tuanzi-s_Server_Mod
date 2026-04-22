@@ -30,6 +30,10 @@ public class ShopRegistry {
         instance = null;
     }
 
+    public static long posToKey(BlockPos pos) {
+        return ShopData.posToKey(pos);
+    }
+
     public void registerShop(ShopInstance shop) {
         shopData.addShop(shop);
         markDirty();
@@ -74,9 +78,5 @@ public class ShopRegistry {
 
     public void markDirty() {
         ShopStateSaver.getServerState(server).setDirty();
-    }
-
-    public static long posToKey(BlockPos pos) {
-        return ShopData.posToKey(pos);
     }
 }

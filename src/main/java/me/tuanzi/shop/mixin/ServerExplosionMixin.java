@@ -16,7 +16,9 @@ import java.util.List;
 
 @Mixin(ServerExplosion.class)
 public abstract class ServerExplosionMixin {
-    @Shadow @Final private ServerLevel level;
+    @Shadow
+    @Final
+    private ServerLevel level;
 
     /**
      * 在处理爆炸影响方块之前，过滤掉商店方块（箱子和告示牌）
@@ -25,7 +27,7 @@ public abstract class ServerExplosionMixin {
     private void onInteractWithBlocks(List<BlockPos> targetBlocks, CallbackInfo ci) {
         ShopModule module = ShopModule.getInstance(this.level.getServer());
         if (module == null) return;
-        
+
         BlockProtectionHandler protectionHandler = module.getProtectionHandler();
         if (protectionHandler == null) return;
 

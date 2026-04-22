@@ -11,10 +11,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Player.class)
 public abstract class PlayerExperienceMixin {
-    
+
     @Inject(method = "giveExperiencePoints", at = @At("HEAD"))
     private void onGiveExperiencePoints(int amount, CallbackInfo ci) {
-        Player player = (Player)(Object)this;
+        Player player = (Player) (Object) this;
         if (player instanceof ServerPlayer serverPlayer && amount > 0) {
             String playerName = serverPlayer.getName().getString();
             PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);

@@ -16,6 +16,21 @@ public class ShopData {
     public ShopData() {
     }
 
+    public static long posToKey(int x, int y, int z) {
+        return ((long) x & 0xFFFFFFL) | (((long) y & 0xFFFFL) << 24) | (((long) z & 0xFFFFFFL) << 40);
+    }
+
+    public static long posToKey(net.minecraft.core.BlockPos pos) {
+        return posToKey(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    public static int[] keyToPos(long key) {
+        int x = (int) (key & 0xFFFFFFL);
+        int y = (int) ((key >> 24) & 0xFFFFL);
+        int z = (int) ((key >> 40) & 0xFFFFFFL);
+        return new int[]{x, y, z};
+    }
+
     public void addShop(ShopInstance shop) {
         shopsById.put(shop.getShopId(), shop);
         shopsByPosKey.put(posToKey(shop.getShopPos()), shop);
@@ -80,21 +95,6 @@ public class ShopData {
         shopsById.clear();
         shopsByPosKey.clear();
         shopsByOwner.clear();
-    }
-
-    public static long posToKey(int x, int y, int z) {
-        return ((long) x & 0xFFFFFFL) | (((long) y & 0xFFFFL) << 24) | (((long) z & 0xFFFFFFL) << 40);
-    }
-
-    public static long posToKey(net.minecraft.core.BlockPos pos) {
-        return posToKey(pos.getX(), pos.getY(), pos.getZ());
-    }
-
-    public static int[] keyToPos(long key) {
-        int x = (int) (key & 0xFFFFFFL);
-        int y = (int) ((key >> 24) & 0xFFFFL);
-        int z = (int) ((key >> 40) & 0xFFFFFFL);
-        return new int[]{x, y, z};
     }
 
     Map<UUID, ShopInstance> getShopsByIdMap() {

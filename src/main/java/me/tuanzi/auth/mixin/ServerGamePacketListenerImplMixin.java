@@ -48,9 +48,9 @@ public abstract class ServerGamePacketListenerImplMixin {
 
     private boolean isAllowedCommand(String command) {
         String lowerCommand = command.toLowerCase().trim();
-        return lowerCommand.startsWith("login ") || 
-               lowerCommand.startsWith("register ") ||
-               lowerCommand.equals("login") ||
-               lowerCommand.equals("register");
+        return lowerCommand.startsWith("login ") ||
+                lowerCommand.startsWith("register ") ||
+                lowerCommand.equals("login") ||
+                lowerCommand.equals("register");
     }
 }

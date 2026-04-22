@@ -22,49 +22,53 @@ import org.slf4j.LoggerFactory;
 public class StatisticsModule implements ModInitializer {
     public static final String MOD_ID = "statistics-module";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    
+
     private static StatisticsModule instance;
     private StatisticsDataManager dataManager;
-    
+
+    public static StatisticsModule getInstance() {
+        return instance;
+    }
+
     @Override
     public void onInitialize() {
         instance = this;
-        
+
         LOGGER.info("正在初始化统计模块...");
-        
+
         StatsTranslationHelper.initialize();
-        
+
         dataManager = new StatisticsDataManager();
         dataManager.loadData();
-        
+
         registerListeners();
         registerCommands();
         registerServerLifecycleEvents();
-        
+
         LOGGER.info("统计模块初始化完成");
     }
-    
+
     private void registerListeners() {
         ServerPlayConnectionEvents.JOIN.register(new PlayerJoinListener());
         ServerPlayConnectionEvents.DISCONNECT.register(new PlayerLeaveListener());
-        
+
         PlayerBlockBreakEvents.BEFORE.register(new BlockBreakListener());
-        
+
         ServerTickEvents.END_SERVER_TICK.register(new PlayerMoveListener());
-        
+
         ServerLivingEntityEvents.ALLOW_DEATH.register(new EntityDeathListener());
-        
+
         UseItemCallback.EVENT.register(new ItemDurabilityListener());
-        
+
         ServerLivingEntityEvents.AFTER_DAMAGE.register(new DamageListener());
-        
+
         ChatListener.register();
-        
+
         SessionListener.register();
-        
+
         PlayerActivityListener.register();
     }
-    
+
     private void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             StatsCommand.register(dispatcher, registryAccess);
@@ -72,12 +76,12 @@ public class StatisticsModule implements ModInitializer {
             FloatingTextCommand.register(dispatcher, registryAccess);
         });
     }
-    
+
     private void registerServerLifecycleEvents() {
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             FloatingTextManager.getInstance().loadData();
         });
-        
+
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             if (dataManager != null) {
                 dataManager.shutdown();
@@ -86,26 +90,22 @@ public class StatisticsModule implements ModInitializer {
             FloatingTextManager.getInstance().saveData();
             FloatingTextManager.getInstance().clearAll();
         });
-        
+
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             FloatingTextManager.getInstance().updateAllDisplays(server.getTickCount());
         });
-        
+
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             for (net.minecraft.server.level.ServerLevel level : server.getAllLevels()) {
                 FloatingTextManager.getInstance().rebuildAllEntities(level);
             }
             ScoreboardManager.getInstance(server).loadConfig();
-            
+
             // 注册经济统计监听器
             new EconomyStatisticsListener(dataManager).register(server);
         });
     }
-    
-    public static StatisticsModule getInstance() {
-        return instance;
-    }
-    
+
     public StatisticsDataManager getDataManager() {
         return dataManager;
     }

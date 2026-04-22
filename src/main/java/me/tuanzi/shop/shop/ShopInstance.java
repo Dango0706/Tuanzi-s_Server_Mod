@@ -11,6 +11,7 @@ public class ShopInstance {
     private final BlockPos shopPos;
     private final BlockPos signPos;
     private final ShopType shopType;
+    private final long createdTime;
     private ItemStack tradeItem;
     private double basePrice;
     private double currentPrice;
@@ -25,7 +26,6 @@ public class ShopInstance {
     private long totalSold;
     private long totalBought;
     private String walletTypeId;
-    private final long createdTime;
     private String description;
     private volatile boolean deleted;
 

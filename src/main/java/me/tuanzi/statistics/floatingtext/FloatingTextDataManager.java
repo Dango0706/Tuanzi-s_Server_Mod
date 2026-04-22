@@ -1,9 +1,9 @@
 package me.tuanzi.statistics.floatingtext;
 
-import me.tuanzi.statistics.StatisticsModule;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import me.tuanzi.statistics.StatisticsModule;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.File;

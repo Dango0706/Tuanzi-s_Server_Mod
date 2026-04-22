@@ -3,7 +3,6 @@
   "auth.module.not_in_whitelist": "§c您不在服务器白名单中，请联系管理员申请访问权限。",
   "auth.module.mojang_unavailable": "§cMojang 服务器暂时不可用，请稍后再试",
   "auth.module.verify_error": "§c验证过程中发生错误，请联系管理员",
-  
   "auth.login.not_registered": "§c您还没有注册，请先使用 /register <密码> <确认密码> 注册",
   "auth.login.already_logged_in": "§a您已经登录过了",
   "auth.login.account_locked": "§c您的账户已被锁定",
@@ -12,32 +11,27 @@
   "auth.login.locked_too_many_attempts": "§c登录失败次数过多，账户已被锁定",
   "auth.login.success": "§a登录成功！",
   "auth.login.system_not_initialized": "§c登录系统尚未初始化，请联系管理员",
-  
   "auth.register.already_registered": "§c您已经注册过了，请使用 /login 命令登录",
   "auth.register.success": "§a注册成功！您已自动登录",
   "auth.register.failed": "§c注册失败，请稍后重试",
   "auth.register.password_mismatch": "§c两次输入的密码不一致，请重新输入",
   "auth.register.system_not_initialized": "§c登录系统尚未初始化，请联系管理员",
   "auth.register.premium_no_need": "§c正版玩家无需注册，您已自动登录",
-  
   "auth.password.change_success": "§a密码修改成功！",
   "auth.password.change_failed": "§c密码修改失败",
   "auth.password.wrong_old": "§c原密码错误！",
   "auth.password.same_as_old": "§c新密码不能与原密码相同！",
   "auth.password.not_registered": "§c您还没有注册，无法修改密码",
-  
   "auth.restriction.please_login": "§e请使用 §a/login <密码> §e登录",
   "auth.restriction.please_register": "§e您尚未注册，请使用 §a/register <密码> <确认密码> §e注册",
   "auth.restriction.login_timeout": "§c您有 %d 秒的时间完成登录",
   "auth.restriction.auto_login": "§a欢迎回来！您已自动登录。",
-  
   "auth.restriction.no_move": "§c请先登录后再移动！",
   "auth.restriction.no_action": "§c请先登录后再进行操作！",
   "auth.restriction.no_item": "§c请先登录后再使用物品！",
   "auth.restriction.no_chat": "§c请先登录后再发送消息！",
   "auth.restriction.no_command": "§c请先登录后再使用命令！",
   "auth.restriction.no_attack": "§c请先登录后再进行攻击！",
-  
   "auth.whitelist.already_in": "§c玩家 %s 已在白名单中",
   "auth.whitelist.add_success": "§a已将玩家 %s 添加到白名单",
   "auth.whitelist.add_failed": "§c添加玩家到白名单失败",
@@ -47,13 +41,11 @@
   "auth.whitelist.empty": "§e白名单为空",
   "auth.whitelist.list_header": "§e========== §6白名单列表 §e==========",
   "auth.whitelist.list_count": "§b共 %d 位玩家",
-  
   "auth.password.reset_success": "§a已成功重置玩家 %s 的密码",
   "auth.password.reset_failed": "§c重置密码失败",
   "auth.password.player_not_registered": "§c玩家 %s 尚未注册",
   "auth.password.player_name_empty": "§c玩家名不能为空",
   "auth.password.new_password_empty": "§c新密码不能为空",
-  
   "auth.config.reloaded": "§a配置文件已重新加载",
   "auth.config.show_header": "§6===== 登录配置 =====",
   "auth.config.login_timeout": "§e登录超时: §f%d 秒",
@@ -69,7 +61,6 @@
   "auth.config.set_lockout_duration": "§a锁定时长已设置为 §f%d §a秒",
   "auth.config.set_min_password_length": "§a密码最小长度已设置为 §f%d §a字符",
   "auth.config.set_max_password_length": "§a密码最大长度已设置为 §f%d §a字符",
-  
   "auth.command.player_only": "§c此命令只能由玩家使用",
   "auth.command.module_not_initialized": "§c身份验证模块未初始化",
   "auth.command.config_not_initialized": "§cLoginConfig 未初始化",
@@ -80,17 +71,14 @@
   "auth.admin.operation.add_whitelist": "添加白名单",
   "auth.admin.operation.remove_whitelist": "移除白名单",
   "auth.admin.operation.reset_password": "重置密码",
-  
   "auth.password_validation.too_short": "密码长度不能少于 %d 个字符",
   "auth.password_validation.too_long": "密码长度不能超过 %d 个字符",
   "auth.password_validation.empty": "密码不能为空",
-  
   "economy.pay.self": "§c不能向自己转账",
   "economy.pay.success": "§a成功向 %s 转账 §e%.2f %s",
   "economy.pay.received": "§a收到来自 %s 的转账: §e%.2f %s",
   "economy.pay.wallet_not_found": "§c钱包类型 '%s' 不存在",
   "economy.pay.insufficient_balance": "§c余额不足! 当前余额: §e%.2f§c, 需要: §e%.2f",
-  
   "economy.admin.wallet_exists": "§c钱包类型 '%s' 已存在",
   "economy.admin.wallet_created": "§a成功创建钱包类型 '%s' (显示名称: %s)",
   "economy.admin.wallet_not_found": "§c钱包类型 '%s' 不存在",
@@ -103,14 +91,12 @@
   "economy.admin.no_wallets": "§7暂无注册的钱包类型",
   "economy.admin.balance_line": "§b%s (%s): §f%.2f",
   "economy.admin.player_only": "§c此命令只能由玩家使用",
-  
   "economy.balance.header": "§e========== §6余额查询 §e==========",
   "economy.balance.player_header": "§e========== §6%s 的余额 §e==========",
   "economy.balance.no_wallets": "§c暂无可用钱包类型",
   "economy.balance.line": "§b%s: §a%.2f",
   "economy.balance.wallet_not_found": "§c钱包类型 '%s' 不存在",
   "economy.balance.player_only": "§c此命令只能由玩家使用",
-  
   "stats.command.player_only": "§c此命令只能由玩家使用",
   "stats.header.player": "§e========== §6%s 的统计数据 §e==========",
   "stats.header.server": "§e========== §6服务器统计 §e==========",
@@ -128,7 +114,6 @@
   "stats.header.player_info": "§e========== §6%s 的玩家信息 §e==========",
   "stats.header.activity": "§e========== §6%s 的活动统计 §e==========",
   "stats.header.extended": "§e========== §6%s 的扩展统计 §e==========",
-  
   "stats.online_time": "§b在线时间: §f%d小时 %d分钟 %d秒",
   "stats.distance_traveled": "§b移动距离: §f%.2f 米",
   "stats.blocks_placed": "§b放置方块: §f%d",
@@ -138,22 +123,18 @@
   "stats.damage_dealt": "§b造成伤害: §f%d",
   "stats.damage_taken": "§b受到伤害: §f%d",
   "stats.durability_used": "§b耐久消耗: §f%d",
-  
   "stats.server.uptime": "§b总运行时间: §f%d天 %d小时 %d分钟 %d秒",
   "stats.server.session": "§b当前会话运行时间: §f%d小时 %d分钟 %d秒",
-  
   "stats.kills.total": "§b总击杀数: §f%d",
   "stats.kills.by_entity": "§b%s 击杀数: §f%d",
   "stats.kills.entity_count": "§f%s: §a%d",
   "stats.kills.no_records": "§7暂无击杀记录",
   "stats.kills.by_type_header": "§e--- 按实体类型分类 ---",
-  
   "stats.deaths.total": "§b总死亡数: §f%d",
   "stats.deaths.by_entity": "§b被 %s 击杀数: §f%d",
   "stats.deaths.entity_count": "§f%s: §c%d",
   "stats.deaths.no_records": "§7暂无死亡记录",
   "stats.deaths.by_type_header": "§e--- 按实体类型分类 ---",
-  
   "stats.blocks.total_placed": "§b总放置方块: §f%d",
   "stats.blocks.total_broken": "§b总破坏方块: §f%d",
   "stats.blocks.placed_hint": "§7使用 /stats blocks placed 查看放置详情",
@@ -165,7 +146,6 @@
   "stats.blocks.no_placed_records": "§7暂无放置记录",
   "stats.blocks.no_broken_records": "§7暂无破坏记录",
   "stats.blocks.by_type_header": "§e--- 按方块类型分类 ---",
-  
   "stats.damage.total_dealt": "§b总造成伤害: §f%d 点",
   "stats.damage.total_taken": "§b总受到伤害: §f%d 点",
   "stats.damage.dealt_hint": "§7使用 /stats damage dealt 查看造成伤害详情",
@@ -178,7 +158,6 @@
   "stats.damage.no_dealt_records": "§7暂无造成伤害记录",
   "stats.damage.no_taken_records": "§7暂无受到伤害记录",
   "stats.damage.by_type_header": "§e--- 按实体类型分类 ---",
-  
   "stats.fishing.total": "§b总钓鱼次数: §f%d",
   "stats.fishing.success": "§b成功次数: §a%d",
   "stats.fishing.failures": "§b失败次数: §c%d",
@@ -186,28 +165,23 @@
   "stats.fishing.item_detail": "§b%s 钓获数: §f%d",
   "stats.fishing.no_records": "§7暂无钓鱼记录",
   "stats.fishing.by_type_header": "§e--- 按物品类型分类 ---",
-  
   "stats.crafting.total": "§b总合成次数: §f%d",
   "stats.crafting.item_count": "§f%s: §a%d",
   "stats.crafting.item_detail": "§b%s 合成数: §f%d",
   "stats.crafting.no_records": "§7暂无合成记录",
   "stats.crafting.by_type_header": "§e--- 按物品类型分类 ---",
-  
   "stats.drops.total": "§b总丢弃次数: §f%d",
   "stats.drops.item_count": "§f%s: §c%d",
   "stats.drops.item_detail": "§b%s 丢弃数: §f%d",
   "stats.drops.no_records": "§7暂无丢弃记录",
   "stats.drops.by_type_header": "§e--- 按物品类型分类 ---",
-  
   "stats.player_info.first_join": "§b首次加入时间: §f%s",
   "stats.player_info.first_join_unknown": "§b首次加入时间: §f未知",
   "stats.player_info.login_days": "§b登录天数: §f%d 天",
-  
   "stats.activity.anvil_uses": "§b使用铁砧次数: §f%d",
   "stats.activity.items_enchanted": "§b附魔物品数: §f%d",
   "stats.activity.villager_trades": "§b村民交易次数: §f%d",
   "stats.activity.chat_messages": "§b发送聊天消息数: §f%d",
-  
   "stats.extended.exp_header": "§b--- 经验统计 ---",
   "stats.extended.exp_gained": "§f获得经验总量: §a%d",
   "stats.extended.exp_consumed": "§f消耗经验总量: §c%d",
@@ -231,7 +205,6 @@
   "stats.extended.longest_life": "§f最长寿命: §a%d时%d分%d秒",
   "stats.extended.death_header": "§b--- 死亡统计 ---",
   "stats.extended.farthest_death_distance": "§f最远死亡掉落距离: §c%.1f米",
-
   "block.minecraft.grass_block": "草方块",
   "block.minecraft.dirt": "泥土",
   "block.minecraft.stone": "石头",
@@ -245,7 +218,6 @@
   "item.minecraft.apple": "苹果",
   "item.minecraft.bread": "面包",
   "item.minecraft.unknown": "未知物品",
-  
   "entity.minecraft.zombie": "僵尸",
   "entity.minecraft.skeleton": "骷髅",
   "entity.minecraft.creeper": "苦力怕",
@@ -272,7 +244,6 @@
   "entity.minecraft.iron_golem": "铁傀儡",
   "entity.minecraft.snow_golem": "雪傀儡",
   "entity.minecraft.unknown": "未知",
-  
   "floatingtext.created": "§a成功创建悬浮文字 '%s' 在位置 (%d, %d, %d)",
   "floatingtext.already_exists": "§c悬浮文字 '%s' 已存在！",
   "floatingtext.not_found": "§c悬浮文字 '%s' 不存在！",
@@ -297,7 +268,6 @@
   "floatingtext.info_created": "§b创建时间: §f%s",
   "floatingtext.unsupported_stat": "§c不支持的统计类型: %s",
   "floatingtext.default_text": "悬浮文字",
-  
   "shop.type.sell": "§b出售商店",
   "shop.type.buy": "§b收购商店",
   "shop.creation.success": "§a商店创建成功！",
@@ -318,7 +288,6 @@
   "shop.sign.invalid_item": "§c无效的物品！",
   "shop.sign.invalid_price": "§c无效的价格！",
   "shop.sign.not_on_chest": "§c告示牌必须放置在箱子上！",
-  
   "transaction.header": "交易流程",
   "transaction.input.prompt": "§e请在 §a%d秒 §e内输入交易数量（输入数字或 'cancel' 取消）:",
   "transaction.input.timeout": "§c输入超时，交易已取消！",
@@ -337,7 +306,6 @@
   "transaction.click_to_buy": "§a[点击购买]",
   "transaction.click_to_sell": "§a[点击出售]",
   "transaction.shift_hint": "§7按住Shift点击可批量交易(64个)",
-  
   "item.change.header": "物品更换",
   "item.change.prompt": "§e确认要将商店物品更换为 §b%s §e吗？",
   "item.change.confirm": "§a[确认]",
@@ -349,7 +317,6 @@
   "item.change.success": "§a商店物品已更换为: §b%s",
   "item.change.timeout": "§c操作超时，物品更换已取消！",
   "item.change.cancelled": "§e物品更换已取消！",
-  
   "admin.shop.info.title": "§6=== 商店信息 ===",
   "admin.shop.info.id": "§b商店ID: §f%s",
   "admin.shop.info.owner": "§b所有者: §f%s",

@@ -24,13 +24,13 @@ public class ServerTranslationHelper {
 
     public static void initialize() {
         if (initialized) return;
-        
+
         try {
             loadTranslations("zh_cn", zhCnTranslations);
             loadTranslations("en_us", enUsTranslations);
             initialized = true;
-            LOGGER.info("Translation system initialized. Loaded {} zh_cn and {} en_us translations", 
-                zhCnTranslations.size(), enUsTranslations.size());
+            LOGGER.info("Translation system initialized. Loaded {} zh_cn and {} en_us translations",
+                    zhCnTranslations.size(), enUsTranslations.size());
         } catch (Exception e) {
             LOGGER.error("Failed to load translations: {}", e.getMessage());
         }
@@ -41,7 +41,8 @@ public class ServerTranslationHelper {
         try (InputStream is = ServerTranslationHelper.class.getResourceAsStream(path)) {
             if (is != null) {
                 try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-                    Map<String, String> translations = new Gson().fromJson(reader, new TypeToken<Map<String, String>>(){}.getType());
+                    Map<String, String> translations = new Gson().fromJson(reader, new TypeToken<Map<String, String>>() {
+                    }.getType());
                     if (translations != null) {
                         targetMap.putAll(translations);
                         LOGGER.info("Loaded {} translations from {}", translations.size(), path);
@@ -81,12 +82,12 @@ public class ServerTranslationHelper {
         String normalized = normalizeLanguage(languageCode);
         Map<String, String> translations = "zh_cn".equals(normalized) ? zhCnTranslations : enUsTranslations;
         String translation = translations.get(key);
-        
+
         // 兜底逻辑
         if (translation == null) {
             translation = ("zh_cn".equals(normalized) ? enUsTranslations : zhCnTranslations).get(key);
         }
-        
+
         return translation != null ? translation : key;
     }
 
@@ -95,7 +96,7 @@ public class ServerTranslationHelper {
         if (template.equals(key)) {
             return key;
         }
-        
+
         // 预处理参数中的 Component
         Object[] processedArgs = new Object[args.length];
         for (int i = 0; i < args.length; i++) {

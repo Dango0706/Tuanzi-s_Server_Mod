@@ -8,23 +8,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class LoginTimeoutManager {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger("LoginTimeoutManager");
-    
+
     private final LoginConfig config;
     private final MinecraftServer server;
     private final ScheduledExecutorService scheduler;
     private final Map<String, ScheduledFuture<?>> loginTimers;
     private final Map<String, Long> loginStartTimes;
-    
+
     public LoginTimeoutManager(LoginConfig config, MinecraftServer server) {
         this.config = config;
         this.server = server;
@@ -36,25 +31,25 @@ public class LoginTimeoutManager {
         this.loginTimers = new ConcurrentHashMap<>();
         this.loginStartTimes = new ConcurrentHashMap<>();
     }
-    
+
     public void startLoginTimer(String playerName) {
         cancelLoginTimer(playerName);
-        
+
         int timeoutSeconds = config.getLoginTimeoutSeconds();
         long startTime = System.currentTimeMillis();
         loginStartTimes.put(playerName, startTime);
-        
+
         LOGGER.info("为玩家 {} 启动登录超时计时器，超时时间: {} 秒", playerName, timeoutSeconds);
-        
+
         ScheduledFuture<?> timer = scheduler.schedule(() -> {
             kickPlayerForTimeout(playerName);
             loginTimers.remove(playerName);
             loginStartTimes.remove(playerName);
         }, timeoutSeconds, TimeUnit.SECONDS);
-        
+
         loginTimers.put(playerName, timer);
     }
-    
+
     public void cancelLoginTimer(String playerName) {
         ScheduledFuture<?> timer = loginTimers.remove(playerName);
         if (timer != null) {
@@ -63,23 +58,23 @@ public class LoginTimeoutManager {
             LOGGER.debug("已取消玩家 {} 的登录超时计时器", playerName);
         }
     }
-    
+
     public boolean hasActiveTimer(String playerName) {
         ScheduledFuture<?> timer = loginTimers.get(playerName);
         return timer != null && !timer.isDone();
     }
-    
+
     public int getRemainingSeconds(String playerName) {
         Long startTime = loginStartTimes.get(playerName);
         if (startTime == null) {
             return 0;
         }
-        
+
         long elapsed = (System.currentTimeMillis() - startTime) / 1000;
         int remaining = config.getLoginTimeoutSeconds() - (int) elapsed;
         return Math.max(0, remaining);
     }
-    
+
     private void kickPlayerForTimeout(String playerName) {
         server.execute(() -> {
             ServerPlayer player = findPlayerByName(playerName);
@@ -90,7 +85,7 @@ public class LoginTimeoutManager {
             }
         });
     }
-    
+
     private ServerPlayer findPlayerByName(String playerName) {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             if (player.getName().getString().equals(playerName)) {
@@ -99,7 +94,7 @@ public class LoginTimeoutManager {
         }
         return null;
     }
-    
+
     public void shutdown() {
         LOGGER.info("正在关闭登录超时管理器...");
         scheduler.shutdown();
@@ -115,7 +110,7 @@ public class LoginTimeoutManager {
         loginStartTimes.clear();
         LOGGER.info("登录超时管理器已关闭");
     }
-    
+
     public void clearAllTimers() {
         for (ScheduledFuture<?> timer : loginTimers.values()) {
             timer.cancel(false);

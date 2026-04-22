@@ -45,13 +45,13 @@ public class BlockInteractionHandler {
         }
 
         ShopInstance shop = shopOpt.get();
-        
+
         if (!shop.isValid()) {
             LOGGER.warn("尝试与已删除的商店交互 - 商店ID: {}, 玩家: {}", shop.getShopId(), player.getName().getString());
             player.sendSystemMessage(ShopTranslationHelper.colored("§c此商店已不存在"));
             return true;
         }
-        
+
         ItemStack heldItem = player.getMainHandItem();
 
         if (shop.isOwner(player.getUUID()) && !heldItem.isEmpty()) {
@@ -121,20 +121,20 @@ public class BlockInteractionHandler {
 
         ItemStack tradeItem = shop.getTradeItem();
         net.minecraft.world.item.ItemStackTemplate template = net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(tradeItem);
-        Component itemName = tradeItem.getDisplayName().copy().withStyle(style -> 
-            style.withHoverEvent(new net.minecraft.network.chat.HoverEvent.ShowItem(template)));
+        Component itemName = tradeItem.getDisplayName().copy().withStyle(style ->
+                style.withHoverEvent(new net.minecraft.network.chat.HoverEvent.ShowItem(template)));
 
         player.sendSystemMessage(ShopTranslationHelper.header(player, "admin.shop.info.title"));
         player.sendSystemMessage(Component.empty()
                 .append(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "common.item") + ": "))
                 .append(itemName));
-        
+
         if (shop.isDynamicPricing()) {
-            player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.current_price") + ": §e" + 
+            player.sendSystemMessage(ShopTranslationHelper.colored("§b" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.info.current_price") + ": §e" +
                     String.format("%.2f %s", price, currencyName)));
             player.sendSystemMessage(ShopTranslationHelper.colored("§7(" + ShopTranslationHelper.getRawTranslation(player, "admin.shop.dynamic_desc") + ")"));
         } else {
-            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "admin.shop.info.price", 
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "admin.shop.info.price",
                     price, currencyName));
         }
 
@@ -152,20 +152,20 @@ public class BlockInteractionHandler {
     private void sendShopInteractionMessage(ServerPlayer player, ShopInstance shop, boolean isShiftDown) {
         WalletType walletType = shopManager.getWalletType(shop.getWalletTypeId()).orElse(null);
         String currencyName = walletType != null ? walletType.displayName().getString() : "Unknown";
-        
+
         boolean isBuy = shop.getShopType() == ShopType.SELL;
         int quantity = isShiftDown ? 64 : 1;
         double price = DynamicPricing.calculatePrice(shop);
-        double totalPrice = shop.isDynamicPricing() ? 
-                DynamicPricing.calculateBulkPrice(shop, quantity, isBuy) : 
+        double totalPrice = shop.isDynamicPricing() ?
+                DynamicPricing.calculateBulkPrice(shop, quantity, isBuy) :
                 price * quantity;
 
         String headerKey = isBuy ? "shop.type.sell" : "shop.type.buy";
         ItemStack tradeItem = shop.getTradeItem();
-        
+
         net.minecraft.world.item.ItemStackTemplate template = net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(tradeItem);
-        Component itemName = tradeItem.getDisplayName().copy().withStyle(style -> 
-            style.withHoverEvent(new net.minecraft.network.chat.HoverEvent.ShowItem(template)));
+        Component itemName = tradeItem.getDisplayName().copy().withStyle(style ->
+                style.withHoverEvent(new net.minecraft.network.chat.HoverEvent.ShowItem(template)));
 
         int stock = getShopStock(shop);
         int capacity = getChestAvailableSpace(shop);
@@ -205,27 +205,27 @@ public class BlockInteractionHandler {
         if (!isShiftDown) {
             player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.shift_hint"));
         }
-        
+
         player.sendSystemMessage(ShopTranslationHelper.header(player, headerKey));
     }
 
-    private Component createActionButton(ShopInstance shop, ServerPlayer player, int quantity, 
-                                          double totalPrice, String currencyName) {
+    private Component createActionButton(ShopInstance shop, ServerPlayer player, int quantity,
+                                         double totalPrice, String currencyName) {
         boolean isSellShop = shop.getShopType() == ShopType.SELL;
-        String buttonText = isSellShop ? 
+        String buttonText = isSellShop ?
                 ShopTranslationHelper.getRawTranslation("transaction.click_to_buy") :
                 ShopTranslationHelper.getRawTranslation("transaction.click_to_sell");
 
         // 如果是动态定价且是 Shift 点击，点击按钮也应该走确认流程
         if (shop.isDynamicPricing() && quantity > 1) {
-             Style style = Style.EMPTY
-                .withClickEvent(new ClickEvent.RunCommand("/shopconfirm yes"))
-                .withHoverEvent(new HoverEvent.ShowText(
-                        Component.literal(String.format("§e预计总价: %.2f %s\n§7点击确认交易", totalPrice, currencyName))));
-             return Component.literal(buttonText).setStyle(style);
+            Style style = Style.EMPTY
+                    .withClickEvent(new ClickEvent.RunCommand("/shopconfirm yes"))
+                    .withHoverEvent(new HoverEvent.ShowText(
+                            Component.literal(String.format("§e预计总价: %.2f %s\n§7点击确认交易", totalPrice, currencyName))));
+            return Component.literal(buttonText).setStyle(style);
         }
 
-        String command = String.format("/shop %s %d", 
+        String command = String.format("/shop %s %d",
                 isSellShop ? "buy" : "sell", quantity);
 
         Style style = Style.EMPTY
@@ -253,7 +253,7 @@ public class BlockInteractionHandler {
         }
 
         ShopInstance shop = shopOpt.get();
-        
+
         if (!shop.isValid()) {
             DevFlowLogger.error("交易执行流程", "商店已被删除: " + shopId);
             LOGGER.warn("尝试与已删除的商店交易 - 商店ID: {}, 玩家: {}", shopId, player.getName().getString());
@@ -261,7 +261,7 @@ public class BlockInteractionHandler {
             DevFlowLogger.endFlow("交易执行流程", false, "商店已删除");
             return false;
         }
-        
+
         DevFlowLogger.status("交易执行流程", "商店验证通过");
         DevFlowLogger.param("交易执行流程", "shopType", shop.getShopType());
         DevFlowLogger.param("交易执行流程", "tradeItem", shop.getTradeItem().getDisplayName().getString());
@@ -276,11 +276,11 @@ public class BlockInteractionHandler {
         }
 
         String currencyName = walletType.displayName().getString();
-        
+
         // 使用新的批量计算逻辑
         boolean isBuy = transactionType.equals("buy");
-        double totalPrice = shop.isDynamicPricing() ? 
-                DynamicPricing.calculateBulkPrice(shop, quantity, isBuy) : 
+        double totalPrice = shop.isDynamicPricing() ?
+                DynamicPricing.calculateBulkPrice(shop, quantity, isBuy) :
                 DynamicPricing.calculatePrice(shop) * quantity;
 
         DevFlowLogger.param("交易执行流程", "currencyName", currencyName);
@@ -288,12 +288,12 @@ public class BlockInteractionHandler {
 
         if (isBuy) {
             boolean result = executeBuyTransaction(player, shop, quantity, totalPrice, currencyName, walletType);
-            DevFlowLogger.endFlow("交易执行流程", result ? true : false, 
+            DevFlowLogger.endFlow("交易执行流程", result ? true : false,
                     result ? "购买成功" : "购买失败");
             return result;
         } else {
             boolean result = executeSellTransaction(player, shop, quantity, totalPrice, currencyName, walletType);
-            DevFlowLogger.endFlow("交易执行流程", result ? true : false, 
+            DevFlowLogger.endFlow("交易执行流程", result ? true : false,
                     result ? "出售成功" : "出售失败");
             return result;
         }
@@ -310,7 +310,7 @@ public class BlockInteractionHandler {
         if (!shop.isAdminShop() && !shop.isInfinite()) {
             int stock = getShopStock(shop);
             DevFlowLogger.param("购买交易子流程", "当前库存", stock);
-            
+
             if (stock < quantity) {
                 DevFlowLogger.warning("购买交易子流程", "库存不足 - 需要: " + quantity + ", 实际: " + stock);
                 player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.insufficient_stock"));
@@ -328,7 +328,7 @@ public class BlockInteractionHandler {
 
         if (!shopManager.hasEnoughBalance(player.getUUID(), shop.getWalletTypeId(), totalPrice)) {
             DevFlowLogger.warning("购买交易子流程", "余额不足 - 需要: " + totalPrice + ", 实际: " + playerBalance);
-            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.insufficient_balance", 
+            player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.insufficient_balance",
                     totalPrice, currencyName));
             DevFlowLogger.endFlow("购买交易子流程", false, "余额不足");
             return false;
@@ -337,7 +337,7 @@ public class BlockInteractionHandler {
 
         DevFlowLogger.step("购买交易子流程", "执行资金转账（从玩家到商店所有者）");
         if (!shop.isAdminShop() && !shop.isInfinite()) {
-            shopManager.transferMoney(player.getUUID(), shop.getOwnerId(), 
+            shopManager.transferMoney(player.getUUID(), shop.getOwnerId(),
                     shop.getWalletTypeId(), totalPrice);
             DevFlowLogger.status("购买交易子流程", "转账完成 - 从玩家到商店所有者: " + totalPrice);
         } else if (shop.isAdminShop()) {
@@ -370,7 +370,7 @@ public class BlockInteractionHandler {
         transactionLogger.logBuy(player.getUUID(), player.getName().getString(), shop,
                 ItemUtils.getItemDisplayName(shop.getTradeItem()), quantity, totalPrice, currencyName);
 
-        LOGGER.info("[商店交易] 玩家 {} 从商店 {} 购买了 {}x{} - 花费: {} {}", 
+        LOGGER.info("[商店交易] 玩家 {} 从商店 {} 购买了 {}x{} - 花费: {} {}",
                 player.getName().getString(),
                 shop.getShopId(),
                 shop.getTradeItem().getDisplayName().getString(),
@@ -378,7 +378,7 @@ public class BlockInteractionHandler {
                 totalPrice,
                 currencyName);
 
-        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.buy.success", 
+        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.buy.success",
                 totalPrice, currencyName));
 
         // 触发交易事件用于统计
@@ -390,10 +390,10 @@ public class BlockInteractionHandler {
         }
         DevFlowLogger.status("购买交易子流程", "告示牌已同步更新");
 
-        DevFlowLogger.endFlow("购买交易子流程", true, 
-                "购买成功 - 物品: " + shop.getTradeItem().getDisplayName().getString() + 
-                " x" + quantity + 
-                ", 花费: " + totalPrice + " " + currencyName);
+        DevFlowLogger.endFlow("购买交易子流程", true,
+                "购买成功 - 物品: " + shop.getTradeItem().getDisplayName().getString() +
+                        " x" + quantity +
+                        ", 花费: " + totalPrice + " " + currencyName);
         return true;
     }
 
@@ -414,20 +414,20 @@ public class BlockInteractionHandler {
         DevFlowLogger.status("出售交易子流程", "玩家物品检查通过");
 
         MinecraftServer server = player.level().getServer();
-        
+
         DevFlowLogger.step("出售交易子流程", "检查商店所有者余额和箱子容量");
         if (!shop.isAdminShop() && !shop.isInfinite()) {
             double ownerBalance = shopManager.getPlayerBalance(shop.getOwnerId(), shop.getWalletTypeId());
             DevFlowLogger.param("出售交易子流程", "商店所有者余额", ownerBalance);
-            
+
             if (!shopManager.hasEnoughBalance(shop.getOwnerId(), shop.getWalletTypeId(), totalPrice)) {
                 DevFlowLogger.warning("出售交易子流程", "商店所有者余额不足 - 需要: " + totalPrice + ", 实际: " + ownerBalance);
                 player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.owner_insufficient_balance"));
-                
+
                 if (server != null) {
                     ServerPlayer ownerPlayer = server.getPlayerList().getPlayer(shop.getOwnerId());
                     if (ownerPlayer != null) {
-                        ownerPlayer.sendSystemMessage(ShopTranslationHelper.translatable(ownerPlayer, 
+                        ownerPlayer.sendSystemMessage(ShopTranslationHelper.translatable(ownerPlayer,
                                 "transaction.owner_notification", currencyName));
                         DevFlowLogger.status("出售交易子流程", "已通知商店所有者余额不足");
                     }
@@ -438,7 +438,7 @@ public class BlockInteractionHandler {
 
             int availableSpace = getChestAvailableSpace(shop);
             DevFlowLogger.param("出售交易子流程", "箱子可用空间", availableSpace);
-            
+
             if (availableSpace < quantity) {
                 DevFlowLogger.warning("出售交易子流程", "箱子空间不足 - 需要: " + quantity + ", 可用: " + availableSpace);
                 player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.insufficient_space"));
@@ -452,7 +452,7 @@ public class BlockInteractionHandler {
 
         DevFlowLogger.step("出售交易子流程", "执行资金转账（从商店所有者到玩家）");
         if (!shop.isAdminShop() && !shop.isInfinite()) {
-            shopManager.transferMoney(shop.getOwnerId(), player.getUUID(), 
+            shopManager.transferMoney(shop.getOwnerId(), player.getUUID(),
                     shop.getWalletTypeId(), totalPrice);
             DevFlowLogger.status("出售交易子流程", "转账完成 - 从商店所有者到玩家: " + totalPrice);
         } else {
@@ -482,7 +482,7 @@ public class BlockInteractionHandler {
         transactionLogger.logSell(player.getUUID(), player.getName().getString(), shop,
                 ItemUtils.getItemDisplayName(shop.getTradeItem()), quantity, totalPrice, currencyName);
 
-        LOGGER.info("[商店交易] 玩家 {} 向商店 {} 出售了 {}x{} - 获得: {} {}", 
+        LOGGER.info("[商店交易] 玩家 {} 向商店 {} 出售了 {}x{} - 获得: {} {}",
                 player.getName().getString(),
                 shop.getShopId(),
                 shop.getTradeItem().getDisplayName().getString(),
@@ -490,7 +490,7 @@ public class BlockInteractionHandler {
                 totalPrice,
                 currencyName);
 
-        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.sell.success", 
+        player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.sell.success",
                 totalPrice, currencyName));
 
         // 触发交易事件用于统计
@@ -502,10 +502,10 @@ public class BlockInteractionHandler {
         }
         DevFlowLogger.status("出售交易子流程", "告示牌已同步更新");
 
-        DevFlowLogger.endFlow("出售交易子流程", true, 
-                "出售成功 - 物品: " + shop.getTradeItem().getDisplayName().getString() + 
-                " x" + quantity + 
-                ", 获得: " + totalPrice + " " + currencyName);
+        DevFlowLogger.endFlow("出售交易子流程", true,
+                "出售成功 - 物品: " + shop.getTradeItem().getDisplayName().getString() +
+                        " x" + quantity +
+                        ", 获得: " + totalPrice + " " + currencyName);
         return true;
     }
 

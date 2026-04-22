@@ -26,13 +26,13 @@ public class StatsTranslationHelper {
 
     public static void initialize() {
         if (initialized) return;
-        
+
         try {
             loadTranslations("zh_cn", zhCnTranslations);
             loadTranslations("en_us", enUsTranslations);
             initialized = true;
             LOGGER.info("[统计翻译] 翻译系统初始化完成，zh_cn: {} 条，en_us: {} 条",
-                zhCnTranslations.size(), enUsTranslations.size());
+                    zhCnTranslations.size(), enUsTranslations.size());
         } catch (Exception e) {
             LOGGER.error("[统计翻译] 翻译系统初始化失败: {}", e.getMessage());
         }
@@ -43,7 +43,8 @@ public class StatsTranslationHelper {
         try (InputStream is = StatsTranslationHelper.class.getResourceAsStream(path)) {
             if (is != null) {
                 try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-                    Map<String, String> translations = new Gson().fromJson(reader, new TypeToken<Map<String, String>>(){}.getType());
+                    Map<String, String> translations = new Gson().fromJson(reader, new TypeToken<Map<String, String>>() {
+                    }.getType());
                     if (translations != null) {
                         targetMap.putAll(translations);
                         LOGGER.info("[统计翻译] 已加载 {} 条翻译: {}", translations.size(), path);

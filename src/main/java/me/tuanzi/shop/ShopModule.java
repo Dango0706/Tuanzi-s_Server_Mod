@@ -13,8 +13,8 @@ import me.tuanzi.shop.shop.ShopInstance;
 import me.tuanzi.shop.shop.ShopManager;
 import me.tuanzi.shop.shop.ShopRegistry;
 import me.tuanzi.shop.storage.ShopStateSaver;
-import me.tuanzi.shop.utils.ShopTranslationHelper;
 import me.tuanzi.shop.util.DevFlowLogger;
+import me.tuanzi.shop.utils.ShopTranslationHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -24,11 +24,9 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.SignedMessageBody;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -63,6 +61,18 @@ public class ShopModule implements ModInitializer {
     public ShopModule() {
     }
 
+    public static ShopModule getInstance(MinecraftServer server) {
+        return instances.computeIfAbsent(server, s -> {
+            ShopModule module = new ShopModule();
+            module.initializeForServer(s);
+            return module;
+        });
+    }
+
+    public static ShopConfig getConfig() {
+        return config;
+    }
+
     private void initializeForServer(MinecraftServer server) {
         this.server = server;
         this.shopManager = ShopManager.getInstance(server);
@@ -74,18 +84,6 @@ public class ShopModule implements ModInitializer {
         this.interactionHandler = new BlockInteractionHandler(shopManager, transactionLogger);
         this.protectionHandler = new BlockProtectionHandler(shopManager);
         this.chatInputHandler = new ChatInputHandler(shopManager, transactionLogger);
-    }
-
-    public static ShopModule getInstance(MinecraftServer server) {
-        return instances.computeIfAbsent(server, s -> {
-            ShopModule module = new ShopModule();
-            module.initializeForServer(s);
-            return module;
-        });
-    }
-
-    public static ShopConfig getConfig() {
-        return config;
     }
 
     @Override
@@ -234,7 +232,7 @@ public class ShopModule implements ModInitializer {
             if (containerPos == null) {
                 return false;
             }
-            
+
             if (!(world.getBlockEntity(containerPos) instanceof net.minecraft.world.Container)) {
                 return false;
             }
@@ -258,11 +256,11 @@ public class ShopModule implements ModInitializer {
         }
         return false;
     }
-    
+
     private BlockPos getContainerPosForSign(Level world, BlockPos signPos) {
         net.minecraft.world.level.block.state.BlockState state = world.getBlockState(signPos);
         net.minecraft.world.level.block.Block block = state.getBlock();
-        
+
         if (block instanceof net.minecraft.world.level.block.StandingSignBlock) {
             BlockPos belowPos = signPos.below();
             if (world.getBlockEntity(belowPos) instanceof net.minecraft.world.Container) {
@@ -275,19 +273,19 @@ public class ShopModule implements ModInitializer {
                 return attachedPos;
             }
         }
-        
+
         for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.Plane.HORIZONTAL) {
             BlockPos checkPos = signPos.relative(dir);
             if (world.getBlockEntity(checkPos) instanceof net.minecraft.world.Container) {
                 return checkPos;
             }
         }
-        
+
         BlockPos belowPos = signPos.below();
         if (world.getBlockEntity(belowPos) instanceof net.minecraft.world.Container) {
             return belowPos;
         }
-        
+
         return null;
     }
 
@@ -347,20 +345,20 @@ public class ShopModule implements ModInitializer {
 
         if (instance.shopManager != null && instance.displayManager != null && world instanceof ServerLevel serverLevel) {
             Optional<ShopInstance> shopAtPos = instance.shopManager.getShopByPos(pos);
-            
+
             if (shopAtPos.isEmpty()) {
                 shopAtPos = findShopBySignOrContainerPos(instance.shopManager, pos, serverLevel);
             }
-            
+
             if (shopAtPos.isPresent()) {
                 ShopInstance shop = shopAtPos.get();
-                
+
                 if (!shop.isValid()) {
                     LOGGER.warn("检测到已标记删除的商店，强制清理 - 商店ID: {}, 位置: {}", shop.getShopId(), pos);
                     forceDeleteShop(instance, shop, serverLevel, serverPlayer);
                     return true;
                 }
-                
+
                 LOGGER.info("检测到商店破坏事件 - 商店ID: {}, 破坏位置: {}, 商店箱子: {}, 告示牌: {}",
                         shop.getShopId(), pos, shop.getShopPos(), shop.getSignPos());
                 forceDeleteShop(instance, shop, serverLevel, serverPlayer);
@@ -395,10 +393,10 @@ public class ShopModule implements ModInitializer {
         DevFlowLogger.param("商店删除流程", "操作玩家", player.getName().getString());
 
         UUID shopId = shop.getShopId();
-        
+
         LOGGER.info("正在删除商店 - 商店ID: {}, 所有者: {}", shopId, shop.getOwnerId());
         DevFlowLogger.step("商店删除流程", "标记商店为已删除");
-        
+
         shop.markAsDeleted();
         DevFlowLogger.status("商店删除流程", "商店已标记为删除状态");
 
@@ -409,7 +407,7 @@ public class ShopModule implements ModInitializer {
         DevFlowLogger.step("商店删除流程", "从系统中注销商店");
         instance.shopManager.deleteShop(shopId);
         DevFlowLogger.status("商店删除流程", "商店已从系统注销");
-        
+
         if (instance.chatInputHandler != null) {
             DevFlowLogger.step("商店删除流程", "清理待处理状态");
             instance.chatInputHandler.cleanupForShop(shopId);
@@ -419,16 +417,16 @@ public class ShopModule implements ModInitializer {
         player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.deleted.success"));
 
         LOGGER.info("商店删除成功 - 商店ID: {}", shopId);
-        DevFlowLogger.endFlow("商店删除流程", true, 
+        DevFlowLogger.endFlow("商店删除流程", true,
                 "商店删除成功 - ID: " + shopId.toString().substring(0, 8));
     }
 
-    
+
     private void restoreSignText(Level world, net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.entity.BlockEntity blockEntity, net.minecraft.world.level.block.state.BlockState state) {
         if (!(world instanceof ServerLevel serverLevel)) {
             return;
         }
-        
+
         if (blockEntity instanceof SignBlockEntity signEntity) {
             world.getServer().execute(() -> {
                 if (world.getBlockEntity(pos) instanceof SignBlockEntity currentSign) {

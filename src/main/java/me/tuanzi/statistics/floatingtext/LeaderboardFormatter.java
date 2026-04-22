@@ -33,7 +33,7 @@ public class LeaderboardFormatter {
 
     public static String formatLeaderboard(String statType, String displayName, String color) {
         String colorCode = STAT_COLOR_CODES.getOrDefault(color, "§6");
-        
+
         String statName = StatsTranslationHelper.translate("stats.type." + statType, null);
         String title = displayName != null && !displayName.isEmpty() ? displayName : statName;
         String boardTitle = StatsTranslationHelper.translate("stats.leaderboard.title_suffix", null);

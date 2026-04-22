@@ -5,8 +5,6 @@ import me.tuanzi.economy.events.TransactionType;
 import me.tuanzi.shop.events.ShopTransactionCallback;
 import me.tuanzi.statistics.data.PlayerStatistics;
 import me.tuanzi.statistics.data.StatisticsDataManager;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
 
 public class EconomyStatisticsListener {
     private final StatisticsDataManager dataManager;
