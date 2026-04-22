@@ -67,8 +67,7 @@ public class PayCommand {
             return 0;
         }
 
-        api.withdraw(sender.getUUID(), walletId, amount);
-        api.deposit(target.getUUID(), walletId, amount);
+        api.transfer(sender.getUUID(), target.getUUID(), walletId, amount);
 
         String senderName = sender.getName().getString();
         String targetName = target.getName().getString();

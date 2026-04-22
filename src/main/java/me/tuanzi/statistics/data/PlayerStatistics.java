@@ -80,8 +80,24 @@ public class PlayerStatistics {
     private boolean isSneaking;
     private long sneakStartTime;
     
-    private long highestDamageDealt;
-    private long highestDamageTaken;
+    private long highestDamageDealt = 0;
+    private long highestDamageTaken = 0;
+
+    private int itemsBoughtCount = 0;
+    private Map<String, Integer> itemsBoughtByType = new HashMap<>();
+    private Map<String, Map<String, Double>> itemsBoughtExpenseByItemAndCurrency = new HashMap<>();
+    private Map<String, Double> totalBuyExpenseByCurrency = new HashMap<>();
+
+    private int itemsSoldCount = 0;
+    private Map<String, Integer> itemsSoldByType = new HashMap<>();
+    private Map<String, Map<String, Double>> itemsSoldIncomeByItemAndCurrency = new HashMap<>();
+    private Map<String, Double> totalSellIncomeByCurrency = new HashMap<>();
+
+    private int moneySentCount = 0;
+    private Map<String, Double> totalMoneySentByCurrency = new HashMap<>();
+
+    private int moneyReceivedCount = 0;
+    private Map<String, Double> totalMoneyReceivedByCurrency = new HashMap<>();
 
     public PlayerStatistics() {
         this.playTimeSeconds = 0;
@@ -159,6 +175,13 @@ public class PlayerStatistics {
         
         this.highestDamageDealt = 0;
         this.highestDamageTaken = 0;
+
+        this.itemsBoughtByType = new HashMap<>();
+        this.totalBuyExpenseByCurrency = new HashMap<>();
+        this.itemsSoldByType = new HashMap<>();
+        this.totalSellIncomeByCurrency = new HashMap<>();
+        this.totalMoneySentByCurrency = new HashMap<>();
+        this.totalMoneyReceivedByCurrency = new HashMap<>();
     }
 
     public PlayerStatistics(String playerName) {
@@ -798,5 +821,74 @@ public class PlayerStatistics {
         if (damage > this.highestDamageTaken) {
             this.highestDamageTaken = damage;
         }
+    }
+
+    // 经济统计方法
+    public int getItemsBoughtCount() { return itemsBoughtCount; }
+    public Map<String, Integer> getItemsBoughtByType() { 
+        if (itemsBoughtByType == null) itemsBoughtByType = new HashMap<>();
+        return itemsBoughtByType; 
+    }
+    public Map<String, Double> getTotalBuyExpenseByCurrency() { 
+        if (totalBuyExpenseByCurrency == null) totalBuyExpenseByCurrency = new HashMap<>();
+        return totalBuyExpenseByCurrency; 
+    }
+    public Map<String, Map<String, Double>> getItemsBoughtExpenseByItemAndCurrency() { 
+        if (itemsBoughtExpenseByItemAndCurrency == null) itemsBoughtExpenseByItemAndCurrency = new HashMap<>();
+        return itemsBoughtExpenseByItemAndCurrency; 
+    }
+
+    public void addItemsBought(String itemType, int count, String currencyId, double amount) {
+        this.itemsBoughtCount += count;
+        this.getItemsBoughtByType().put(itemType, this.getItemsBoughtByType().getOrDefault(itemType, 0) + count);
+        this.getTotalBuyExpenseByCurrency().put(currencyId, this.getTotalBuyExpenseByCurrency().getOrDefault(currencyId, 0.0) + amount);
+        
+        this.getItemsBoughtExpenseByItemAndCurrency().computeIfAbsent(itemType, k -> new HashMap<>())
+            .merge(currencyId, amount, Double::sum);
+    }
+
+    public int getItemsSoldCount() { return itemsSoldCount; }
+    public Map<String, Integer> getItemsSoldByType() { 
+        if (itemsSoldByType == null) itemsSoldByType = new HashMap<>();
+        return itemsSoldByType; 
+    }
+    public Map<String, Double> getTotalSellIncomeByCurrency() { 
+        if (totalSellIncomeByCurrency == null) totalSellIncomeByCurrency = new HashMap<>();
+        return totalSellIncomeByCurrency; 
+    }
+    public Map<String, Map<String, Double>> getItemsSoldIncomeByItemAndCurrency() { 
+        if (itemsSoldIncomeByItemAndCurrency == null) itemsSoldIncomeByItemAndCurrency = new HashMap<>();
+        return itemsSoldIncomeByItemAndCurrency; 
+    }
+
+    public void addItemsSold(String itemType, int count, String currencyId, double amount) {
+        this.itemsSoldCount += count;
+        this.getItemsSoldByType().put(itemType, this.getItemsSoldByType().getOrDefault(itemType, 0) + count);
+        this.getTotalSellIncomeByCurrency().put(currencyId, this.getTotalSellIncomeByCurrency().getOrDefault(currencyId, 0.0) + amount);
+        
+        this.getItemsSoldIncomeByItemAndCurrency().computeIfAbsent(itemType, k -> new HashMap<>())
+            .merge(currencyId, amount, Double::sum);
+    }
+
+    public int getMoneySentCount() { return moneySentCount; }
+    public Map<String, Double> getTotalMoneySentByCurrency() { 
+        if (totalMoneySentByCurrency == null) totalMoneySentByCurrency = new HashMap<>();
+        return totalMoneySentByCurrency; 
+    }
+
+    public void addMoneySent(String currencyId, double amount) {
+        this.moneySentCount++;
+        this.getTotalMoneySentByCurrency().put(currencyId, this.getTotalMoneySentByCurrency().getOrDefault(currencyId, 0.0) + amount);
+    }
+
+    public int getMoneyReceivedCount() { return moneyReceivedCount; }
+    public Map<String, Double> getTotalMoneyReceivedByCurrency() { 
+        if (totalMoneyReceivedByCurrency == null) totalMoneyReceivedByCurrency = new HashMap<>();
+        return totalMoneyReceivedByCurrency; 
+    }
+
+    public void addMoneyReceived(String currencyId, double amount) {
+        this.moneyReceivedCount++;
+        this.getTotalMoneyReceivedByCurrency().put(currencyId, this.getTotalMoneyReceivedByCurrency().getOrDefault(currencyId, 0.0) + amount);
     }
 }

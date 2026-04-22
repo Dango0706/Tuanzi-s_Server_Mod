@@ -381,6 +381,9 @@ public class BlockInteractionHandler {
         player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.buy.success", 
                 totalPrice, currencyName));
 
+        // 触发交易事件用于统计
+        ShopTransactionCallback.EVENT.invoker().onTransaction(player, shop, shop.getTradeItem(), quantity, totalPrice, true);
+
         DevFlowLogger.step("购买交易子流程", "同步更新告示牌显示");
         if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             SignUpdateHelper.updateSignForShop(shop, serverLevel);
@@ -489,6 +492,9 @@ public class BlockInteractionHandler {
 
         player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.sell.success", 
                 totalPrice, currencyName));
+
+        // 触发交易事件用于统计
+        ShopTransactionCallback.EVENT.invoker().onTransaction(player, shop, shop.getTradeItem(), quantity, totalPrice, false);
 
         DevFlowLogger.step("出售交易子流程", "同步更新告示牌显示");
         if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {

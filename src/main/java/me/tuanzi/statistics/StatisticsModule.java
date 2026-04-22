@@ -96,6 +96,9 @@ public class StatisticsModule implements ModInitializer {
                 FloatingTextManager.getInstance().rebuildAllEntities(level);
             }
             ScoreboardManager.getInstance(server).loadConfig();
+            
+            // 注册经济统计监听器
+            new EconomyStatisticsListener(dataManager).register(server);
         });
     }
     

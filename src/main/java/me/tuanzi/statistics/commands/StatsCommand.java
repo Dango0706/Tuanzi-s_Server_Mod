@@ -1,5 +1,6 @@
 package me.tuanzi.statistics.commands;
 
+import me.tuanzi.auth.whitelist.OfflineUUIDGenerator;
 import me.tuanzi.statistics.StatisticsModule;
 import me.tuanzi.statistics.data.PlayerStatistics;
 import me.tuanzi.statistics.data.ServerStatistics;
@@ -14,446 +15,318 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permission;
+import net.minecraft.server.permissions.PermissionLevel;
 
 import java.util.Locale;
 import java.util.Map;
 
 public class StatsCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess) {
-        dispatcher.register(Commands.literal("stats")
+        var playerArgument = Commands.argument("player", StringArgumentType.string())
+                .requires(source -> source.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.GAMEMASTERS)))
+                .suggests((context, builder) -> {
+                    ServerPlayer sender = context.getSource().getPlayer();
+                    if (sender != null) {
+                        return SharedSuggestionProvider.suggest(
+                                context.getSource().getServer().getPlayerList().getPlayers()
+                                        .stream()
+                                        .map(p -> "\"" + p.getName().getString() + "\""),
+                                builder
+                        );
+                    }
+                    return Suggestions.empty();
+                })
+                .executes(context -> {
+                    String playerName = getPlayerNameFromArgument(context, "player");
+                    showPlayerStats(context.getSource(), playerName);
+                    return 1;
+                });
+
+        // 为管理员添加查看他人详细信息的子命令
+        addStatsSubcommands(playerArgument, true);
+
+        var statsCommand = Commands.literal("stats")
                 .executes(context -> {
                     ServerPlayer player = context.getSource().getPlayer();
                     if (player != null) {
-                        String playerName = player.getName().getString();
-                        showPlayerStats(context.getSource(), playerName);
+                        showPlayerStats(context.getSource(), player.getName().getString());
                     } else {
                         StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
                     }
                     return 1;
                 })
-                .then(Commands.argument("player", StringArgumentType.string())
-                        .suggests((context, builder) -> {
-                            ServerPlayer sender = context.getSource().getPlayer();
-                            if (sender != null) {
-                                return SharedSuggestionProvider.suggest(
-                                        context.getSource().getServer().getPlayerList().getPlayers()
-                                                .stream()
-                                                .map(p -> "\"" + p.getName().getString() + "\""),
-                                        builder
-                                );
-                            }
-                            return Suggestions.empty();
-                        })
-                        .executes(context -> {
-                            String playerName = StringArgumentType.getString(context, "player");
-                            if (playerName.startsWith("\"") && playerName.endsWith("\"")) {
-                                playerName = playerName.substring(1, playerName.length() - 1);
-                            }
-                            showPlayerStats(context.getSource(), playerName);
-                            return 1;
-                        })
-                )
                 .then(Commands.literal("server")
                         .executes(context -> {
                             showServerStats(context.getSource());
                             return 1;
                         })
                 )
-                .then(Commands.literal("kills")
+                .then(playerArgument);
+
+        // 为玩家自己添加子命令
+        addStatsSubcommands(statsCommand, false);
+
+        dispatcher.register(statsCommand);
+    }
+
+    private static String getPlayerNameFromArgument(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context, String name) {
+        String playerName = StringArgumentType.getString(context, name);
+        if (playerName.startsWith("\"") && playerName.endsWith("\"")) {
+            playerName = playerName.substring(1, playerName.length() - 1);
+        }
+        return playerName;
+    }
+
+    private static void addStatsSubcommands(com.mojang.brigadier.builder.ArgumentBuilder<CommandSourceStack, ?> builder, boolean isForTargetPlayer) {
+        builder.then(Commands.literal("kills")
+                .executes(context -> {
+                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                    if (playerName != null) showKillsStats(context.getSource(), playerName, null);
+                    return 1;
+                })
+                .then(Commands.argument("entityType", StringArgumentType.string())
+                        .suggests((context, b) -> {
+                            String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                            if (playerName == null) return Suggestions.empty();
+                            PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                            String language = getPreferredLanguage(context.getSource());
+                            return SharedSuggestionProvider.suggest(stats.getKillsByEntityType().keySet().stream().map(type -> "\"" + translateEntityType(type, language) + "\""), b);
+                        })
                         .executes(context -> {
-                            ServerPlayer player = context.getSource().getPlayer();
-                            if (player != null) {
-                                String playerName = player.getName().getString();
-                                showKillsStats(context.getSource(), playerName, null);
-                            } else {
-                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
-                            }
+                            String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                            String entityType = StringArgumentType.getString(context, "entityType");
+                            if (entityType.startsWith("\"") && entityType.endsWith("\"")) entityType = entityType.substring(1, entityType.length() - 1);
+                            if (playerName != null) showKillsStats(context.getSource(), playerName, entityType);
+                            return 1;
+                        })
+                )
+        ).then(Commands.literal("deaths")
+                .executes(context -> {
+                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                    if (playerName != null) showDeathsStats(context.getSource(), playerName, null);
+                    return 1;
+                })
+                .then(Commands.argument("entityType", StringArgumentType.string())
+                        .suggests((context, b) -> {
+                            String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                            if (playerName == null) return Suggestions.empty();
+                            PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                            String language = getPreferredLanguage(context.getSource());
+                            return SharedSuggestionProvider.suggest(stats.getDeathsByEntityType().keySet().stream().map(type -> "\"" + translateEntityType(type, language) + "\""), b);
+                        })
+                        .executes(context -> {
+                            String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                            String entityType = StringArgumentType.getString(context, "entityType");
+                            if (entityType.startsWith("\"") && entityType.endsWith("\"")) entityType = entityType.substring(1, entityType.length() - 1);
+                            if (playerName != null) showDeathsStats(context.getSource(), playerName, entityType);
+                            return 1;
+                        })
+                )
+        ).then(Commands.literal("blocks")
+                .executes(context -> {
+                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                    if (playerName != null) showBlocksStats(context.getSource(), playerName, null);
+                    return 1;
+                })
+                .then(Commands.literal("placed")
+                        .executes(context -> {
+                            String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                            if (playerName != null) showBlocksPlacedStats(context.getSource(), playerName, null);
+                            return 1;
+                        })
+                        .then(Commands.argument("blockType", StringArgumentType.string())
+                                .suggests((context, b) -> {
+                                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                                    if (playerName == null) return Suggestions.empty();
+                                    PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                                    String language = getPreferredLanguage(context.getSource());
+                                    return SharedSuggestionProvider.suggest(stats.getBlocksPlacedByType().keySet().stream().map(type -> "\"" + translateBlockType(type, language) + "\""), b);
+                                })
+                                .executes(context -> {
+                                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                                    String blockType = StringArgumentType.getString(context, "blockType");
+                                    if (blockType.startsWith("\"") && blockType.endsWith("\"")) blockType = blockType.substring(1, blockType.length() - 1);
+                                    if (playerName != null) showBlocksPlacedStats(context.getSource(), playerName, blockType);
+                                    return 1;
+                                })
+                        )
+                )
+                .then(Commands.literal("broken")
+                        .executes(context -> {
+                            String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                            if (playerName != null) showBlocksBrokenStats(context.getSource(), playerName, null);
+                            return 1;
+                        })
+                        .then(Commands.argument("blockType", StringArgumentType.string())
+                                .suggests((context, b) -> {
+                                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                                    if (playerName == null) return Suggestions.empty();
+                                    PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                                    String language = getPreferredLanguage(context.getSource());
+                                    return SharedSuggestionProvider.suggest(stats.getBlocksBrokenByType().keySet().stream().map(type -> "\"" + translateBlockType(type, language) + "\""), b);
+                                })
+                                .executes(context -> {
+                                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                                    String blockType = StringArgumentType.getString(context, "blockType");
+                                    if (blockType.startsWith("\"") && blockType.endsWith("\"")) blockType = blockType.substring(1, blockType.length() - 1);
+                                    if (playerName != null) showBlocksBrokenStats(context.getSource(), playerName, blockType);
+                                    return 1;
+                                })
+                        )
+                )
+        ).then(Commands.literal("damage")
+                .executes(context -> {
+                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                    if (playerName != null) showDamageStats(context.getSource(), playerName);
+                    return 1;
+                })
+                .then(Commands.literal("dealt")
+                        .executes(context -> {
+                            String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                            if (playerName != null) showDamageDealtStats(context.getSource(), playerName, null);
                             return 1;
                         })
                         .then(Commands.argument("entityType", StringArgumentType.string())
-                                .suggests((context, builder) -> {
-                                    ServerPlayer player = context.getSource().getPlayer();
-                                    if (player != null) {
-                                        String playerName = player.getName().getString();
-                                        PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
-                                        String language = getPreferredLanguage(context.getSource());
-                                        return SharedSuggestionProvider.suggest(
-                                                stats.getKillsByEntityType().keySet().stream()
-                                                        .map(type -> "\"" + translateEntityType(type, language) + "\""),
-                                                builder
-                                        );
-                                    }
-                                    return Suggestions.empty();
+                                .suggests((context, b) -> {
+                                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                                    if (playerName == null) return Suggestions.empty();
+                                    PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                                    String language = getPreferredLanguage(context.getSource());
+                                    return SharedSuggestionProvider.suggest(stats.getDamageDealtByEntityType().keySet().stream().map(type -> "\"" + translateEntityType(type, language) + "\""), b);
                                 })
                                 .executes(context -> {
-                                    String playerName = context.getSource().getPlayer().getName().getString();
+                                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
                                     String entityType = StringArgumentType.getString(context, "entityType");
-                                    if (entityType.startsWith("\"") && entityType.endsWith("\"")) {
-                                        entityType = entityType.substring(1, entityType.length() - 1);
-                                    }
-                                    showKillsStats(context.getSource(), playerName, entityType);
+                                    if (entityType.startsWith("\"") && entityType.endsWith("\"")) entityType = entityType.substring(1, entityType.length() - 1);
+                                    if (playerName != null) showDamageDealtStats(context.getSource(), playerName, entityType);
                                     return 1;
                                 })
                         )
                 )
-                .then(Commands.literal("deaths")
+                .then(Commands.literal("taken")
                         .executes(context -> {
-                            ServerPlayer player = context.getSource().getPlayer();
-                            if (player != null) {
-                                String playerName = player.getName().getString();
-                                showDeathsStats(context.getSource(), playerName, null);
-                            } else {
-                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
-                            }
+                            String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                            if (playerName != null) showDamageTakenStats(context.getSource(), playerName, null);
                             return 1;
                         })
                         .then(Commands.argument("entityType", StringArgumentType.string())
-                                .suggests((context, builder) -> {
-                                    ServerPlayer player = context.getSource().getPlayer();
-                                    if (player != null) {
-                                        String playerName = player.getName().getString();
-                                        PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
-                                        String language = getPreferredLanguage(context.getSource());
-                                        return SharedSuggestionProvider.suggest(
-                                                stats.getDeathsByEntityType().keySet().stream()
-                                                        .map(type -> "\"" + translateEntityType(type, language) + "\""),
-                                                builder
-                                        );
-                                    }
-                                    return Suggestions.empty();
+                                .suggests((context, b) -> {
+                                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                                    if (playerName == null) return Suggestions.empty();
+                                    PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                                    String language = getPreferredLanguage(context.getSource());
+                                    return SharedSuggestionProvider.suggest(stats.getDamageTakenByEntityType().keySet().stream().map(type -> "\"" + translateEntityType(type, language) + "\""), b);
                                 })
                                 .executes(context -> {
-                                    String playerName = context.getSource().getPlayer().getName().getString();
+                                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
                                     String entityType = StringArgumentType.getString(context, "entityType");
-                                    if (entityType.startsWith("\"") && entityType.endsWith("\"")) {
-                                        entityType = entityType.substring(1, entityType.length() - 1);
-                                    }
-                                    showDeathsStats(context.getSource(), playerName, entityType);
+                                    if (entityType.startsWith("\"") && entityType.endsWith("\"")) entityType = entityType.substring(1, entityType.length() - 1);
+                                    if (playerName != null) showDamageTakenStats(context.getSource(), playerName, entityType);
                                     return 1;
                                 })
                         )
                 )
-                .then(Commands.literal("blocks")
-                        .executes(context -> {
-                            ServerPlayer player = context.getSource().getPlayer();
-                            if (player != null) {
-                                String playerName = player.getName().getString();
-                                showBlocksStats(context.getSource(), playerName, null);
-                            } else {
-                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
-                            }
-                            return 1;
+        ).then(Commands.literal("fishing")
+                .executes(context -> {
+                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                    if (playerName != null) showFishingStats(context.getSource(), playerName, null);
+                    return 1;
+                })
+                .then(Commands.argument("itemType", StringArgumentType.string())
+                        .suggests((context, b) -> {
+                            String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                            if (playerName == null) return Suggestions.empty();
+                            PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                            String language = getPreferredLanguage(context.getSource());
+                            return SharedSuggestionProvider.suggest(stats.getFishCaughtByType().keySet().stream().map(type -> "\"" + translateItemType(type, language) + "\""), b);
                         })
-                        .then(Commands.literal("placed")
-                                .executes(context -> {
-                                    ServerPlayer player = context.getSource().getPlayer();
-                                    if (player != null) {
-                                        String playerName = player.getName().getString();
-                                        showBlocksPlacedStats(context.getSource(), playerName, null);
-                                    } else {
-                                        StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
-                                    }
-                                    return 1;
-                                })
-                                .then(Commands.argument("blockType", StringArgumentType.string())
-                                        .suggests((context, builder) -> {
-                                            ServerPlayer player = context.getSource().getPlayer();
-                                            if (player != null) {
-                                                String playerName = player.getName().getString();
-                                                PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
-                                                String language = getPreferredLanguage(context.getSource());
-                                                return SharedSuggestionProvider.suggest(
-                                                        stats.getBlocksPlacedByType().keySet().stream()
-                                                                .map(type -> "\"" + translateBlockType(type, language) + "\""),
-                                                        builder
-                                                );
-                                            }
-                                            return Suggestions.empty();
-                                        })
-                                        .executes(context -> {
-                                            String playerName = context.getSource().getPlayer().getName().getString();
-                                            String blockType = StringArgumentType.getString(context, "blockType");
-                                            if (blockType.startsWith("\"") && blockType.endsWith("\"")) {
-                                                blockType = blockType.substring(1, blockType.length() - 1);
-                                            }
-                                            showBlocksPlacedStats(context.getSource(), playerName, blockType);
-                                            return 1;
-                                        })
-                                )
-                        )
-                        .then(Commands.literal("broken")
-                                .executes(context -> {
-                                    ServerPlayer player = context.getSource().getPlayer();
-                                    if (player != null) {
-                                        String playerName = player.getName().getString();
-                                        showBlocksBrokenStats(context.getSource(), playerName, null);
-                                    } else {
-                                        StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
-                                    }
-                                    return 1;
-                                })
-                                .then(Commands.argument("blockType", StringArgumentType.string())
-                                        .suggests((context, builder) -> {
-                                            ServerPlayer player = context.getSource().getPlayer();
-                                            if (player != null) {
-                                                String playerName = player.getName().getString();
-                                                PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
-                                                String language = getPreferredLanguage(context.getSource());
-                                                return SharedSuggestionProvider.suggest(
-                                                        stats.getBlocksBrokenByType().keySet().stream()
-                                                                .map(type -> "\"" + translateBlockType(type, language) + "\""),
-                                                        builder
-                                                );
-                                            }
-                                            return Suggestions.empty();
-                                        })
-                                        .executes(context -> {
-                                            String playerName = context.getSource().getPlayer().getName().getString();
-                                            String blockType = StringArgumentType.getString(context, "blockType");
-                                            if (blockType.startsWith("\"") && blockType.endsWith("\"")) {
-                                                blockType = blockType.substring(1, blockType.length() - 1);
-                                            }
-                                            showBlocksBrokenStats(context.getSource(), playerName, blockType);
-                                            return 1;
-                                        })
-                                )
-                        )
-                )
-                .then(Commands.literal("damage")
                         .executes(context -> {
-                            ServerPlayer player = context.getSource().getPlayer();
-                            if (player != null) {
-                                String playerName = player.getName().getString();
-                                showDamageStats(context.getSource(), playerName);
-                            } else {
-                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
-                            }
-                            return 1;
-                        })
-                        .then(Commands.literal("dealt")
-                                .executes(context -> {
-                                    ServerPlayer player = context.getSource().getPlayer();
-                                    if (player != null) {
-                                        String playerName = player.getName().getString();
-                                        showDamageDealtStats(context.getSource(), playerName, null);
-                                    } else {
-                                        StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
-                                    }
-                                    return 1;
-                                })
-                                .then(Commands.argument("entityType", StringArgumentType.string())
-                                        .suggests((context, builder) -> {
-                                            ServerPlayer player = context.getSource().getPlayer();
-                                            if (player != null) {
-                                                String playerName = player.getName().getString();
-                                                PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
-                                                String language = getPreferredLanguage(context.getSource());
-                                                return SharedSuggestionProvider.suggest(
-                                                        stats.getDamageDealtByEntityType().keySet().stream()
-                                                                .map(type -> "\"" + translateEntityType(type, language) + "\""),
-                                                        builder
-                                                );
-                                            }
-                                            return Suggestions.empty();
-                                        })
-                                        .executes(context -> {
-                                            String playerName = context.getSource().getPlayer().getName().getString();
-                                            String entityType = StringArgumentType.getString(context, "entityType");
-                                            if (entityType.startsWith("\"") && entityType.endsWith("\"")) {
-                                                entityType = entityType.substring(1, entityType.length() - 1);
-                                            }
-                                            showDamageDealtStats(context.getSource(), playerName, entityType);
-                                            return 1;
-                                        })
-                                )
-                        )
-                        .then(Commands.literal("taken")
-                                .executes(context -> {
-                                    ServerPlayer player = context.getSource().getPlayer();
-                                    if (player != null) {
-                                        String playerName = player.getName().getString();
-                                        showDamageTakenStats(context.getSource(), playerName, null);
-                                    } else {
-                                        StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
-                                    }
-                                    return 1;
-                                })
-                                .then(Commands.argument("entityType", StringArgumentType.string())
-                                        .suggests((context, builder) -> {
-                                            ServerPlayer player = context.getSource().getPlayer();
-                                            if (player != null) {
-                                                String playerName = player.getName().getString();
-                                                PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
-                                                String language = getPreferredLanguage(context.getSource());
-                                                return SharedSuggestionProvider.suggest(
-                                                        stats.getDamageTakenByEntityType().keySet().stream()
-                                                                .map(type -> "\"" + translateEntityType(type, language) + "\""),
-                                                        builder
-                                                );
-                                            }
-                                            return Suggestions.empty();
-                                        })
-                                        .executes(context -> {
-                                            String playerName = context.getSource().getPlayer().getName().getString();
-                                            String entityType = StringArgumentType.getString(context, "entityType");
-                                            if (entityType.startsWith("\"") && entityType.endsWith("\"")) {
-                                                entityType = entityType.substring(1, entityType.length() - 1);
-                                            }
-                                            showDamageTakenStats(context.getSource(), playerName, entityType);
-                                            return 1;
-                                        })
-                                )
-                        )
-                )
-                .then(Commands.literal("fishing")
-                        .executes(context -> {
-                            ServerPlayer player = context.getSource().getPlayer();
-                            if (player != null) {
-                                String playerName = player.getName().getString();
-                                showFishingStats(context.getSource(), playerName, null);
-                            } else {
-                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
-                            }
-                            return 1;
-                        })
-                        .then(Commands.argument("itemType", StringArgumentType.string())
-                                .suggests((context, builder) -> {
-                                    ServerPlayer player = context.getSource().getPlayer();
-                                    if (player != null) {
-                                        String playerName = player.getName().getString();
-                                        PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
-                                        String language = getPreferredLanguage(context.getSource());
-                                        return SharedSuggestionProvider.suggest(
-                                                stats.getFishCaughtByType().keySet().stream()
-                                                        .map(type -> "\"" + translateItemType(type, language) + "\""),
-                                                builder
-                                        );
-                                    }
-                                    return Suggestions.empty();
-                                })
-                                .executes(context -> {
-                                    String playerName = context.getSource().getPlayer().getName().getString();
-                                    String itemType = StringArgumentType.getString(context, "itemType");
-                                    if (itemType.startsWith("\"") && itemType.endsWith("\"")) {
-                                        itemType = itemType.substring(1, itemType.length() - 1);
-                                    }
-                                    showFishingStats(context.getSource(), playerName, itemType);
-                                    return 1;
-                                })
-                        )
-                )
-                .then(Commands.literal("crafting")
-                        .executes(context -> {
-                            ServerPlayer player = context.getSource().getPlayer();
-                            if (player != null) {
-                                String playerName = player.getName().getString();
-                                showCraftingStats(context.getSource(), playerName, null);
-                            } else {
-                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
-                            }
-                            return 1;
-                        })
-                        .then(Commands.argument("itemType", StringArgumentType.string())
-                                .suggests((context, builder) -> {
-                                    ServerPlayer player = context.getSource().getPlayer();
-                                    if (player != null) {
-                                        String playerName = player.getName().getString();
-                                        PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
-                                        String language = getPreferredLanguage(context.getSource());
-                                        return SharedSuggestionProvider.suggest(
-                                                stats.getItemsCraftedByType().keySet().stream()
-                                                        .map(type -> "\"" + translateItemType(type, language) + "\""),
-                                                builder
-                                        );
-                                    }
-                                    return Suggestions.empty();
-                                })
-                                .executes(context -> {
-                                    String playerName = context.getSource().getPlayer().getName().getString();
-                                    String itemType = StringArgumentType.getString(context, "itemType");
-                                    if (itemType.startsWith("\"") && itemType.endsWith("\"")) {
-                                        itemType = itemType.substring(1, itemType.length() - 1);
-                                    }
-                                    showCraftingStats(context.getSource(), playerName, itemType);
-                                    return 1;
-                                })
-                        )
-                )
-                .then(Commands.literal("drops")
-                        .executes(context -> {
-                            ServerPlayer player = context.getSource().getPlayer();
-                            if (player != null) {
-                                String playerName = player.getName().getString();
-                                showDropsStats(context.getSource(), playerName, null);
-                            } else {
-                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
-                            }
-                            return 1;
-                        })
-                        .then(Commands.argument("itemType", StringArgumentType.string())
-                                .suggests((context, builder) -> {
-                                    ServerPlayer player = context.getSource().getPlayer();
-                                    if (player != null) {
-                                        String playerName = player.getName().getString();
-                                        PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
-                                        String language = getPreferredLanguage(context.getSource());
-                                        return SharedSuggestionProvider.suggest(
-                                                stats.getItemsDroppedByType().keySet().stream()
-                                                        .map(type -> "\"" + translateItemType(type, language) + "\""),
-                                                builder
-                                        );
-                                    }
-                                    return Suggestions.empty();
-                                })
-                                .executes(context -> {
-                                    String playerName = context.getSource().getPlayer().getName().getString();
-                                    String itemType = StringArgumentType.getString(context, "itemType");
-                                    if (itemType.startsWith("\"") && itemType.endsWith("\"")) {
-                                        itemType = itemType.substring(1, itemType.length() - 1);
-                                    }
-                                    showDropsStats(context.getSource(), playerName, itemType);
-                                    return 1;
-                                })
-                        )
-                )
-                .then(Commands.literal("info")
-                        .executes(context -> {
-                            ServerPlayer player = context.getSource().getPlayer();
-                            if (player != null) {
-                                String playerName = player.getName().getString();
-                                showPlayerInfoStats(context.getSource(), playerName);
-                            } else {
-                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
-                            }
+                            String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                            String itemType = StringArgumentType.getString(context, "itemType");
+                            if (itemType.startsWith("\"") && itemType.endsWith("\"")) itemType = itemType.substring(1, itemType.length() - 1);
+                            if (playerName != null) showFishingStats(context.getSource(), playerName, itemType);
                             return 1;
                         })
                 )
-                .then(Commands.literal("activity")
+        ).then(Commands.literal("crafting")
+                .executes(context -> {
+                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                    if (playerName != null) showCraftingStats(context.getSource(), playerName, null);
+                    return 1;
+                })
+                .then(Commands.argument("itemType", StringArgumentType.string())
+                        .suggests((context, b) -> {
+                            String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                            if (playerName == null) return Suggestions.empty();
+                            PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                            String language = getPreferredLanguage(context.getSource());
+                            return SharedSuggestionProvider.suggest(stats.getItemsCraftedByType().keySet().stream().map(type -> "\"" + translateItemType(type, language) + "\""), b);
+                        })
                         .executes(context -> {
-                            ServerPlayer player = context.getSource().getPlayer();
-                            if (player != null) {
-                                String playerName = player.getName().getString();
-                                showActivityStats(context.getSource(), playerName);
-                            } else {
-                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
-                            }
+                            String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                            String itemType = StringArgumentType.getString(context, "itemType");
+                            if (itemType.startsWith("\"") && itemType.endsWith("\"")) itemType = itemType.substring(1, itemType.length() - 1);
+                            if (playerName != null) showCraftingStats(context.getSource(), playerName, itemType);
                             return 1;
                         })
                 )
-                .then(Commands.literal("extended")
+        ).then(Commands.literal("drops")
+                .executes(context -> {
+                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                    if (playerName != null) showDropsStats(context.getSource(), playerName, null);
+                    return 1;
+                })
+                .then(Commands.argument("itemType", StringArgumentType.string())
+                        .suggests((context, b) -> {
+                            String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                            if (playerName == null) return Suggestions.empty();
+                            PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+                            String language = getPreferredLanguage(context.getSource());
+                            return SharedSuggestionProvider.suggest(stats.getItemsDroppedByType().keySet().stream().map(type -> "\"" + translateItemType(type, language) + "\""), b);
+                        })
                         .executes(context -> {
-                            ServerPlayer player = context.getSource().getPlayer();
-                            if (player != null) {
-                                String playerName = player.getName().getString();
-                                showExtendedStats(context.getSource(), playerName);
-                            } else {
-                                StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
-                            }
+                            String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                            String itemType = StringArgumentType.getString(context, "itemType");
+                            if (itemType.startsWith("\"") && itemType.endsWith("\"")) itemType = itemType.substring(1, itemType.length() - 1);
+                            if (playerName != null) showDropsStats(context.getSource(), playerName, itemType);
                             return 1;
                         })
                 )
+        ).then(Commands.literal("info")
+                .executes(context -> {
+                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                    if (playerName != null) showPlayerInfoStats(context.getSource(), playerName);
+                    return 1;
+                })
+        ).then(Commands.literal("activity")
+                .executes(context -> {
+                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                    if (playerName != null) showActivityStats(context.getSource(), playerName);
+                    return 1;
+                })
+        ).then(Commands.literal("extended")
+                .executes(context -> {
+                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                    if (playerName != null) showExtendedStats(context.getSource(), playerName);
+                    return 1;
+                })
+        ).then(Commands.literal("economy")
+                .executes(context -> {
+                    String playerName = isForTargetPlayer ? getPlayerNameFromArgument(context, "player") : getSenderName(context);
+                    if (playerName != null) showEconomyStats(context.getSource(), playerName);
+                    return 1;
+                })
         );
     }
+
+    private static String getSenderName(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
+        ServerPlayer player = context.getSource().getPlayer();
+        if (player != null) return player.getName().getString();
+        StatsTranslationHelper.sendSuccess(context.getSource(), "stats.command.player_only");
+        return null;
+    }
+
 
     private static void showPlayerStats(CommandSourceStack source, String playerName) {
         PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
@@ -1190,6 +1063,99 @@ public class StatsCommand {
         
         StatsTranslationHelper.sendSuccess(source, "stats.extended.death_header");
         StatsTranslationHelper.sendSuccess(source, "stats.extended.farthest_death_distance", stats.getFarthestDeathDistance());
+    }
+
+    private static void showEconomyStats(CommandSourceStack source, String playerName) {
+        PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(playerName);
+        String lang = getPreferredLanguage(source);
+        net.minecraft.server.MinecraftServer server = source.getServer();
+
+        StatsTranslationHelper.sendSuccess(source, "stats.header.economy", playerName);
+
+        // 1. 各货币持有数量
+        StatsTranslationHelper.sendSuccess(source, "stats.economy.balances_header");
+        me.tuanzi.economy.api.EconomyAPI economyAPI = me.tuanzi.economy.api.EconomyAPIImpl.getInstance(server);
+        if (economyAPI != null) {
+            java.util.Collection<me.tuanzi.economy.currency.WalletType> walletTypes = economyAPI.getAllWalletTypes();
+            
+            java.util.UUID uuid = null;
+            net.minecraft.server.level.ServerPlayer targetPlayer = server.getPlayerList().getPlayerByName(playerName);
+            if (targetPlayer != null) {
+                uuid = targetPlayer.getUUID();
+            } else {
+                // 尝试从离线 UUID 生成器获取 (符合本项目的离线/盗版支持逻辑)
+                uuid = me.tuanzi.auth.whitelist.OfflineUUIDGenerator.generateOfflineUUID(playerName);
+            }
+
+            if (uuid != null) {
+                for (me.tuanzi.economy.currency.WalletType wt : walletTypes) {
+                    double balance = economyAPI.getBalance(uuid, wt.id());
+                    StatsTranslationHelper.sendSuccess(source, "stats.economy.item_count", wt.displayName().getString(), (int)balance);
+                }
+            }
+        }
+
+        // 2. 商店交易统计 (概览)
+        StatsTranslationHelper.sendSuccess(source, "stats.economy.shop_header");
+        StatsTranslationHelper.sendSuccess(source, "stats.economy.items_bought_count", stats.getItemsBoughtCount());
+        stats.getTotalBuyExpenseByCurrency().forEach((cid, amount) -> {
+            String cname = economyAPI != null ? economyAPI.getWalletType(cid).map(wt -> wt.displayName().getString()).orElse(cid) : cid;
+            StatsTranslationHelper.sendSuccess(source, "stats.economy.buy_expense", amount, cname);
+        });
+
+        StatsTranslationHelper.sendSuccess(source, "stats.economy.items_sold_count", stats.getItemsSoldCount());
+        stats.getTotalSellIncomeByCurrency().forEach((cid, amount) -> {
+            String cname = economyAPI != null ? economyAPI.getWalletType(cid).map(wt -> wt.displayName().getString()).orElse(cid) : cid;
+            StatsTranslationHelper.sendSuccess(source, "stats.economy.sell_income", amount, cname);
+        });
+
+        // 3. 转账统计
+        StatsTranslationHelper.sendSuccess(source, "stats.economy.transfer_header");
+        StatsTranslationHelper.sendSuccess(source, "stats.economy.sent_count", stats.getMoneySentCount());
+        stats.getTotalMoneySentByCurrency().forEach((cid, amount) -> {
+            String cname = economyAPI != null ? economyAPI.getWalletType(cid).map(wt -> wt.displayName().getString()).orElse(cid) : cid;
+            StatsTranslationHelper.sendSuccess(source, "stats.economy.sent_amount", amount, cname);
+        });
+
+        StatsTranslationHelper.sendSuccess(source, "stats.economy.received_count", stats.getMoneyReceivedCount());
+        stats.getTotalMoneyReceivedByCurrency().forEach((cid, amount) -> {
+            String cname = economyAPI != null ? economyAPI.getWalletType(cid).map(wt -> wt.displayName().getString()).orElse(cid) : cid;
+            StatsTranslationHelper.sendSuccess(source, "stats.economy.received_amount", amount, cname);
+        });
+
+        // 4. 出售物品种类数量 (明细)
+        if (!stats.getItemsSoldByType().isEmpty()) {
+            StatsTranslationHelper.sendSuccess(source, "stats.economy.sold_items_header");
+            stats.getItemsSoldByType().forEach((type, count) -> {
+                String itemName = translateItemType(type, lang);
+                Map<String, Double> incomeMap = stats.getItemsSoldIncomeByItemAndCurrency().getOrDefault(type, Map.of());
+                if (incomeMap.isEmpty()) {
+                    StatsTranslationHelper.sendSuccess(source, "stats.economy.item_count", itemName, count);
+                } else {
+                    incomeMap.forEach((cid, amount) -> {
+                        String cname = economyAPI != null ? economyAPI.getWalletType(cid).map(wt -> wt.displayName().getString()).orElse(cid) : cid;
+                        StatsTranslationHelper.sendSuccess(source, "stats.economy.item_detail", itemName, count, amount, cname);
+                    });
+                }
+            });
+        }
+
+        // 5. 收购物品种类数量 (明细 - 即玩家买入)
+        if (!stats.getItemsBoughtByType().isEmpty()) {
+            StatsTranslationHelper.sendSuccess(source, "stats.economy.bought_items_header");
+            stats.getItemsBoughtByType().forEach((type, count) -> {
+                String itemName = translateItemType(type, lang);
+                Map<String, Double> expenseMap = stats.getItemsBoughtExpenseByItemAndCurrency().getOrDefault(type, Map.of());
+                if (expenseMap.isEmpty()) {
+                    StatsTranslationHelper.sendSuccess(source, "stats.economy.item_count", itemName, count);
+                } else {
+                    expenseMap.forEach((cid, amount) -> {
+                        String cname = economyAPI != null ? economyAPI.getWalletType(cid).map(wt -> wt.displayName().getString()).orElse(cid) : cid;
+                        StatsTranslationHelper.sendSuccess(source, "stats.economy.item_detail", itemName, count, amount, cname);
+                    });
+                }
+            });
+        }
     }
 }
 

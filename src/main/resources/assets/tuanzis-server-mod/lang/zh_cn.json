@@ -508,5 +508,21 @@
   "stats.board.rotation_stopped": "§a计分板轮换已停止",
   "stats.board.rotation_interval_set": "§a计分板轮换间隔已设置为 §f%d §a秒",
   "stats.board.update_interval_set": "§a计分板数据更新间隔已设置为 §f%d §a刻 (§f%.1f 秒)",
-  "stats.board.removed": "§a计分板已移除"
+  "stats.board.removed": "§a计分板已移除",
+  "stats.header.economy": "§6=== 玩家经济统计: %s ===",
+  "stats.economy.balances_header": "§b[当前各货币持有量]",
+  "stats.economy.shop_header": "§b[商店交易统计]",
+  "stats.economy.items_bought_count": "§f购买物品总数: §e%d",
+  "stats.economy.buy_expense": "§f购买总支出: §e%.2f %s",
+  "stats.economy.items_sold_count": "§f出售物品总数: §e%d",
+  "stats.economy.sell_income": "§f出售总收益: §e%.2f %s",
+  "stats.economy.bought_items_header": "§b[已购买物品明细清单]",
+  "stats.economy.sold_items_header": "§b[已出售物品明细清单]",
+  "stats.economy.item_detail": "§7 - %s: §f%d个§7 (共计 §e%.2f %s§7)",
+  "stats.economy.item_count": "§7 - %s: §f%d",
+  "stats.economy.transfer_header": "§b[转账统计]",
+  "stats.economy.sent_count": "§f转账次数: §e%d",
+  "stats.economy.sent_amount": "§f转账总金额: §e%.2f %s",
+  "stats.economy.received_count": "§f收到转账次数: §e%d",
+  "stats.economy.received_amount": "§f收到转账总金额: §e%.2f %s"
 }
