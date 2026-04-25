@@ -88,7 +88,7 @@ public class ShopModule implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        LOGGER.info("正在初始化商店模块...");
+        me.tuanzi.shop.util.DevFlowLogger.critical("ShopModule", "正在初始化商店模块...");
 
         config = new ShopConfig();
         config.load();
@@ -165,7 +165,7 @@ public class ShopModule implements ModInitializer {
             return !instance.chatInputHandler.handleChatInput(sender, content);
         });
 
-        LOGGER.info("商店模块初始化完成！");
+        me.tuanzi.shop.util.DevFlowLogger.critical("ShopModule", "商店模块初始化完成！");
     }
 
     private void onServerStarting(MinecraftServer server) {
@@ -175,14 +175,14 @@ public class ShopModule implements ModInitializer {
             instance.displayManager.initializeAllDisplays(overworld);
         }
         int shopCount = instance.shopManager != null ? instance.shopManager.getAllShops().size() : 0;
-        LOGGER.info("商店模块已加载 {} 个商店", shopCount);
+        me.tuanzi.shop.util.DevFlowLogger.critical("ShopModule", "商店模块已加载 " + shopCount + " 个商店");
     }
 
     private void onServerStopped(MinecraftServer server) {
         ShopManager.resetInstance();
         ShopRegistry.resetInstance();
         instances.remove(server);
-        LOGGER.info("商店模块已卸载");
+        me.tuanzi.shop.util.DevFlowLogger.critical("ShopModule", "商店模块已卸载");
     }
 
     private InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
@@ -359,8 +359,7 @@ public class ShopModule implements ModInitializer {
                     return true;
                 }
 
-                LOGGER.info("检测到商店破坏事件 - 商店ID: {}, 破坏位置: {}, 商店箱子: {}, 告示牌: {}",
-                        shop.getShopId(), pos, shop.getShopPos(), shop.getSignPos());
+                me.tuanzi.shop.util.DevFlowLogger.info("ShopModule", "检测到商店破坏事件 - 商店ID: " + shop.getShopId());
                 forceDeleteShop(instance, shop, serverLevel, serverPlayer);
             }
         }
@@ -394,7 +393,7 @@ public class ShopModule implements ModInitializer {
 
         UUID shopId = shop.getShopId();
 
-        LOGGER.info("正在删除商店 - 商店ID: {}, 所有者: {}", shopId, shop.getOwnerId());
+        me.tuanzi.shop.util.DevFlowLogger.info("ShopModule", "正在删除商店 - 商店ID: " + shopId + ", 所有者: " + shop.getOwnerId());
         DevFlowLogger.step("商店删除流程", "标记商店为已删除");
 
         shop.markAsDeleted();
@@ -416,7 +415,7 @@ public class ShopModule implements ModInitializer {
 
         player.sendSystemMessage(ShopTranslationHelper.translatable(player, "shop.deleted.success"));
 
-        LOGGER.info("商店删除成功 - 商店ID: {}", shopId);
+        me.tuanzi.shop.util.DevFlowLogger.critical("ShopModule", "商店删除成功 - 商店ID: " + shopId);
         DevFlowLogger.endFlow("商店删除流程", true,
                 "商店删除成功 - ID: " + shopId.toString().substring(0, 8));
     }

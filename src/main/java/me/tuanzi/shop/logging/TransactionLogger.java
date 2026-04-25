@@ -55,7 +55,7 @@ public class TransactionLogger {
         try {
             Files.writeString(logPath, logLine, StandardOpenOption.APPEND);
         } catch (IOException e) {
-            System.err.println("Failed to write transaction log: " + e.getMessage());
+            me.tuanzi.shop.util.DevFlowLogger.error("TransactionLogger", "Failed to write transaction log: " + e.getMessage());
         }
     }
 

@@ -17,14 +17,14 @@ public class EconomyModule implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        LOGGER.info("Initializing Economy Module...");
+        me.tuanzi.shop.util.DevFlowLogger.critical("EconomyModule", "Initializing Economy Module...");
 
         ServerTranslationHelper.initialize();
 
         registerCommands();
         registerServerLifecycleEvents();
 
-        LOGGER.info("Economy Module initialized successfully!");
+        me.tuanzi.shop.util.DevFlowLogger.critical("EconomyModule", "Economy Module initialized successfully!");
     }
 
     private void registerCommands() {
@@ -37,11 +37,11 @@ public class EconomyModule implements ModInitializer {
 
     private void registerServerLifecycleEvents() {
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
-            LOGGER.info("Economy Module: Server starting...");
+            me.tuanzi.shop.util.DevFlowLogger.critical("EconomyModule", "Economy Module: Server starting...");
         });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            LOGGER.info("Economy Module: Server stopping, saving data...");
+            me.tuanzi.shop.util.DevFlowLogger.critical("EconomyModule", "Economy Module: Server stopping, saving data...");
             EconomyAPIImpl.resetInstance();
         });
     }

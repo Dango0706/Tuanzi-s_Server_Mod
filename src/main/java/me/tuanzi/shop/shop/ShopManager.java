@@ -136,7 +136,7 @@ public class ShopManager {
         DevFlowLogger.step("删除商店", "检查商店是否存在");
         Optional<ShopInstance> existingShop = getShopById(shopId);
         if (existingShop.isEmpty()) {
-            DevFlowLogger.warning("删除商店", "商店不存在，可能已被删除: " + shopId);
+            DevFlowLogger.flowWarning("删除商店", "商店不存在，可能已被删除: " + shopId);
             DevFlowLogger.endFlow("删除商店", false, "商店不存在");
             return;
         }
@@ -269,7 +269,7 @@ public class ShopManager {
         }
         if (changed) {
             markDirty();
-            LOGGER.info("[商店系统] 已完成基于各商店衰减率的库存自动衰减(1分钟周期)并刷新了告示牌");
+            me.tuanzi.shop.util.DevFlowLogger.status("商店系统", "已完成基于各商店衰减率的库存自动衰减(1分钟周期)并刷新了告示牌");
         }
     }
 

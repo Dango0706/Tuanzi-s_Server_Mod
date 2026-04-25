@@ -17,6 +17,24 @@ import java.util.Locale;
 
 public class SignUpdateHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger("ShopModule/SignUpdate");
+    private static final boolean IS_DEV = net.fabricmc.loader.api.FabricLoader.getInstance().isDevelopmentEnvironment();
+
+    private static void logInfo(String msg, Object... args) {
+        if (IS_DEV) {
+            // 开发环境下，正常输出到控制台和日志
+            LOGGER.info(msg, args);
+        } else {
+            // 生产环境下，绕过标准日志，直接记录到流程文件
+            String formatted = msg;
+            try {
+                // 处理 SLF4J 占位符 {}
+                for (Object arg : args) {
+                    formatted = formatted.replaceFirst("\\{\\}", String.valueOf(arg));
+                }
+                DevFlowLogger.status("告示牌更新/后台", formatted);
+            } catch (Exception ignored) {}
+        }
+    }
 
     public static void updateSignForShop(ShopInstance shop, ServerLevel level) {
         if (shop == null || level == null) {
@@ -70,7 +88,7 @@ public class SignUpdateHelper {
         signEntity.setChanged();
         level.sendBlockUpdated(signPos, level.getBlockState(signPos), level.getBlockState(signPos), 3);
 
-        LOGGER.info("[告示牌更新] 刷新并同步成功：商店ID={}, 位置={}, 第1行={}, 第2行={}, 第3行={}",
+        logInfo("[告示牌更新] 刷新并同步成功：商店ID={}, 位置={}, 第1行={}, 第2行={}, 第3行={}",
                 shop.getShopId().toString().substring(0, 8), signPos, line0, tradeItemDisplayName.getString(), line2);
 
         DevFlowLogger.status("告示牌同步",

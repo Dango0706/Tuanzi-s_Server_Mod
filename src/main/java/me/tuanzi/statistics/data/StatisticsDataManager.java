@@ -46,7 +46,7 @@ public class StatisticsDataManager {
                 reader.close();
             }
         } catch (IOException e) {
-            System.err.println("Failed to load player statistics: " + e.getMessage());
+            me.tuanzi.shop.util.DevFlowLogger.error("StatisticsDataManager", "Failed to load player statistics: " + e.getMessage());
         }
 
         try {
@@ -58,7 +58,7 @@ public class StatisticsDataManager {
                 serverStatistics.updateLastStartupTime();
             }
         } catch (IOException e) {
-            System.err.println("Failed to load server statistics: " + e.getMessage());
+            me.tuanzi.shop.util.DevFlowLogger.error("StatisticsDataManager", "Failed to load server statistics: " + e.getMessage());
         }
     }
 
@@ -68,7 +68,7 @@ public class StatisticsDataManager {
             gson.toJson(playerStatisticsMap, writer);
             writer.close();
         } catch (IOException e) {
-            System.err.println("Failed to save player statistics: " + e.getMessage());
+            me.tuanzi.shop.util.DevFlowLogger.error("StatisticsDataManager", "Failed to save player statistics: " + e.getMessage());
         }
 
         try {
@@ -79,7 +79,7 @@ public class StatisticsDataManager {
             gson.toJson(serverStatistics, writer);
             writer.close();
         } catch (IOException e) {
-            System.err.println("Failed to save server statistics: " + e.getMessage());
+            me.tuanzi.shop.util.DevFlowLogger.error("StatisticsDataManager", "Failed to save server statistics: " + e.getMessage());
         }
     }
 

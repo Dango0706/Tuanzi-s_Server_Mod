@@ -43,7 +43,7 @@ public class WhitelistManager {
                 }
             }
         } catch (IOException e) {
-            System.err.println("加载白名单数据失败: " + e.getMessage());
+            me.tuanzi.shop.util.DevFlowLogger.error("WhitelistManager", "加载白名单数据失败: " + e.getMessage());
         }
     }
 
@@ -58,7 +58,7 @@ public class WhitelistManager {
             gson.toJson(data, writer);
             writer.close();
         } catch (IOException e) {
-            System.err.println("保存白名单数据失败: " + e.getMessage());
+            me.tuanzi.shop.util.DevFlowLogger.error("WhitelistManager", "保存白名单数据失败: " + e.getMessage());
         }
     }
 

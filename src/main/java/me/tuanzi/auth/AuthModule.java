@@ -47,7 +47,7 @@ public class AuthModule implements ModInitializer {
     public void onInitialize() {
         instance = this;
 
-        LOGGER.info("正在初始化玩家身份验证模块...");
+        me.tuanzi.shop.util.DevFlowLogger.critical("AuthModule", "正在初始化玩家身份验证模块...");
 
         TranslationHelper.initialize();
 
@@ -71,7 +71,7 @@ public class AuthModule implements ModInitializer {
         registerServerLifecycleEvents();
         registerLoginListeners();
 
-        LOGGER.info("玩家身份验证模块初始化完成!");
+        me.tuanzi.shop.util.DevFlowLogger.critical("AuthModule", "玩家身份验证模块初始化完成!");
     }
 
     public void initializeLoginTimeoutManager(MinecraftServer minecraftServer) {
@@ -127,7 +127,7 @@ public class AuthModule implements ModInitializer {
         ServerPlayConnectionEvents.DISCONNECT.register(new PlayerQuitListener());
         PlayerRestrictionListener.register();
 
-        LOGGER.info("[AuthModule] 登录事件监听器已注册");
+        me.tuanzi.shop.util.DevFlowLogger.info("AuthModule", "登录事件监听器已注册");
     }
 
     public AuthConfig getAuthConfig() {

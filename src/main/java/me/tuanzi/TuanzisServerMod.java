@@ -19,5 +19,6 @@ public class TuanzisServerMod implements ModInitializer {
         // Proceed with mild caution.
 
 //        LOGGER.info("Hello Fabric world!");
+
     }
 }

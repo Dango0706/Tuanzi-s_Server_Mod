@@ -312,7 +312,7 @@ public class BlockInteractionHandler {
             DevFlowLogger.param("购买交易子流程", "当前库存", stock);
 
             if (stock < quantity) {
-                DevFlowLogger.warning("购买交易子流程", "库存不足 - 需要: " + quantity + ", 实际: " + stock);
+                DevFlowLogger.flowWarning("购买交易子流程", "库存不足 - 需要: " + quantity + ", 实际: " + stock);
                 player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.insufficient_stock"));
                 DevFlowLogger.endFlow("购买交易子流程", false, "库存不足");
                 return false;
@@ -327,7 +327,7 @@ public class BlockInteractionHandler {
         DevFlowLogger.param("购买交易子流程", "玩家余额", playerBalance);
 
         if (!shopManager.hasEnoughBalance(player.getUUID(), shop.getWalletTypeId(), totalPrice)) {
-            DevFlowLogger.warning("购买交易子流程", "余额不足 - 需要: " + totalPrice + ", 实际: " + playerBalance);
+            DevFlowLogger.flowWarning("购买交易子流程", "余额不足 - 需要: " + totalPrice + ", 实际: " + playerBalance);
             player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.insufficient_balance",
                     totalPrice, currencyName));
             DevFlowLogger.endFlow("购买交易子流程", false, "余额不足");
@@ -406,7 +406,7 @@ public class BlockInteractionHandler {
 
         DevFlowLogger.step("出售交易子流程", "检查玩家物品数量");
         if (!hasEnoughItems(player, shop.getTradeItem(), quantity)) {
-            DevFlowLogger.warning("出售交易子流程", "玩家物品不足 - 需要: " + quantity);
+            DevFlowLogger.flowWarning("出售交易子流程", "玩家物品不足 - 需要: " + quantity);
             player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.insufficient_items"));
             DevFlowLogger.endFlow("出售交易子流程", false, "玩家物品不足");
             return false;
@@ -421,7 +421,7 @@ public class BlockInteractionHandler {
             DevFlowLogger.param("出售交易子流程", "商店所有者余额", ownerBalance);
 
             if (!shopManager.hasEnoughBalance(shop.getOwnerId(), shop.getWalletTypeId(), totalPrice)) {
-                DevFlowLogger.warning("出售交易子流程", "商店所有者余额不足 - 需要: " + totalPrice + ", 实际: " + ownerBalance);
+                DevFlowLogger.flowWarning("出售交易子流程", "商店所有者余额不足 - 需要: " + totalPrice + ", 实际: " + ownerBalance);
                 player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.owner_insufficient_balance"));
 
                 if (server != null) {
@@ -440,7 +440,7 @@ public class BlockInteractionHandler {
             DevFlowLogger.param("出售交易子流程", "箱子可用空间", availableSpace);
 
             if (availableSpace < quantity) {
-                DevFlowLogger.warning("出售交易子流程", "箱子空间不足 - 需要: " + quantity + ", 可用: " + availableSpace);
+                DevFlowLogger.flowWarning("出售交易子流程", "箱子空间不足 - 需要: " + quantity + ", 可用: " + availableSpace);
                 player.sendSystemMessage(ShopTranslationHelper.translatable(player, "transaction.insufficient_space"));
                 DevFlowLogger.endFlow("出售交易子流程", false, "箱子空间不足");
                 return false;

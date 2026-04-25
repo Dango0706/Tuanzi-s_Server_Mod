@@ -34,7 +34,7 @@ public class StatisticsModule implements ModInitializer {
     public void onInitialize() {
         instance = this;
 
-        LOGGER.info("正在初始化统计模块...");
+        me.tuanzi.shop.util.DevFlowLogger.critical("StatisticsModule", "正在初始化统计模块...");
 
         StatsTranslationHelper.initialize();
 
@@ -45,7 +45,7 @@ public class StatisticsModule implements ModInitializer {
         registerCommands();
         registerServerLifecycleEvents();
 
-        LOGGER.info("统计模块初始化完成");
+        me.tuanzi.shop.util.DevFlowLogger.critical("StatisticsModule", "统计模块初始化完成");
     }
 
     private void registerListeners() {

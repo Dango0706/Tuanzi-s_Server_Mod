@@ -160,17 +160,15 @@ public class ShopAdminCommand {
         if (moduleInstance != null && moduleInstance.getDisplayManager() != null) {
             if (player.level() instanceof net.minecraft.server.level.ServerLevel adminServerLevel) {
                 moduleInstance.getDisplayManager().removeDisplayForShop(shopId, adminServerLevel);
-                LOGGER.info("[商店管理] 管理员 {} 正在删除商店 {}，已触发悬浮展示实体清理",
-                        player.getName().getString(), shopId);
+                me.tuanzi.shop.util.DevFlowLogger.critical("ShopAdmin", "管理员 " + player.getName().getString() + " 正在删除商店 " + shopId);
+                }
             }
-        }
 
-        // 2. 然后删除商店数据记录
-        shopManager.deleteShop(shopId);
-        deleteConfirmations.remove(playerId);
+            // 2. 然后删除商店数据记录
+            shopManager.deleteShop(shopId);
+            deleteConfirmations.remove(playerId);
 
-        LOGGER.info("[商店管理] 管理员 {} 已成功删除商店 {}，位置 {}",
-                player.getName().getString(), shopId, shop.getShopPos());
+            me.tuanzi.shop.util.DevFlowLogger.critical("ShopAdmin", "管理员 " + player.getName().getString() + " 已成功删除商店 " + shopId);
         source.sendSuccess(() -> ShopTranslationHelper.translatable("shop.deleted.success"), false);
         return 1;
     }
@@ -204,8 +202,7 @@ public class ShopAdminCommand {
             SignUpdateHelper.updateSignForShop(shop, serverLevel);
         }
 
-        LOGGER.info("[商店管理] 管理员 {} 设置商店 {} 的无限模式为: {}",
-                player.getName().getString(), shop.getShopId(), value);
+        me.tuanzi.shop.util.DevFlowLogger.critical("ShopAdmin", "管理员 " + player.getName().getString() + " 设置商店 " + shop.getShopId() + " 的无限模式为: " + value);
 
         String statusText = value ? ShopTranslationHelper.getRawTranslation(player, "common.yes") : ShopTranslationHelper.getRawTranslation(player, "common.no");
         source.sendSuccess(() -> ShopTranslationHelper.translatable(player, "admin.shop.set_infinite", statusText), false);
@@ -354,8 +351,7 @@ public class ShopAdminCommand {
         shop.setCurrentPrice(price);
         shopManager.markDirty();
 
-        LOGGER.info("[商店管理] 管理员 {} 设置商店 {} 的价格为: {}",
-                player.getName().getString(), shop.getShopId(), price);
+        me.tuanzi.shop.util.DevFlowLogger.critical("ShopAdmin", "管理员 " + player.getName().getString() + " 设置商店 " + shop.getShopId() + " 的价格为: " + price);
 
         if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             SignUpdateHelper.updateSignForShop(shop, serverLevel);
@@ -396,8 +392,7 @@ public class ShopAdminCommand {
         shopManager.markDirty();
 
         String currencyName = walletTypeOpt.get().displayName().getString();
-        LOGGER.info("[商店管理] 管理员 {} 设置商店 {} 的货币为: {}",
-                player.getName().getString(), shop.getShopId(), currencyName);
+        me.tuanzi.shop.util.DevFlowLogger.critical("ShopAdmin", "管理员 " + player.getName().getString() + " 设置商店 " + shop.getShopId() + " 的货币为: " + currencyName);
 
         if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             SignUpdateHelper.updateSignForShop(shop, serverLevel);
