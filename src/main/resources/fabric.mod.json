@@ -20,7 +20,8 @@
       "me.tuanzi.statistics.StatisticsModule",
       "me.tuanzi.auth.AuthModule",
       "me.tuanzi.economy.EconomyModule",
-      "me.tuanzi.shop.ShopModule"
+      "me.tuanzi.shop.ShopModule",
+      "me.tuanzi.title.TitleModule"
     ],
     "fabric-datagen": [
       "me.tuanzi.TuanzisServerModDataGenerator"

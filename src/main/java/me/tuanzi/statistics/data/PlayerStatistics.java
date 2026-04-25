@@ -99,6 +99,11 @@ public class PlayerStatistics {
     private int moneyReceivedCount = 0;
     private Map<String, Double> totalMoneyReceivedByCurrency = new HashMap<>();
 
+    private int titlesOwned = 0;
+    private int titleSwitches = 0;
+    private int titlesFromAdmin = 0;
+    private int titlesFromItem = 0;
+
     public PlayerStatistics() {
         this.playTimeSeconds = 0;
         this.distanceTraveled = 0.0;
@@ -906,5 +911,42 @@ public class PlayerStatistics {
     public void addMoneyReceived(String currencyId, double amount) {
         this.moneyReceivedCount++;
         this.getTotalMoneyReceivedByCurrency().put(currencyId, this.getTotalMoneyReceivedByCurrency().getOrDefault(currencyId, 0.0) + amount);
+    }
+
+    // 称号统计方法
+    public int getTitlesOwned() {
+        return titlesOwned;
+    }
+
+    public void setTitlesOwned(int titlesOwned) {
+        this.titlesOwned = titlesOwned;
+    }
+
+    public void addTitleOwned() {
+        this.titlesOwned++;
+    }
+
+    public int getTitleSwitches() {
+        return titleSwitches;
+    }
+
+    public void addTitleSwitch() {
+        this.titleSwitches++;
+    }
+
+    public int getTitlesFromAdmin() {
+        return titlesFromAdmin;
+    }
+
+    public void addTitleFromAdmin() {
+        this.titlesFromAdmin++;
+    }
+
+    public int getTitlesFromItem() {
+        return titlesFromItem;
+    }
+
+    public void addTitleFromItem() {
+        this.titlesFromItem++;
     }
 }
