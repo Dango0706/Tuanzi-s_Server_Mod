@@ -103,6 +103,7 @@ public class PlayerStatistics {
     private int titleSwitches = 0;
     private int titlesFromAdmin = 0;
     private int titlesFromItem = 0;
+    private int cdksRedeemed = 0;
 
     public PlayerStatistics() {
         this.playTimeSeconds = 0;
@@ -948,5 +949,13 @@ public class PlayerStatistics {
 
     public void addTitleFromItem() {
         this.titlesFromItem++;
+    }
+
+    public int getCdksRedeemed() {
+        return cdksRedeemed;
+    }
+
+    public void addCdkRedeemed() {
+        this.cdksRedeemed++;
     }
 }

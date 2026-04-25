@@ -21,7 +21,8 @@
       "me.tuanzi.auth.AuthModule",
       "me.tuanzi.economy.EconomyModule",
       "me.tuanzi.shop.ShopModule",
-      "me.tuanzi.title.TitleModule"
+      "me.tuanzi.title.TitleModule",
+      "me.tuanzi.cdk.CDKModule"
     ],
     "fabric-datagen": [
       "me.tuanzi.TuanzisServerModDataGenerator"
