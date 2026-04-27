@@ -20,6 +20,7 @@ public class EconomyModule implements ModInitializer {
         me.tuanzi.shop.util.DevFlowLogger.critical("EconomyModule", "Initializing Economy Module...");
 
         ServerTranslationHelper.initialize();
+        me.tuanzi.backup.BackupManager.getInstance().init();
 
         registerCommands();
         registerServerLifecycleEvents();
@@ -32,6 +33,7 @@ public class EconomyModule implements ModInitializer {
             EconAdminCommand.register(dispatcher, registryAccess);
             BalanceCommand.register(dispatcher, registryAccess);
             PayCommand.register(dispatcher, registryAccess);
+            me.tuanzi.economy.commands.BackupCommand.register(dispatcher);
         });
     }
 

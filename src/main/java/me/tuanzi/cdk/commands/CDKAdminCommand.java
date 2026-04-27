@@ -7,6 +7,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import me.tuanzi.cdk.*;
+import me.tuanzi.economy.utils.ServerTranslationHelper;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -89,7 +90,7 @@ public class CDKAdminCommand {
         int maxUses = IntegerArgumentType.getInteger(ctx, "maxUses");
 
         String finalCode = CDKManager.getInstance().createCDK(code, type, maxUses);
-        ctx.getSource().sendSuccess(() -> Component.literal("§a成功创建礼包码: " + finalCode), true);
+        ServerTranslationHelper.sendSuccess(ctx.getSource(), "cdk.admin.create.success", finalCode);
         return 1;
     }
 
@@ -98,7 +99,7 @@ public class CDKAdminCommand {
         int count = IntegerArgumentType.getInteger(ctx, "count");
 
         int success = CDKManager.getInstance().bulkGenerate(baseCode, count);
-        ctx.getSource().sendSuccess(() -> Component.literal("§a成功基于 " + baseCode + " 生成了 " + success + " 个新礼包码。"), true);
+        ServerTranslationHelper.sendSuccess(ctx.getSource(), "cdk.admin.generate.success", baseCode, success);
         return 1;
     }
 
@@ -110,7 +111,7 @@ public class CDKAdminCommand {
         if (entry != null) {
             entry.getCommands().add(cmd);
             CDKStateSaver.getServerState(ctx.getSource().getServer()).setDirty();
-            ctx.getSource().sendSuccess(() -> Component.literal("§a已为 " + code + " 添加指令。"), true);
+            ServerTranslationHelper.sendSuccess(ctx.getSource(), "cdk.admin.addcmd.success", code);
         }
         return 1;
     }
@@ -123,7 +124,7 @@ public class CDKAdminCommand {
         if (entry != null) {
             entry.setSuccessMessage(msg);
             CDKStateSaver.getServerState(ctx.getSource().getServer()).setDirty();
-            ctx.getSource().sendSuccess(() -> Component.literal("§a已设置成功提示: " + msg), true);
+            ServerTranslationHelper.sendSuccess(ctx.getSource(), "cdk.admin.setmsg.success", msg);
         }
         return 1;
     }
@@ -140,10 +141,10 @@ public class CDKAdminCommand {
             if (entry != null) {
                 entry.setExpireTime(timestamp);
                 CDKStateSaver.getServerState(ctx.getSource().getServer()).setDirty();
-                ctx.getSource().sendSuccess(() -> Component.literal("§a过期时间已设为: " + dateStr), true);
+                ServerTranslationHelper.sendSuccess(ctx.getSource(), "cdk.admin.setexpiry.success", dateStr);
             }
         } catch (Exception e) {
-            ctx.getSource().sendFailure(Component.literal("§c日期格式错误，请使用: yyyy-MM-dd-HH:mm:ss"));
+            ServerTranslationHelper.sendFailure(ctx.getSource(), "cdk.admin.setexpiry.error");
         }
         return 1;
     }
@@ -152,7 +153,7 @@ public class CDKAdminCommand {
         String code = StringArgumentType.getString(ctx, "code");
         CDKManager.getInstance().getCDKData().removeCDK(code);
         CDKStateSaver.getServerState(ctx.getSource().getServer()).setDirty();
-        ctx.getSource().sendSuccess(() -> Component.literal("§a已删除礼包码: " + code), true);
+        ServerTranslationHelper.sendSuccess(ctx.getSource(), "cdk.admin.delete.success", code);
         return 1;
     }
 
@@ -164,38 +165,39 @@ public class CDKAdminCommand {
 
         final int currentPage = page;
         final int finalTotalPages = totalPages;
-        ctx.getSource().sendSuccess(() -> Component.literal("§b--- CDK 列表 (第 " + currentPage + "/" + finalTotalPages + " 页) ---"), false);
+        String lang = ServerTranslationHelper.getLanguage(ctx.getSource());
+        
+        ctx.getSource().sendSuccess(() -> ServerTranslationHelper.translateToComponent("cdk.admin.list.header", lang, currentPage, finalTotalPages), false);
         
         int start = (page - 1) * pageSize;
         int end = Math.min(start + pageSize, all.size());
         
+        String delBtnText = ServerTranslationHelper.translate("cdk.admin.list.delete_btn", lang);
+        String delHoverText = ServerTranslationHelper.translate("cdk.admin.list.delete_hover", lang);
+        String copyBtnText = ServerTranslationHelper.translate("cdk.admin.list.copy_btn", lang);
+        String copyHoverText = ServerTranslationHelper.translate("cdk.admin.list.copy_hover", lang);
+
         for (int i = start; i < end; i++) {
             CDKEntry e = all.get(i);
-            String status = e.isExpired() ? "§c[已过期]" : (e.isFull() ? "§6[已满]" : "§a[有效]");
+            String statusKey = e.isExpired() ? "cdk.admin.list.status.expired" : (e.isFull() ? "cdk.admin.list.status.full" : "cdk.admin.list.status.valid");
+            String status = ServerTranslationHelper.translate(statusKey, lang);
             
-            Component deleteBtn = Component.literal(" §c[删除]")
+            Component deleteBtn = Component.literal(delBtnText)
                     .setStyle(Style.EMPTY
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("§c点击立即删除此 CDK")))
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(delHoverText)))
                         .withClickEvent(new ClickEvent.RunCommand("/cdkadmin delete " + e.getCode())));
 
-            Component copyBtn = Component.literal(" §b[复制]")
+            Component copyBtn = Component.literal(copyBtnText)
                     .setStyle(Style.EMPTY
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("§b点击复制 CDK 代码到剪贴板")))
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(copyHoverText)))
                         .withClickEvent(new ClickEvent.CopyToClipboard(e.getCode())));
 
-            StringBuilder cmdHover = new StringBuilder("§b类型: §f" + e.getType() + "\n§b指令列表:");
-            if (e.getCommands().isEmpty()) {
-                cmdHover.append("\n§7  (无指令)");
-            } else {
-                for (String c : e.getCommands()) {
-                    cmdHover.append("\n§7  - ").append(c);
-                }
-            }
-            cmdHover.append("\n§d点击复制兑换指令");
+            String cmds = e.getCommands().isEmpty() ? "  (无指令)" : "  - " + String.join("\n  - ", e.getCommands());
+            String hoverDetail = ServerTranslationHelper.translate("cdk.admin.list.item_hover", lang, e.getType().toString(), cmds);
 
             Component line = Component.literal("§e" + e.getCode() + " " + status + " §7(" + e.getCurrentUses() + "/" + (e.getMaxUses() == -1 ? "∞" : e.getMaxUses()) + ")")
                     .setStyle(Style.EMPTY
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(cmdHover.toString())))
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal(hoverDetail)))
                         .withClickEvent(new ClickEvent.SuggestCommand("/cdk " + e.getCode())))
                     .append(copyBtn)
                     .append(deleteBtn);
@@ -209,25 +211,20 @@ public class CDKAdminCommand {
         try {
             ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
             List<CDKHistoryEntry> history = CDKManager.getInstance().getHistoryManager().getPlayerHistory(target.getUUID());
-            
-            ctx.getSource().sendSuccess(() -> Component.literal("§b--- " + target.getName().getString() + " 的兑换历史 ---"), false);
+            String lang = ServerTranslationHelper.getLanguage(ctx.getSource());
+
+            ctx.getSource().sendSuccess(() -> ServerTranslationHelper.translateToComponent("cdk.admin.history.header", lang, target.getName().getString()), false);
             if (history.isEmpty()) {
-                ctx.getSource().sendSuccess(() -> Component.literal("§7暂无记录。"), false);
+                ServerTranslationHelper.sendSuccess(ctx.getSource(), "cdk.admin.history.empty");
                 return 1;
             }
 
             for (CDKHistoryEntry entry : history) {
-                StringBuilder histHover = new StringBuilder("§b执行的指令:");
-                if (entry.commands() == null || entry.commands().isEmpty()) {
-                    histHover.append("\n§7  (无记录)");
-                } else {
-                    for (String c : entry.commands()) {
-                        histHover.append("\n§7  - ").append(c);
-                    }
-                }
+                String cmds = (entry.commands() == null || entry.commands().isEmpty()) ? "  (无记录)" : "  - " + String.join("\n  - ", entry.commands());
+                String hoverDetail = ServerTranslationHelper.translate("cdk.admin.history.hover", lang, cmds);
 
                 Component line = Component.literal("§7[" + entry.timestamp() + "] §f" + entry.code())
-                        .setStyle(Style.EMPTY.withHoverEvent(new HoverEvent.ShowText(Component.literal(histHover.toString()))));
+                        .setStyle(Style.EMPTY.withHoverEvent(new HoverEvent.ShowText(Component.literal(hoverDetail))));
                 
                 ctx.getSource().sendSuccess(() -> line, false);
             }
@@ -246,9 +243,9 @@ public class CDKAdminCommand {
                 filename = CDKManager.getInstance().getHistoryManager().exportCDKs(format, CDKManager.getInstance().getCDKData().getCdks().values());
             }
             
-            ctx.getSource().sendSuccess(() -> Component.literal("§a数据已成功导出至: config/tuanzis_exports/" + filename), true);
+            ServerTranslationHelper.sendSuccess(ctx.getSource(), "cdk.admin.export.success", filename);
         } catch (Exception e) {
-            ctx.getSource().sendFailure(Component.literal("§c导出失败: " + e.getMessage()));
+            ServerTranslationHelper.sendFailure(ctx.getSource(), "cdk.admin.export.failure", e.getMessage());
         }
         return 1;
     }

@@ -23,7 +23,7 @@ public class TitleData {
         titles.remove(titleId);
         // Also remove from all players
         for (PlayerTitleData data : playerTitles.values()) {
-            data.getUnlockedTitles().remove(titleId);
+            data.removeTitle(titleId);
             if (titleId.equals(data.getEquippedTitle())) {
                 data.setEquippedTitle(null);
             }

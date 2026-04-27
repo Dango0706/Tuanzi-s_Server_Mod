@@ -5,11 +5,16 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 
-public record Title(String id, Component displayName) {
+public record Title(String id, Component displayName, long globalExpiry) {
     public static final Codec<Title> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     Codec.STRING.fieldOf("id").forGetter(Title::id),
-                    ComponentSerialization.CODEC.fieldOf("displayName").forGetter(Title::displayName)
+                    ComponentSerialization.CODEC.fieldOf("displayName").forGetter(Title::displayName),
+                    Codec.LONG.optionalFieldOf("globalExpiry", -1L).forGetter(Title::globalExpiry)
             ).apply(instance, Title::new)
     );
+
+    public boolean isExpired() {
+        return globalExpiry != -1 && System.currentTimeMillis() > globalExpiry;
+    }
 }

@@ -1,5 +1,6 @@
 package me.tuanzi.title.listeners;
 
+import me.tuanzi.economy.utils.ServerTranslationHelper;
 import me.tuanzi.statistics.StatisticsModule;
 import me.tuanzi.statistics.data.PlayerStatistics;
 import me.tuanzi.title.PlayerTitleData;
@@ -46,31 +47,22 @@ public class TitleListener {
                     CompoundTag tag = customData.copyTag();
                     if (tag.contains("tuanzi_title")) {
                         String titleId = tag.getString("tuanzi_title").orElse("");
+                        long duration = tag.getLong("tuanzi_duration").orElse(-1L);
                         
                         if (titleId.isEmpty()) return InteractionResult.PASS;
-
-                        PlayerTitleData data = TitleManager.getInstance().getTitleData().getOrCreatePlayerTitleData(player.getUUID());
-                        if (data.getUnlockedTitles().contains(titleId)) {
-                            player.sendSystemMessage(Component.literal("§c你已经拥有这个称号了。"));
-                            return InteractionResult.FAIL;
-                        }
+                        if (!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.PASS;
 
                         if (!TitleManager.getInstance().getTitleData().getTitles().containsKey(titleId)) {
-                            player.sendSystemMessage(Component.literal("§c该称号已失效。"));
+                            ServerTranslationHelper.sendMessage(serverPlayer, "title.item.error.invalid");
                             return InteractionResult.FAIL;
                         }
 
                         // Success
-                        data.unlockTitle(titleId);
+                        TitleManager.getInstance().giveTitle(serverPlayer.getUUID(), titleId, duration, false);
                         stack.shrink(1);
                         
                         String displayName = TitleManager.getInstance().getTitleData().getTitles().get(titleId).displayName().getString();
-                        player.sendSystemMessage(Component.literal("§b成功激活称号: §f" + displayName));
-                        
-                        // Stats
-                        PlayerStatistics stats = StatisticsModule.getInstance().getDataManager().getPlayerStatistics(player.getName().getString());
-                        stats.addTitleOwned();
-                        stats.addTitleFromItem();
+                        ServerTranslationHelper.sendMessage(serverPlayer, "title.item.success", displayName);
                         
                         return InteractionResult.SUCCESS;
                     }

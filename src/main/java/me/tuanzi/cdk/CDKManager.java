@@ -1,5 +1,6 @@
 package me.tuanzi.cdk;
 
+import me.tuanzi.economy.utils.ServerTranslationHelper;
 import me.tuanzi.statistics.StatisticsModule;
 import me.tuanzi.statistics.data.PlayerStatistics;
 import net.minecraft.network.chat.Component;
@@ -40,27 +41,27 @@ public class CDKManager {
     public void redeemCDK(ServerPlayer player, String code) {
         CDKEntry entry = getCDKData().getCDK(code);
         if (entry == null) {
-            player.sendSystemMessage(Component.literal("§c无效的礼包码。"));
+            ServerTranslationHelper.sendMessage(player, "cdk.error.invalid");
             return;
         }
 
         if (entry.isExpired()) {
-            player.sendSystemMessage(Component.literal("§c该礼包码已过期。"));
+            ServerTranslationHelper.sendMessage(player, "cdk.error.expired");
             return;
         }
 
         if (entry.getType() == CDKType.GLOBAL_SINGLE && entry.getCurrentUses() > 0) {
-            player.sendSystemMessage(Component.literal("§c该礼包码已被他人领用。"));
+            ServerTranslationHelper.sendMessage(player, "cdk.error.global_used");
             return;
         }
 
         if (entry.isFull()) {
-            player.sendSystemMessage(Component.literal("§c该礼包码的使用次数已达上限。"));
+            ServerTranslationHelper.sendMessage(player, "cdk.error.full");
             return;
         }
 
         if (entry.hasUsed(player.getUUID())) {
-            player.sendSystemMessage(Component.literal("§c你已经领取过该礼包了。"));
+            ServerTranslationHelper.sendMessage(player, "cdk.error.player_used");
             return;
         }
 
@@ -77,7 +78,7 @@ public class CDKManager {
         executeCDKCommands(player, entry.getCommands());
         
         // Notify
-        player.sendSystemMessage(Component.literal(entry.getSuccessMessage()));
+        player.sendSystemMessage(Component.literal(entry.getSuccessMessage())); // Success message is custom from admin
         
         CDKStateSaver.getServerState(server).setDirty();
     }
