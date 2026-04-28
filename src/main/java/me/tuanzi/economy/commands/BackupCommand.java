@@ -79,6 +79,12 @@ public class BackupCommand {
                                             }
                                             return 1;
                                         }))))
+                .then(Commands.literal("reload")
+                        .executes(ctx -> {
+                            BackupManager.getInstance().reloadConfig();
+                            ctx.getSource().sendSuccess(() -> Component.literal("§a备份配置已重载！"), true);
+                            return 1;
+                        }))
                 .then(Commands.literal("interval")
                         .then(Commands.argument("hours", IntegerArgumentType.integer(1))
                                 .executes(ctx -> {

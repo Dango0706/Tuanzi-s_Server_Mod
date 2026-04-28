@@ -147,4 +147,9 @@ public class BackupManager {
     public BackupConfig getConfig() {
         return config;
     }
+
+    public void reloadConfig() {
+        BackupConfig newConfig = BackupConfig.load();
+        this.config.setBackupIntervalHours(newConfig.getBackupIntervalHours());
+    }
 }
