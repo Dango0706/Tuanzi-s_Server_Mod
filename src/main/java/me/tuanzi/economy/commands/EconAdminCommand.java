@@ -1,13 +1,16 @@
 package me.tuanzi.economy.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import me.tuanzi.economy.EconomyModule;
 import me.tuanzi.economy.api.EconomyAPI;
 import me.tuanzi.economy.api.EconomyAPIImpl;
+import me.tuanzi.economy.config.EconomyConfig;
 import me.tuanzi.economy.currency.WalletType;
 import me.tuanzi.economy.exception.WalletTypeNotFoundException;
 import me.tuanzi.economy.utils.ServerTranslationHelper;
@@ -24,6 +27,7 @@ import net.minecraft.server.permissions.PermissionLevel;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
+import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
 import static com.mojang.brigadier.arguments.DoubleArgumentType.doubleArg;
 import static com.mojang.brigadier.arguments.DoubleArgumentType.getDouble;
 
@@ -31,6 +35,13 @@ public class EconAdminCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess) {
         dispatcher.register(Commands.literal("econ-admin")
                 .requires(source -> source.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.GAMEMASTERS)))
+                .then(Commands.literal("config")
+                        .then(Commands.literal("reload")
+                                .executes(ctx -> reloadConfig(ctx)))
+                        .then(Commands.literal("set")
+                                .then(Commands.literal("allowSameIPTransfer")
+                                        .then(Commands.argument("value", BoolArgumentType.bool())
+                                                .executes(ctx -> setAllowSameIPTransfer(ctx))))))
                 .then(Commands.literal("type")
                         .then(Commands.literal("add")
                                 .then(Commands.argument("id", StringArgumentType.word())
@@ -217,6 +228,21 @@ public class EconAdminCommand {
 
         ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_header", playerName);
         ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.balance_line", type.displayName(), walletId, balance);
+        return 1;
+    }
+
+    private static int reloadConfig(CommandContext<CommandSourceStack> ctx) {
+        EconomyModule.reloadConfig();
+        ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.config_reloaded");
+        return 1;
+    }
+
+    private static int setAllowSameIPTransfer(CommandContext<CommandSourceStack> ctx) {
+        boolean value = getBool(ctx, "value");
+        EconomyConfig config = EconomyModule.getConfig();
+        config.setAllowSameIPTransfer(value);
+        EconomyConfig.save(config);
+        ServerTranslationHelper.sendSuccess(ctx.getSource(), "economy.admin.config_set_allow_same_ip", value);
         return 1;
     }
 }

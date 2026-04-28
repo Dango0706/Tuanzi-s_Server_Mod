@@ -4,6 +4,7 @@ import me.tuanzi.economy.api.EconomyAPIImpl;
 import me.tuanzi.economy.commands.BalanceCommand;
 import me.tuanzi.economy.commands.EconAdminCommand;
 import me.tuanzi.economy.commands.PayCommand;
+import me.tuanzi.economy.config.EconomyConfig;
 import me.tuanzi.economy.utils.ServerTranslationHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -14,11 +15,13 @@ import org.slf4j.LoggerFactory;
 public class EconomyModule implements ModInitializer {
     public static final String MOD_ID = "economy-module";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+    private static EconomyConfig config;
 
     @Override
     public void onInitialize() {
         me.tuanzi.shop.util.DevFlowLogger.critical("EconomyModule", "Initializing Economy Module...");
 
+        config = EconomyConfig.load();
         ServerTranslationHelper.initialize();
         me.tuanzi.backup.BackupManager.getInstance().init();
 
@@ -26,6 +29,14 @@ public class EconomyModule implements ModInitializer {
         registerServerLifecycleEvents();
 
         me.tuanzi.shop.util.DevFlowLogger.critical("EconomyModule", "Economy Module initialized successfully!");
+    }
+
+    public static EconomyConfig getConfig() {
+        return config;
+    }
+
+    public static void reloadConfig() {
+        config = EconomyConfig.load();
     }
 
     private void registerCommands() {

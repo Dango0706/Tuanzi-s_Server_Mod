@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import me.tuanzi.economy.EconomyModule;
 import me.tuanzi.economy.api.EconomyAPI;
 import me.tuanzi.economy.api.EconomyAPIImpl;
 import me.tuanzi.economy.currency.WalletType;
@@ -50,6 +51,11 @@ public class PayCommand {
 
         if (sender.getUUID().equals(target.getUUID())) {
             ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.pay.self");
+            return 0;
+        }
+
+        if (!EconomyModule.getConfig().isAllowSameIPTransfer() && sender.getIpAddress().equals(target.getIpAddress())) {
+            ServerTranslationHelper.sendFailure(ctx.getSource(), "economy.pay.same_ip");
             return 0;
         }
 
