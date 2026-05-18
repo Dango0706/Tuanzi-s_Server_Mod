@@ -78,15 +78,31 @@ public class SignUpdateHelper {
         Component tradeItemDisplayName = shop.getTradeItem().getDisplayName();
         String line2 = String.format(Locale.ROOT, "%.2f %s", price, currencyName);
 
-        var frontText = signEntity.getFrontText()
-                .setMessage(0, Component.literal(line0))
-                .setMessage(1, tradeItemDisplayName)
-                .setMessage(2, Component.literal(line2))
-                .setMessage(3, Component.literal(shop.getDescription() != null ? shop.getDescription() : ""));
+        Component comp0 = Component.literal(line0);
+        Component comp1 = tradeItemDisplayName;
+        Component comp2 = Component.literal(line2);
+        Component comp3 = Component.literal(shop.getDescription() != null ? shop.getDescription() : "");
 
-        signEntity.setText(frontText, true);
-        signEntity.setChanged();
-        level.sendBlockUpdated(signPos, level.getBlockState(signPos), level.getBlockState(signPos), 3);
+        var currentText = signEntity.getFrontText();
+        boolean needsUpdate = false;
+        
+        if (!currentText.getMessage(0, false).getString().equals(comp0.getString())) needsUpdate = true;
+        if (!currentText.getMessage(1, false).getString().equals(comp1.getString())) needsUpdate = true;
+        if (!currentText.getMessage(2, false).getString().equals(comp2.getString())) needsUpdate = true;
+        if (!currentText.getMessage(3, false).getString().equals(comp3.getString())) needsUpdate = true;
+
+        if (needsUpdate) {
+            var frontText = currentText
+                    .setMessage(0, comp0)
+                    .setMessage(1, comp1)
+                    .setMessage(2, comp2)
+                    .setMessage(3, comp3);
+
+            signEntity.setText(frontText, true);
+            // 移除 signEntity.setChanged() 以避免频繁标记区块为脏数据，防止区块频繁保存导致大量调用 PalettedContainer$Data.copy() 引发严重卡顿
+            // 改用 flag 2 仅更新客户端，不触发方块更新 (避免产生连锁的红石/方块刷新)
+            level.sendBlockUpdated(signPos, level.getBlockState(signPos), level.getBlockState(signPos), 2);
+        }
 
         logInfo("[告示牌更新] 刷新并同步成功：商店ID={}, 位置={}, 第1行={}, 第2行={}, 第3行={}",
                 shop.getShopId().toString().substring(0, 8), signPos, line0, tradeItemDisplayName.getString(), line2);

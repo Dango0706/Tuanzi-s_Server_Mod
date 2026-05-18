@@ -38,7 +38,10 @@ The project uses the Gradle wrapper (`gradlew`). Standard Fabric Loom tasks appl
 
 ## Development Conventions
 
-* **Java Version:** The project strictly targets Java 25. 环境变量的Java为21，请手动选择25版本的Java（非 Path 环境变量版本，需手动配置，路径：`C:/Program Files/Zulu/zulu-25`）。
+* **Java Version:** 项目严格目标为 Java 25。开发环境必须使用 **JBR 25 (JetBrains Runtime)** 以支持类与 Mixin 的热重载（HotSwap）。
+    - **SDK 配置:** 在 IDEA 中请确保项目 SDK 和 Gradle JVM 均指向 JBR 25。
+    - **路径参考:** `C:\Users\12616\.jdks\jbr-25.0.2`
+    - **热重载:** 支持通过 IDEA 的 `Reload Changed Classes` 功能实现逻辑实时更新（包含 Mixin）。
 * **Language Requirement:** Always communicate and output responses in Chinese (中文).
 * **Source Code Reference:** 请参考 Minecraft 反编译后的本地源码来进行开发（路径详见根目录源码 Jar 包）。
 * **Cache Directory:** 所有查看源码或开发过程中产生的临时缓存文件必须放置在 `cache/` 文件夹下。该文件夹已被列入 Git 忽略名单。

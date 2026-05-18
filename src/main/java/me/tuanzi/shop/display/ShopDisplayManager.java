@@ -127,6 +127,12 @@ public class ShopDisplayManager {
                 continue;
             }
 
+            // 由于 ShopInstance 缺少维度信息，且所有商店被认为属于主世界
+            // 只有当传入的 level 是主世界时，才对商店进行更新操作，以防止在其他维度（如地狱、末地）错误生成展示实体
+            if (level.dimension() != net.minecraft.world.level.Level.OVERWORLD) {
+                continue;
+            }
+
             UUID shopId = shop.getShopId();
             BlockPos shopPos = shop.getShopPos();
 
