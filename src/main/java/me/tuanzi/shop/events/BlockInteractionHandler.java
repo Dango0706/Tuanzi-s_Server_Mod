@@ -363,6 +363,8 @@ public class BlockInteractionHandler {
         DevFlowLogger.step("购买交易子流程", "更新动态价格和保存数据");
         if (shop.isDynamicPricing()) {
             DynamicPricing.updatePriceAfterTransaction(shop, quantity, true);
+        } else if (shop.isInfinite()) {
+            shop.incrementTotalSold(quantity);
         }
         shopManager.markDirty();
         DevFlowLogger.param("购买交易子流程", "新价格", shop.getCurrentPrice());
@@ -475,6 +477,8 @@ public class BlockInteractionHandler {
         DevFlowLogger.step("出售交易子流程", "更新动态价格和保存数据");
         if (shop.isDynamicPricing()) {
             DynamicPricing.updatePriceAfterTransaction(shop, quantity, false);
+        } else if (shop.isInfinite()) {
+            shop.incrementTotalBought(quantity);
         }
         shopManager.markDirty();
         DevFlowLogger.param("出售交易子流程", "新价格", shop.getCurrentPrice());
